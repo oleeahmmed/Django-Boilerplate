@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HR & Payroll Management System{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(214.3 31.8% 91.4%)",
+                        input: "hsl(214.3 31.8% 91.4%)",
+                        ring: "hsl(222.2 84% 4.9%)",
+                        background: "hsl(0 0% 100%)",
+                        foreground: "hsl(222.2 84% 4.9%)",
+                        primary: {
+                            DEFAULT: "hsl(222.2 47.4% 11.2%)",
+                            foreground: "hsl(210 40% 98%)",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(210 40% 96%)",
+                            foreground: "hsl(222.2 84% 4.9%)",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(0 84.2% 60.2%)",
+                            foreground: "hsl(210 40% 98%)",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(210 40% 96%)",
+                            foreground: "hsl(215.4 16.3% 46.9%)",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(210 40% 96%)",
+                            foreground: "hsl(222.2 84% 4.9%)",
+                        },
+                        popover: {
+                            DEFAULT: "hsl(0 0% 100%)",
+                            foreground: "hsl(222.2 84% 4.9%)",
+                        },
+                        card: {
+                            DEFAULT: "hsl(0 0% 100%)",
+                            foreground: "hsl(222.2 84% 4.9%)",
+                        },
+                    },
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        :root {
+            --radius: 0.5rem;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="h-full bg-background text-foreground">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-card shadow-sm border-b border-border">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="flex h-16 justify-between">
+                    <div class="flex">
+                        <div class="flex flex-shrink-0 items-center">
+                            <a href="{% url 'hr_payroll:hr_dashboard' %}" class="flex items-center">
+                                <i class="fas fa-users-cog text-primary text-2xl mr-3"></i>
+                                <span class="text-xl font-bold text-foreground">HR & Payroll</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <div class="relative ml-3">
+                            <div class="flex items-center">
+                                <button type="button" class="relative flex rounded-full bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                                    <span class="sr-only">Open user menu</span>
+                                    <div class="flex items-center space-x-3">
+                                        <div class="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
+                                            <i class="fas fa-user text-primary"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-foreground">{{ user.get_full_name|default:user.username }}</span>
+                                        <i class="fas fa-chevron-down text-muted-foreground text-xs"></i>
+                                    </div>
+                                </button>
+                            </div>
+                            
+                            <div class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-popover py-1 shadow-lg ring-1 ring-border focus:outline-none hidden" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" id="user-menu">
+                                <a href="#" class="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground" role="menuitem">
+                                    <i class="fas fa-user mr-2"></i>Profile
+                                </a>
+                                <a href="#" class="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground" role="menuitem">
+                                    <i class="fas fa-cog mr-2"></i>Settings
+                                </a>
+                                <a href="{% url 'admin:logout' %}" class="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground" role="menuitem">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Sign out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="flex">
+            <!-- Sidebar -->
+            <div class="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:pt-16">
+                <div class="flex flex-grow flex-col overflow-y-auto bg-card border-r border-border">
+                    <div class="flex flex-grow flex-col">
+                        <nav class="flex-1 space-y-1 px-2 py-4">
+                            <!-- Dashboard -->
+                            <a href="{% url 'hr_payroll:hr_dashboard' %}" class="{% if request.resolver_match.url_name == 'hr_dashboard' %}bg-accent border-primary text-accent-foreground{% else %}border-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground{% endif %} group flex items-center px-2 py-2 text-sm font-medium border-l-4 transition-colors duration-200">
+                                <i class="fas fa-tachometer-alt {% if request.resolver_match.url_name == 'hr_dashboard' %}text-primary{% else %}text-muted-foreground group-hover:text-accent-foreground{% endif %} mr-3 flex-shrink-0 h-6 w-6"></i>
+                                Dashboard
+                            </a>
+
+                            <!-- ZKTeco Section -->
+                            <div class="mt-8">
+                                <h3 class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    ZKTeco Operations
+                                </h3>
+                                <div class="mt-1 space-y-1">
+                                    <a href="{% url 'hr_payroll:zkteco_employee_import_page' %}" class="{% if request.resolver_match.url_name == 'zkteco_employee_import_page' %}bg-accent border-primary text-accent-foreground{% else %}border-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground{% endif %} group flex items-center px-2 py-2 text-sm font-medium border-l-4 transition-colors duration-200">
+                                        <i class="fas fa-user-plus {% if request.resolver_match.url_name == 'zkteco_employee_import_page' %}text-primary{% else %}text-muted-foreground group-hover:text-accent-foreground{% endif %} mr-3 flex-shrink-0 h-6 w-6"></i>
+                                        Import Employees
+                                    </a>
+                                    <a href="{% url 'hr_payroll:zkteco_attendance_import_page' %}" class="{% if request.resolver_match.url_name == 'zkteco_attendance_import_page' %}bg-accent border-primary text-accent-foreground{% else %}border-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground{% endif %} group flex items-center px-2 py-2 text-sm font-medium border-l-4 transition-colors duration-200">
+                                        <i class="fas fa-clock {% if request.resolver_match.url_name == 'zkteco_attendance_import_page' %}text-primary{% else %}text-muted-foreground group-hover:text-accent-foreground{% endif %} mr-3 flex-shrink-0 h-6 w-6"></i>
+                                        Import Attendance
+                                    </a>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <div class="md:pl-64 flex flex-col flex-1">
+                <main class="flex-1">
+                    <div class="py-6">
+                        <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+                            <!-- Messages -->
+                            {% if messages %}
+                                <div class="mb-6">
+                                    {% for message in messages %}
+                                        <div class="rounded-lg {% if message.tags == 'error' %}bg-destructive/15 border border-destructive/20 text-destructive{% elif message.tags == 'warning' %}bg-yellow-50 border border-yellow-200 text-yellow-800{% elif message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %} p-4 mb-4">
+                                            <div class="flex">
+                                                <div class="flex-shrink-0">
+                                                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <p class="text-sm">{{ message }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            {% block content %}{% endblock %}
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+        // Global CSRF token setup
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        const csrftoken = getCookie('csrftoken');
+        
+        // Setup AJAX to include CSRF token
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+
+        // User menu toggle
+        document.getElementById('user-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('user-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Close user menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const button = document.getElementById('user-menu-button');
+            const menu = document.getElementById('user-menu');
+            
+            if (!button.contains(event.target) && !menu.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Loading button helper
+        function setButtonLoading(button, loading = true) {
+            if (loading) {
+                button.prop('disabled', true);
+                button.find('.loading-spinner').removeClass('hidden');
+                button.find('.btn-text').addClass('opacity-50');
+            } else {
+                button.prop('disabled', false);
+                button.find('.loading-spinner').addClass('hidden');
+                button.find('.btn-text').removeClass('opacity-50');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const colors = {
+                'success': 'bg-green-600 text-white',
+                'error': 'bg-destructive text-destructive-foreground',
+                'warning': 'bg-yellow-600 text-white',
+                'info': 'bg-blue-600 text-white'
+            };
+            
+            const icons = {
+                'success': 'fa-check-circle',
+                'error': 'fa-exclamation-circle',
+                'warning': 'fa-exclamation-triangle',
+                'info': 'fa-info-circle'
+            };
+            
+            const toastHtml = `
+                <div class="toast ${colors[type]} px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 transform transition-all duration-300 translate-x-full">
+                    <i class="fas ${icons[type]}"></i>
+                    <span>${message}</span>
+                    <button class="ml-4 hover:opacity-70" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            const container = document.getElementById('toast-container');
+            container.insertAdjacentHTML('beforeend', toastHtml);
+            
+            const toast = container.lastElementChild;
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 5000);
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

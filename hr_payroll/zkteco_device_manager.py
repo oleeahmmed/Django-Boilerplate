@@ -6,6 +6,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from typing import List, Dict, Any, Tuple, Optional
 import json
 
+import socket
+import struct
+import time
 try:
     from zk import ZK
     from zk.exception import ZKNetworkError, ZKErrorResponse
@@ -22,31 +25,77 @@ class ZKTecoDeviceManager:
     """Main manager class for ZKTeco device operations"""
     
     def __init__(self):
-        self.connection_timeout = 30
-        self.max_retry_attempts = 3
+        self.connection_timeout = 10  # Reduced timeout for faster testing
+        self.max_retry_attempts = 2   # Reduced retries
     
     def _get_zk_connection(self, device: ZkDevice):
         """Establish connection to ZKTeco device"""
         if not ZK_AVAILABLE:
             raise Exception("ZK library not available. Please install with 'pip install pyzk'")
         
-        password = int(device.password) if device.password and str(device.password).isdigit() else 0
-        zk = ZK(device.ip_address, port=device.port, timeout=self.connection_timeout, 
-                password=password, force_udp=True, ommit_ping=True)
+        password = 0
+        if device.password:
+            try:
+                password = int(device.password)
+            except (ValueError, TypeError):
+                password = 0
+        
+        # Create ZK instance with proper parameters
+        zk = ZK(
+            ip=device.ip_address, 
+            port=device.port, 
+            timeout=self.connection_timeout,
+            password=password,
+            force_udp=False,  # Try TCP first
+            ommit_ping=False  # Enable ping
+        )
+        
+        conn = None
+        last_error = None
         
         for attempt in range(self.max_retry_attempts):
             try:
+                logger.info(f"Connection attempt {attempt + 1} for device {device.name} ({device.ip_address}:{device.port})")
                 conn = zk.connect()
                 if conn:
+                    logger.info(f"Successfully connected to device {device.name}")
                     return conn
                 else:
-                    logger.warning(f"Connection attempt {attempt + 1} failed for device {device.name}")
-            except (ZKNetworkError, ZKErrorResponse) as e:
-                logger.warning(f"Connection attempt {attempt + 1} failed for device {device.name}: {str(e)}")
-                if attempt == self.max_retry_attempts - 1:
-                    raise e
+                    last_error = f"Connection returned None on attempt {attempt + 1}"
+                    logger.warning(last_error)
+            except ZKNetworkError as e:
+                last_error = f"Network error on attempt {attempt + 1}: {str(e)}"
+                logger.warning(last_error)
+                time.sleep(1)  # Wait before retry
+            except ZKErrorResponse as e:
+                last_error = f"ZK error on attempt {attempt + 1}: {str(e)}"
+                logger.warning(last_error)
+                time.sleep(1)
+            except Exception as e:
+                last_error = f"Unexpected error on attempt {attempt + 1}: {str(e)}"
+                logger.warning(last_error)
+                time.sleep(1)
         
-        raise Exception("Failed to establish connection after maximum retry attempts")
+        raise Exception(f"Failed to establish connection after {self.max_retry_attempts} attempts. Last error: {last_error}")
+
+    def _test_network_connectivity(self, device: ZkDevice) -> Dict[str, Any]:
+        """Test basic network connectivity to device"""
+        try:
+            # Test if we can reach the IP and port
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(5)
+            result = sock.connect_ex((device.ip_address, device.port))
+            sock.close()
+            
+            if result == 0:
+                return {"reachable": True, "message": "Port is reachable"}
+            else:
+                return {"reachable": False, "message": f"Port is not reachable (error code: {result})"}
+                
+        except socket.gaierror as e:
+            return {"reachable": False, "message": f"DNS resolution failed: {str(e)}"}
+        except Exception as e:
+            return {"reachable": False, "message": f"Network test failed: {str(e)}"}
 
 class ZKTecoConnectionChecker:
     """Handle ZKTeco device connection testing"""
@@ -56,83 +105,162 @@ class ZKTecoConnectionChecker:
     
     def check_single_device(self, device: ZkDevice) -> Dict[str, Any]:
         """Test connection to a single ZKTeco device"""
+        logger.info(f"Starting connection test for device: {device.name}")
+        
         if not ZK_AVAILABLE:
             return {
                 'device_id': device.id,
                 'device_name': device.name,
                 'success': False,
-                'message': 'ZK library not available. Please install with pip install pyzk',
-                'details': {}
+                'message': 'ZK library not available. Please install with: pip install pyzk',
+                'details': {
+                    'error_type': 'library_missing',
+                    'ip_address': device.ip_address,
+                    'port': device.port
+                }
+            }
+        
+        # First test basic network connectivity
+        network_test = self.manager._test_network_connectivity(device)
+        
+        if not network_test["reachable"]:
+            return {
+                'device_id': device.id,
+                'device_name': device.name,
+                'success': False,
+                'message': f'Network connectivity failed: {network_test["message"]}',
+                'details': {
+                    'error_type': 'network_error',
+                    'ip_address': device.ip_address,
+                    'port': device.port,
+                    'network_test': network_test
+                }
             }
         
         try:
+            # Attempt ZK connection
             conn = self.manager._get_zk_connection(device)
             
             # Get device information
-            device_name = conn.get_device_name()
-            firmware_version = conn.get_firmware_version()
-            platform = conn.get_platform()
-            device_time = conn.get_time()
+            device_info = {}
             
-            # Get counts
-            users = conn.get_users()
-            attendance_logs = conn.get_attendance()
+            try:
+                device_info['device_name'] = conn.get_device_name() or "Unknown"
+            except:
+                device_info['device_name'] = "Unknown"
             
-            conn.disconnect()
+            try:
+                device_info['firmware_version'] = conn.get_firmware_version() or "Unknown"
+            except:
+                device_info['firmware_version'] = "Unknown"
+            
+            try:
+                device_info['platform'] = conn.get_platform() or "Unknown"
+            except:
+                device_info['platform'] = "Unknown"
+                
+            try:
+                device_time = conn.get_time()
+                device_info['device_time'] = device_time.isoformat() if device_time else None
+            except:
+                device_info['device_time'] = None
+            
+            # Get user and attendance counts
+            try:
+                users = conn.get_users() or []
+                device_info['total_users'] = len(users)
+            except Exception as e:
+                logger.warning(f"Could not get users from {device.name}: {e}")
+                device_info['total_users'] = 0
+            
+            try:
+                attendance_logs = conn.get_attendance() or []
+                device_info['total_attendance'] = len(attendance_logs)
+            except Exception as e:
+                logger.warning(f"Could not get attendance from {device.name}: {e}")
+                device_info['total_attendance'] = 0
+            
+            # Safely disconnect
+            try:
+                conn.disconnect()
+            except:
+                pass
             
             # Update device last sync time
-            device.last_synced = timezone.now()
-            device.save(update_fields=['last_synced'])
+            try:
+                device.last_synced = timezone.now()
+                device.save(update_fields=['last_synced'])
+            except Exception as e:
+                logger.warning(f"Could not update last_synced for device {device.name}: {e}")
             
             return {
                 'device_id': device.id,
                 'device_name': device.name,
                 'success': True,
                 'message': 'Connected successfully',
-                'details': {
-                    'device_name': device_name,
-                    'firmware_version': firmware_version,
-                    'platform': platform,
-                    'device_time': device_time.isoformat() if device_time else None,
-                    'total_users': len(users),
-                    'total_attendance': len(attendance_logs),
-                }
+                'details': device_info
             }
             
         except ZKNetworkError as e:
-            logger.error(f"Network error for device {device.name}: {str(e)}")
+            error_msg = f'Network error: {str(e)}'
+            logger.error(f"Network error for device {device.name}: {error_msg}")
             return {
                 'device_id': device.id,
                 'device_name': device.name,
                 'success': False,
-                'message': f'Network error: {str(e)}',
-                'details': {}
+                'message': error_msg,
+                'details': {
+                    'error_type': 'network_error',
+                    'ip_address': device.ip_address,
+                    'port': device.port,
+                    'error_details': str(e)
+                }
             }
         except ZKErrorResponse as e:
-            logger.error(f"ZK error for device {device.name}: {str(e)}")
+            error_msg = f'ZK device error: {str(e)}'
+            logger.error(f"ZK error for device {device.name}: {error_msg}")
             return {
                 'device_id': device.id,
                 'device_name': device.name,
                 'success': False,
-                'message': f'ZK device error: {str(e)}',
-                'details': {}
+                'message': error_msg,
+                'details': {
+                    'error_type': 'device_error',
+                    'ip_address': device.ip_address,
+                    'port': device.port,
+                    'error_details': str(e)
+                }
             }
         except Exception as e:
-            logger.error(f"Unexpected error for device {device.name}: {str(e)}")
+            error_msg = f'Connection failed: {str(e)}'
+            logger.error(f"Unexpected error for device {device.name}: {error_msg}")
             return {
                 'device_id': device.id,
                 'device_name': device.name,
                 'success': False,
-                'message': f'Connection failed: {str(e)}',
-                'details': {}
+                'message': error_msg,
+                'details': {
+                    'error_type': 'unexpected_error',
+                    'ip_address': device.ip_address,
+                    'port': device.port,
+                    'error_details': str(e)
+                }
             }
     
     def check_multiple_devices(self, devices: List[ZkDevice]) -> List[Dict[str, Any]]:
         """Test connection to multiple ZKTeco devices"""
         results = []
-        for device in devices:
+        total_devices = len(devices)
+        
+        for i, device in enumerate(devices, 1):
+            logger.info(f"Testing device {i}/{total_devices}: {device.name}")
             result = self.check_single_device(device)
             results.append(result)
+            
+            # Small delay between tests to avoid overwhelming devices
+            if i < total_devices:
+                time.sleep(0.5)
+                
         return results
 
 class ZKTecoEmployeeImporter:

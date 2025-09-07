@@ -1,40 +1,119 @@
-{% extends 'zkteco/base.html' %}
+{% extends 'base.html' %}
 
-{% block title %}Connection Test{% endblock %}
-
-{% block breadcrumb %}
-    <li class="breadcrumb-item active">Connection Test</li>
-{% endblock %}
+{% block title %}ZKTeco Connection Test - {{ block.super }}{% endblock %}
 
 {% block content %}
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-1">Connection Test</h1>
-            <p class="text-muted mb-0">Test connectivity to your ZKTeco devices</p>
-        </div>
-        <div>
-            <button class="btn btn-primary" onclick="testAllConnections()">
-                <i class="fas fa-wifi me-2"></i>Test All Devices
-            </button>
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">ZKTeco Device Connection Test</h1>
+        <p class="mt-1 text-sm text-gray-600">Test connectivity and communication with your ZKTeco devices</p>
+    </div>
+    <a href="{% url 'hr_payroll:zkteco_dashboard' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Back to Dashboard
+    </a>
+</div>
+
+{% if not devices %}
+    <div class="rounded-md bg-yellow-50 p-4 border border-yellow-200">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-yellow-800">No Active Devices Found</h3>
+                <div class="mt-2 text-sm text-yellow-700">
+                    <p>Please add and configure ZKTeco devices before running connection tests.</p>
+                </div>
+            </div>
         </div>
     </div>
-
-    <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <button class="btn btn-outline-success w-100" onclick="testActiveDevices()">
-                                <i class="fas fa-check-circle me-2"></i>Test Active Devices Only
+{% else %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Device Selection -->
+        <div class="lg:col-span-2">
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                        <i class="fas fa-network-wired mr-2 text-primary-600"></i>
+                        Select Devices to Test
+                    </h3>
+                    
+                    <form id="connectionTestForm">
+                        <div class="space-y-4">
+                            <!-- Select All -->
+                            <div class="flex items-center">
+                                <input id="selectAll" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                                <label for="selectAll" class="ml-2 text-sm font-medium text-gray-900">
+                                    Select All Devices
+                                </label>
+                            </div>
+                            
+                            <div class="border-t border-gray-200 pt-4">
+                                <div class="space-y-3">
+                                    {% for device in devices %}
+                                        <div class="flex items-start">
+                                            <div class="flex items-center h-5">
+                                                <input id="device_{{ device.id }}" name="device_ids" value="{{ device.id }}" type="checkbox" class="device-checkbox h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                                            </div>
+                                            <div class="ml-3 text-sm">
+                                                <label for="device_{{ device.id }}" class="font-medium text-gray-700">{{ device.name }}</label>
+                                                <p class="text-gray-500">{{ device.ip_address }}:{{ device.port }}</p>
+                                                <p class="text-gray-400 text-xs">{{ device.company.name }}</p>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex space-x-3">
+                            <button type="submit" id="testConnectionBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                <span class="loading-spinner hidden">
+                                    <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </span>
+                                <span class="btn-text">
+                                    <i class="fas fa-play mr-2"></i>
+                                    Test Selected Devices
+                                </span>
+                            </button>
+                            <button type="button" id="clearResultsBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                <i class="fas fa-trash mr-2"></i>
+                                Clear Results
                             </button>
                         </div>
-                        <div class="col-md-6">
-                            <button class="btn btn-outline-info w-100" onclick="refreshDeviceList()">
-                                <i class="fas fa-sync-alt me-2"></i>Refresh Device List
-                            </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Information Panel -->
+        <div class="lg:col-span-1">
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                        <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                        Test Information
+                    </h3>
+                    <div class="text-sm text-gray-600 space-y-3">
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-0.5 mr-2"></i>
+                            <span>Tests network connectivity to each device</span>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-0.5 mr-2"></i>
+                            <span>Verifies ZKTeco protocol communication</span>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-0.5 mr-2"></i>
+                            <span>Retrieves device information and status</span>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-0.5 mr-2"></i>
+                            <span>Updates last sync timestamp</span>
                         </div>
                     </div>
                 </div>
@@ -42,462 +121,208 @@
         </div>
     </div>
 
-    <!-- Connection Status Overview -->
-    <div class="row mb-4" id="statusOverview" style="display: none;">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stats-card success">
-                <h3 id="onlineCount">0</h3>
-                <p><i class="fas fa-check-circle me-2"></i>Online</p>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stats-card danger">
-                <h3 id="offlineCount">0</h3>
-                <p><i class="fas fa-times-circle me-2"></i>Offline</p>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stats-card warning">
-                <h3 id="testingCount">0</h3>
-                <p><i class="fas fa-spinner me-2"></i>Testing</p>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stats-card primary">
-                <h3 id="totalCount">{{ devices|length }}</h3>
-                <p><i class="fas fa-fingerprint me-2"></i>Total</p>
+    <!-- Results Section -->
+    <div id="resultsSection" class="mt-8 hidden">
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                    <i class="fas fa-chart-line mr-2 text-primary-600"></i>
+                    Connection Test Results
+                </h3>
+                <div id="testResults"></div>
             </div>
         </div>
     </div>
+{% endif %}
 
-    <!-- Device List -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-fingerprint me-2"></i>Device Connection Status
-            </h5>
-            <div>
-                <button class="btn btn-sm btn-outline-primary" onclick="selectAllDevices()">
-                    <i class="fas fa-check-square me-2"></i>Select All
-                </button>
-                <button class="btn btn-sm btn-outline-secondary" onclick="clearSelection()">
-                    <i class="fas fa-square me-2"></i>Clear All
-                </button>
-                <button class="btn btn-sm btn-primary" onclick="testSelectedDevices()">
-                    <i class="fas fa-wifi me-2"></i>Test Selected
-                </button>
+<!-- Progress Modal -->
+<div id="progressModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-center mx-auto">
+                <i class="fas fa-cog fa-spin text-primary-600 text-2xl mr-3"></i>
+                <h3 class="text-lg font-medium text-gray-900">Testing Device Connections</h3>
             </div>
-        </div>
-        <div class="card-body">
-            {% if devices %}
-                <div class="row" id="deviceGrid">
-                    {% for device in devices %}
-                        <div class="col-lg-6 mb-3">
-                            <div class="card device-card h-100" data-device-id="{{ device.id }}" id="device-{{ device.id }}">
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-1">
-                                            <input type="checkbox" class="form-check-input device-checkbox" 
-                                                   value="{{ device.id }}" {% if device.is_active %}checked{% endif %}>
-                                        </div>
-                                        <div class="col-8">
-                                            <h6 class="mb-1">{{ device.name }}</h6>
-                                            <p class="text-muted mb-1">{{ device.company.name }}</p>
-                                            <small class="text-muted">
-                                                <code>{{ device.ip_address }}:{{ device.port }}</code>
-                                            </small>
-                                        </div>
-                                        <div class="col-3 text-end">
-                                            <div class="connection-status" id="status-{{ device.id }}">
-                                                <span class="badge bg-secondary">
-                                                    <i class="fas fa-question-circle me-1"></i>Unknown
-                                                </span>
-                                            </div>
-                                            <button class="btn btn-sm btn-outline-primary mt-2" 
-                                                    onclick="testSingleDevice({{ device.id }})">
-                                                <i class="fas fa-wifi"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Device Details (Initially Hidden) -->
-                                    <div class="device-details mt-3" id="details-{{ device.id }}" style="display: none;">
-                                        <hr>
-                                        <div class="row text-center">
-                                            <div class="col-4">
-                                                <small class="text-muted d-block">Users</small>
-                                                <strong id="users-{{ device.id }}">--</strong>
-                                            </div>
-                                            <div class="col-4">
-                                                <small class="text-muted d-block">Attendance</small>
-                                                <strong id="attendance-{{ device.id }}">--</strong>
-                                            </div>
-                                            <div class="col-4">
-                                                <small class="text-muted d-block">Firmware</small>
-                                                <strong id="firmware-{{ device.id }}">--</strong>
-                                            </div>
-                                        </div>
-                                        <div class="mt-2">
-                                            <small class="text-muted">Device Time: </small>
-                                            <span id="device-time-{{ device.id }}">--</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
+            <div class="mt-4">
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-primary-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%" id="progressBar"></div>
                 </div>
-            {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-fingerprint fa-3x text-muted mb-3"></i>
-                    <h5>No ZKTeco devices found</h5>
-                    <p class="text-muted">Add devices in the admin panel to test connections.</p>
-                    <a href="/admin/hr_payroll/zkdevice/add/" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Add Device
-                    </a>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Test Results -->
-    <div id="testResults" class="mt-4" style="display: none;">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-chart-line me-2"></i>Test Results Summary
-                </h5>
-            </div>
-            <div class="card-body">
-                <div id="testSummary">
-                    <!-- Test summary will be populated here -->
-                </div>
-                <div class="mt-3">
-                    <button class="btn btn-outline-primary" onclick="exportResults()">
-                        <i class="fas fa-download me-2"></i>Export Results
-                    </button>
-                    <button class="btn btn-outline-secondary" onclick="clearResults()">
-                        <i class="fas fa-trash me-2"></i>Clear Results
-                    </button>
-                </div>
+                <p class="text-sm text-gray-600 mt-2 text-center" id="progressText">Initializing connection tests...</p>
             </div>
         </div>
     </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    let testResults = [];
-    let testInProgress = false;
-
-    $(document).ready(function() {
-        updateCounters();
+$(document).ready(function() {
+    // Select all functionality
+    $('#selectAll').change(function() {
+        $('.device-checkbox').prop('checked', this.checked);
     });
-
-    function updateCounters() {
-        const total = $('.device-card').length;
-        const online = $('.badge:contains("Online")').length;
-        const offline = $('.badge:contains("Offline")').length;
-        const testing = $('.badge:contains("Testing")').length;
-
-        $('#totalCount').text(total);
-        $('#onlineCount').text(online);
-        $('#offlineCount').text(offline);
-        $('#testingCount').text(testing);
-
-        if (total > 0) {
-            $('#statusOverview').show();
-        }
-    }
-
-    function selectAllDevices() {
-        $('.device-checkbox').prop('checked', true);
-    }
-
-    function clearSelection() {
-        $('.device-checkbox').prop('checked', false);
-    }
-
-    function getSelectedDevices() {
-        const selected = [];
-        $('.device-checkbox:checked').each(function() {
-            selected.push($(this).val());
-        });
-        return selected;
-    }
-
-    function testAllConnections() {
-        if (testInProgress) {
-            showAlert('Test already in progress', 'warning');
-            return;
-        }
-
-        const deviceIds = [];
-        $('.device-card').each(function() {
-            deviceIds.push($(this).data('device-id'));
-        });
-
-        if (deviceIds.length === 0) {
-            showAlert('No devices to test', 'warning');
-            return;
-        }
-
-        executeConnectionTest(deviceIds, 'Testing all devices...');
-    }
-
-    function testActiveDevices() {
-        if (testInProgress) {
-            showAlert('Test already in progress', 'warning');
-            return;
-        }
-
-        const activeDeviceIds = [];
-        $('.device-checkbox:checked').each(function() {
-            activeDeviceIds.push($(this).val());
-        });
-
-        if (activeDeviceIds.length === 0) {
-            showAlert('No active devices selected', 'warning');
-            return;
-        }
-
-        executeConnectionTest(activeDeviceIds, 'Testing active devices...');
-    }
-
-    function testSelectedDevices() {
-        if (testInProgress) {
-            showAlert('Test already in progress', 'warning');
-            return;
-        }
-
-        const selectedDevices = getSelectedDevices();
+    
+    // Update select all when individual checkboxes change
+    $('.device-checkbox').change(function() {
+        const totalCheckboxes = $('.device-checkbox').length;
+        const checkedCheckboxes = $('.device-checkbox:checked').length;
+        $('#selectAll').prop('checked', totalCheckboxes === checkedCheckboxes);
+    });
+    
+    // Clear results
+    $('#clearResultsBtn').click(function() {
+        $('#resultsSection').addClass('hidden');
+        $('#testResults').empty();
+    });
+    
+    // Form submission
+    $('#connectionTestForm').submit(function(e) {
+        e.preventDefault();
+        
+        const selectedDevices = $('.device-checkbox:checked');
         if (selectedDevices.length === 0) {
-            showAlert('Please select at least one device', 'warning');
+            showToast('Please select at least one device to test.', 'warning');
             return;
         }
-
-        executeConnectionTest(selectedDevices, `Testing ${selectedDevices.length} selected device(s)...`);
-    }
-
-    function testSingleDevice(deviceId) {
-        if (testInProgress) {
-            showAlert('Test already in progress', 'warning');
-            return;
-        }
-
-        executeConnectionTest([deviceId], 'Testing device...');
-    }
-
-    function executeConnectionTest(deviceIds, loadingMessage) {
-        testInProgress = true;
-        showLoading(loadingMessage);
-
-        // Reset all device statuses for selected devices
-        deviceIds.forEach(deviceId => {
-            updateDeviceStatus(deviceId, {
-                status: 'testing',
-                message: 'Testing...',
-                details: null
-            });
+        
+        // Show progress modal
+        $('#progressModal').removeClass('hidden');
+        $('#progressBar').css('width', '0%');
+        $('#progressText').text('Starting connection tests...');
+        
+        // Prepare form data
+        const formData = new FormData();
+        selectedDevices.each(function() {
+            formData.append('device_ids', $(this).val());
         });
-
-        updateCounters();
-
+        
+        // Set button loading state
+        setButtonLoading($('#testConnectionBtn'), true);
+        
+        // Make AJAX request
         $.ajax({
-            url: '{% url "hr_payroll:zkteco_test_connection_api" %}',
-            method: 'POST',
-            data: {
-                'device_ids': deviceIds,
-                'csrfmiddlewaretoken': csrftoken
-            },
+            url: "{% url 'hr_payroll:zkteco_test_connection_api' %}",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
-                if (response.results) {
-                    testResults = response.results;
-                    
-                    response.results.forEach(result => {
-                        updateDeviceStatus(result.device_id, {
-                            status: result.success ? 'online' : 'offline',
-                            message: result.message,
-                            details: result.details
-                        });
-                    });
-
-                    updateCounters();
-                    displayTestSummary(response.results);
-                    showAlert(`Connection test completed for ${response.results.length} device(s)`, 'success');
-                }
+                $('#progressModal').addClass('hidden');
+                displayResults(response.results);
+                showToast('Connection test completed successfully!', 'success');
             },
-            error: function(xhr, status, error) {
-                console.error('Connection test failed:', error);
-                showAlert('Failed to test connections: ' + error, 'danger');
+            error: function(xhr) {
+                $('#progressModal').addClass('hidden');
+                let errorMessage = 'Connection test failed.';
                 
-                // Reset testing statuses to unknown
-                deviceIds.forEach(deviceId => {
-                    updateDeviceStatus(deviceId, {
-                        status: 'unknown',
-                        message: 'Test failed',
-                        details: null
-                    });
-                });
-                updateCounters();
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                
+                showToast(errorMessage, 'error');
+                console.error('Connection test error:', xhr);
             },
             complete: function() {
-                testInProgress = false;
-                hideLoading();
+                setButtonLoading($('#testConnectionBtn'), false);
             }
         });
-    }
-
-    function updateDeviceStatus(deviceId, result) {
-        const statusElement = $(`#status-${deviceId}`);
-        const detailsElement = $(`#details-${deviceId}`);
-        const deviceCard = $(`#device-${deviceId}`);
-
-        let badgeClass = 'bg-secondary';
-        let icon = 'fa-question-circle';
-
-        switch(result.status) {
-            case 'online':
-                badgeClass = 'bg-success';
-                icon = 'fa-check-circle';
-                deviceCard.removeClass('border-danger border-warning').addClass('border-success');
-                break;
-            case 'offline':
-                badgeClass = 'bg-danger';
-                icon = 'fa-times-circle';
-                deviceCard.removeClass('border-success border-warning').addClass('border-danger');
-                break;
-            case 'testing':
-                badgeClass = 'bg-warning';
-                icon = 'fa-spinner fa-spin';
-                deviceCard.removeClass('border-success border-danger').addClass('border-warning');
-                break;
-            default:
-                deviceCard.removeClass('border-success border-danger border-warning');
-        }
-
-        statusElement.html(`
-            <span class="badge ${badgeClass}">
-                <i class="fas ${icon} me-1"></i>${result.status.charAt(0).toUpperCase() + result.status.slice(1)}
-            </span>
-            <div class="mt-1"><small class="text-muted">${result.message}</small></div>
-        `);
-
-        // Update device details if available
-        if (result.details && result.status === 'online') {
-            $(`#users-${deviceId}`).text(result.details.total_users || '--');
-            $(`#attendance-${deviceId}`).text(result.details.total_attendance || '--');
-            $(`#firmware-${deviceId}`).text(result.details.firmware_version || '--');
-            $(`#device-time-${deviceId}`).text(
-                result.details.device_time ? 
-                new Date(result.details.device_time).toLocaleString() : '--'
-            );
-            detailsElement.show();
-        } else {
-            detailsElement.hide();
-        }
-    }
-
-    function displayTestSummary(results) {
-        const online = results.filter(r => r.success).length;
-        const offline = results.filter(r => !r.success).length;
-        const total = results.length;
-
-        let summaryHtml = `
-            <div class="row mb-3">
-                <div class="col-md-3 text-center">
-                    <h4 class="text-success">${online}</h4>
-                    <small class="text-muted">Online</small>
-                </div>
-                <div class="col-md-3 text-center">
-                    <h4 class="text-danger">${offline}</h4>
-                    <small class="text-muted">Offline</small>
-                </div>
-                <div class="col-md-3 text-center">
-                    <h4 class="text-primary">${total}</h4>
-                    <small class="text-muted">Total Tested</small>
-                </div>
-                <div class="col-md-3 text-center">
-                    <h4 class="text-info">${Math.round((online/total)*100)}%</h4>
-                    <small class="text-muted">Success Rate</small>
-                </div>
-            </div>
-        `;
-
-        // Add detailed results
-        summaryHtml += '<h6>Detailed Results:</h6>';
-        results.forEach(result => {
-            const statusClass = result.success ? 'text-success' : 'text-danger';
-            const statusIcon = result.success ? 'fa-check-circle' : 'fa-times-circle';
+    });
+    
+    function displayResults(results) {
+        let html = '';
+        let successCount = 0;
+        let failureCount = 0;
+        
+        results.forEach(function(result) {
+            if (result.success) {
+                successCount++;
+            } else {
+                failureCount++;
+            }
             
-            summaryHtml += `
-                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                    <div>
-                        <strong>${result.device_name}</strong>
-                        <br><small class="text-muted">${result.message}</small>
+            const statusClass = result.success ? 'green' : 'red';
+            const statusIcon = result.success ? 'check-circle' : 'times-circle';
+            
+            html += `
+                <div class="border border-${statusClass}-200 rounded-lg mb-4">
+                    <div class="bg-${statusClass}-50 px-4 py-3 border-b border-${statusClass}-200">
+                        <h4 class="text-sm font-medium text-${statusClass}-800 flex items-center">
+                            <i class="fas fa-${statusIcon} mr-2"></i>
+                            ${result.device_name} (ID: ${result.device_id})
+                        </h4>
                     </div>
-                    <div class="${statusClass}">
-                        <i class="fas ${statusIcon}"></i>
+                    <div class="px-4 py-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm"><strong>Status:</strong> 
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${statusClass}-100 text-${statusClass}-800">
+                                        ${result.success ? 'Connected' : 'Failed'}
+                                    </span>
+                                </p>
+                                <p class="text-sm mt-1"><strong>Message:</strong> ${result.message}</p>
+                            </div>
+                            <div>
+            `;
+            
+            if (result.success && result.details) {
+                html += `
+                    <p class="text-sm"><strong>Device Name:</strong> ${result.details.device_name || 'N/A'}</p>
+                    <p class="text-sm"><strong>Firmware:</strong> ${result.details.firmware_version || 'N/A'}</p>
+                    <p class="text-sm"><strong>Platform:</strong> ${result.details.platform || 'N/A'}</p>
+                    <p class="text-sm"><strong>Total Users:</strong> ${result.details.total_users || 0}</p>
+                    <p class="text-sm"><strong>Total Attendance:</strong> ${result.details.total_attendance || 0}</p>
+                `;
+                
+                if (result.details.device_time) {
+                    html += `<p class="text-sm"><strong>Device Time:</strong> ${new Date(result.details.device_time).toLocaleString()}</p>`;
+                }
+            } else if (!result.success && result.details) {
+                html += `
+                    <p class="text-sm"><strong>IP Address:</strong> ${result.details.ip_address}</p>
+                    <p class="text-sm"><strong>Port:</strong> ${result.details.port}</p>
+                    <p class="text-sm"><strong>Error Type:</strong> ${result.details.error_type}</p>
+                `;
+            }
+            
+            html += `
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
         });
-
-        $('#testSummary').html(summaryHtml);
-        $('#testResults').show();
-    }
-
-    function refreshDeviceList() {
-        window.location.reload();
-    }
-
-    function exportResults() {
-        if (testResults.length === 0) {
-            showAlert('No test results to export', 'warning');
-            return;
-        }
-
-        let csvContent = 'Device Name,IP Address,Status,Message,Users,Attendance,Firmware\n';
         
-        testResults.forEach(result => {
-            const status = result.success ? 'Online' : 'Offline';
-            const users = result.details ? (result.details.total_users || 0) : 0;
-            const attendance = result.details ? (result.details.total_attendance || 0) : 0;
-            const firmware = result.details ? (result.details.firmware_version || '') : '';
-            
-            csvContent += `"${result.device_name}","${result.device_id}","${status}","${result.message}","${users}","${attendance}","${firmware}"\n`;
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `zkteco_connection_test_${new Date().toISOString().split('T')[0]}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+        // Add summary
+        const summaryHtml = `
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 class="text-sm font-medium text-blue-800 mb-2">
+                    <i class="fas fa-chart-pie mr-2"></i>Test Summary
+                </h4>
+                <div class="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                        <span class="text-blue-700">Total Devices:</span>
+                        <span class="font-medium">${results.length}</span>
+                    </div>
+                    <div>
+                        <span class="text-green-700">Successful:</span>
+                        <span class="font-medium text-green-600">${successCount}</span>
+                    </div>
+                    <div>
+                        <span class="text-red-700">Failed:</span>
+                        <span class="font-medium text-red-600">${failureCount}</span>
+                    </div>
+                </div>
+            </div>
+        `;
         
-        showAlert('Test results exported successfully', 'success');
+        $('#testResults').html(summaryHtml + html);
+        $('#resultsSection').removeClass('hidden');
+        
+        // Scroll to results
+        $('html, body').animate({
+            scrollTop: $('#resultsSection').offset().top - 100
+        }, 500);
     }
-
-    function clearResults() {
-        testResults = [];
-        $('#testResults').hide();
-        
-        // Reset all device statuses
-        $('.device-card').each(function() {
-            const deviceId = $(this).data('device-id');
-            updateDeviceStatus(deviceId, {
-                status: 'unknown',
-                message: 'Not tested',
-                details: null
-            });
-        });
-        
-        updateCounters();
-        showAlert('Test results cleared', 'info');
-    }
+});
 </script>
 {% endblock %}
-                

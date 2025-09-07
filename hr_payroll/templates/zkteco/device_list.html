@@ -1,390 +1,444 @@
-{% extends 'zkteco/base.html' %}
+{% extends 'base.html' %}
 
-{% block title %}ZKTeco Devices{% endblock %}
-
-{% block breadcrumb %}
-    <li class="breadcrumb-item active">Device List</li>
-{% endblock %}
+{% block title %}Device Management - {{ block.super }}{% endblock %}
 
 {% block content %}
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">ZKTeco Devices</h1>
-        <div>
-            <a href="/admin/hr_payroll/zkdevice/add/" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Add Device
-            </a>
-            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="fas fa-filter me-2"></i>Filter
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="?">All Devices</a></li>
-                <li><a class="dropdown-item" href="?is_active=true">Active Only</a></li>
-                <li><a class="dropdown-item" href="?is_active=false">Inactive Only</a></li>
-                <li><hr class="dropdown-divider"></li>
-                {% for company in companies %}
-                    <li><a class="dropdown-item" href="?company={{ company.id }}">{{ company.name }}</a></li>
-                {% endfor %}
-            </ul>
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">ZKTeco Device Management</h1>
+        <p class="mt-1 text-sm text-gray-600">Manage and monitor your ZKTeco biometric devices</p>
+    </div>
+    <div class="flex space-x-3">
+        <a href="{% url 'hr_payroll:zkteco_test_connection_api' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            <i class="fas fa-network-wired mr-2"></i>
+            Test Connections
+        </a>
+        <a href="{% url 'admin:hr_payroll_zkdevice_add' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            <i class="fas fa-plus mr-2"></i>
+            Add Device
+        </a>
+    </div>
+</div>
+
+{% if not devices %}
+    <div class="rounded-md bg-yellow-50 p-4 border border-yellow-200">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-yellow-800">No Devices Found</h3>
+                <div class="mt-2 text-sm text-yellow-700">
+                    <p>Please add ZKTeco devices to start managing attendance data.</p>
+                </div>
+            </div>
         </div>
     </div>
-
-    <!-- Search and Filter Bar -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" class="row g-3">
-                <div class="col-md-4">
-                    <label for="search" class="form-label">Search</label>
-                    <input type="text" class="form-control" id="search" name="search" 
-                           value="{{ request.GET.search }}" placeholder="Device name or IP address">
-                </div>
-                <div class="col-md-3">
-                    <label for="company" class="form-label">Company</label>
-                    <select class="form-select" id="company" name="company">
-                        <option value="">All Companies</option>
-                        {% for company in companies %}
-                            <option value="{{ company.id }}" 
-                                    {% if request.GET.company == company.id|stringformat:"s" %}selected{% endif %}>
-                                {{ company.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="status" class="form-label">Status</label>
-                    <select class="form-select" id="status" name="is_active">
-                        <option value="">All Status</option>
-                        <option value="true" {% if request.GET.is_active == 'true' %}selected{% endif %}>Active</option>
-                        <option value="false" {% if request.GET.is_active == 'false' %}selected{% endif %}>Inactive</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">&nbsp;</label>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search me-2"></i>Filter
-                        </button>
+{% else %}
+    <!-- Bulk Operations -->
+    <div class="bg-white shadow rounded-lg mb-6">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                <i class="fas fa-tasks mr-2 text-primary-600"></i>
+                Bulk Operations
+            </h3>
+            
+            <form id="bulkOperationsForm">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="flex items-center">
+                        <input id="selectAllDevices" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                        <label for="selectAllDevices" class="ml-2 text-sm font-medium text-gray-900">
+                            Select All Devices
+                        </label>
                     </div>
+                    <div class="text-sm text-gray-500" id="selectedCount">0 devices selected</div>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button type="button" id="bulkTestBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <span class="loading-spinner hidden">
+                            <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </span>
+                        <i class="fas fa-network-wired mr-2"></i>
+                        Test Selected
+                    </button>
+                    <button type="button" id="bulkSyncBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <span class="loading-spinner hidden">
+                            <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </span>
+                        <i class="fas fa-sync mr-2"></i>
+                        Sync Selected
+                    </button>
+                    <button type="button" id="bulkClearBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <i class="fas fa-times mr-2"></i>
+                        Clear Selection
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Devices Table -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-fingerprint me-2"></i>Devices ({{ devices|length }})
-            </h5>
-            <div>
-                <button class="btn btn-sm btn-outline-primary" onclick="checkSelectedConnections()">
-                    <i class="fas fa-wifi me-2"></i>Test Selected
-                </button>
-                <button class="btn btn-sm btn-outline-success" onclick="bulkImportEmployees()">
-                    <i class="fas fa-users-cog me-2"></i>Import Employees
-                </button>
+    <!-- Device Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for device in devices %}
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="device_ids" value="{{ device.id }}" class="device-checkbox h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mr-3">
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">{{ device.name }}</h3>
+                                <p class="text-sm text-gray-500">{{ device.company.name }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            {% if device.is_active %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <span class="w-1.5 h-1.5 mr-1.5 bg-green-400 rounded-full"></span>
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <span class="w-1.5 h-1.5 mr-1.5 bg-red-400 rounded-full"></span>
+                                    Inactive
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 space-y-2">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-network-wired w-4 mr-2"></i>
+                            <span>{{ device.ip_address }}:{{ device.port }}</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-map-marker-alt w-4 mr-2"></i>
+                            <span>{{ device.location|default:"No location set" }}</span>
+                        </div>
+                        {% if device.last_sync %}
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-clock w-4 mr-2"></i>
+                                <span>Last sync: {{ device.last_sync|timesince }} ago</span>
+                            </div>
+                        {% else %}
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fas fa-clock w-4 mr-2"></i>
+                                <span>Never synced</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-6 flex space-x-2">
+                        <button type="button" class="test-single-btn flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" data-device-id="{{ device.id }}">
+                            <i class="fas fa-network-wired mr-1"></i>
+                            Test
+                        </button>
+                        <button type="button" class="sync-single-btn flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" data-device-id="{{ device.id }}">
+                            <i class="fas fa-sync mr-1"></i>
+                            Sync
+                        </button>
+                        <a href="{% url 'hr_payroll:zkteco_device_detail' device.id %}" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <i class="fas fa-eye mr-1"></i>
+                            View
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection" class="mt-8 hidden">
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                    <i class="fas fa-chart-line mr-2 text-primary-600"></i>
+                    Operation Results
+                </h3>
+                <div id="operationResults"></div>
             </div>
         </div>
-        <div class="card-body">
-            {% if devices %}
-                <div class="table-responsive">
-                    <table class="table table-hover" id="devicesTable">
-                        <thead>
-                            <tr>
-                                <th width="40">
-                                    <input type="checkbox" id="selectAll" class="form-check-input">
-                                </th>
-                                <th>Device</th>
-                                <th>Company</th>
-                                <th>IP Address</th>
-                                <th>Status</th>
-                                <th>Last Synced</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for device in devices %}
-                                <tr data-device-id="{{ device.id }}">
-                                    <td>
-                                        <input type="checkbox" class="form-check-input device-checkbox" 
-                                               value="{{ device.id }}">
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <h6 class="mb-1">{{ device.name }}</h6>
-                                            <small class="text-muted">{{ device.description|default:"No description" }}</small>
-                                        </div>
-                                    </td>
-                                    <td>{{ device.company.name }}</td>
-                                    <td>
-                                        <code>{{ device.ip_address }}:{{ device.port }}</code>
-                                    </td>
-                                    <td>
-                                        <span id="status-{{ device.id }}">
-                                            {% if device.is_active %}
-                                                <span class="badge bg-success">Active</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">Inactive</span>
-                                            {% endif %}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if device.last_synced %}
-                                            <span class="text-muted">{{ device.last_synced|date:"M d, Y H:i" }}</span>
-                                        {% else %}
-                                            <span class="text-muted">Never</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{% url 'hr_payroll:zkteco_device_detail' device.id %}" 
-                                               class="btn btn-outline-info" title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <button class="btn btn-outline-primary" 
-                                                    onclick="testSingleConnection({{ device.id }})" title="Test Connection">
-                                                <i class="fas fa-wifi"></i>
-                                            </button>
-                                            <a href="/admin/hr_payroll/zkdevice/{{ device.id }}/change/" 
-                                               class="btn btn-outline-secondary" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button class="btn btn-outline-danger" 
-                                                    onclick="toggleDeviceStatus({{ device.id }})" title="Toggle Status">
-                                                <i class="fas fa-power-off"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    </div>
+{% endif %}
+
+<!-- Progress Modal -->
+<div id="progressModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-center mx-auto">
+                <i class="fas fa-cog fa-spin text-primary-600 text-2xl mr-3"></i>
+                <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Processing Operation</h3>
+            </div>
+            <div class="mt-4">
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-primary-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%" id="progressBar"></div>
                 </div>
-
-                <!-- Pagination -->
-                {% if is_paginated %}
-                    <nav aria-label="Device pagination">
-                        <ul class="pagination justify-content-center">
-                            {% if page_obj.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=1">First</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                                </li>
-                            {% endif %}
-
-                            <li class="page-item active">
-                                <span class="page-link">
-                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                                </span>
-                            </li>
-
-                            {% if page_obj.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                {% endif %}
-            {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-fingerprint fa-3x text-muted mb-3"></i>
-                    <h5>No devices found</h5>
-                    <p class="text-muted">No ZKTeco devices match your current filters.</p>
-                    <a href="?{% if request.GET.company %}company={{ request.GET.company }}{% endif %}" 
-                       class="btn btn-outline-primary me-2">Clear Filters</a>
-                    <a href="/admin/hr_payroll/zkdevice/add/" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Add Device
-                    </a>
-                </div>
-            {% endif %}
+                <p class="text-sm text-gray-600 mt-2 text-center" id="progressText">Initializing operation...</p>
+            </div>
         </div>
     </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    $(document).ready(function() {
-        // Initialize DataTables
-        $('#devicesTable').DataTable({
-            "paging": false,
-            "searching": false,
-            "info": false,
-            "order": [[1, "asc"]],
-            "columnDefs": [
-                { "orderable": false, "targets": [0, 6] }
-            ]
-        });
-
-        // Select all checkbox functionality
-        $('#selectAll').change(function() {
-            $('.device-checkbox').prop('checked', $(this).prop('checked'));
-        });
-
-        // Update select all checkbox when individual checkboxes change
-        $('.device-checkbox').change(function() {
-            const total = $('.device-checkbox').length;
-            const checked = $('.device-checkbox:checked').length;
-            $('#selectAll').prop('indeterminate', checked > 0 && checked < total);
-            $('#selectAll').prop('checked', checked === total);
-        });
+$(document).ready(function() {
+    // Select all functionality
+    $('#selectAllDevices').change(function() {
+        $('.device-checkbox').prop('checked', this.checked);
+        updateSelectedCount();
+        updateBulkButtons();
     });
-
-    function getSelectedDevices() {
-        const selected = [];
-        $('.device-checkbox:checked').each(function() {
-            selected.push($(this).val());
-        });
-        return selected;
+    
+    // Update select all when individual checkboxes change
+    $('.device-checkbox').change(function() {
+        const totalCheckboxes = $('.device-checkbox').length;
+        const checkedCheckboxes = $('.device-checkbox:checked').length;
+        $('#selectAllDevices').prop('checked', totalCheckboxes === checkedCheckboxes);
+        updateSelectedCount();
+        updateBulkButtons();
+    });
+    
+    function updateSelectedCount() {
+        const count = $('.device-checkbox:checked').length;
+        $('#selectedCount').text(`${count} device${count !== 1 ? 's' : ''} selected`);
     }
-
-    function testSingleConnection(deviceId) {
-        const statusElement = document.getElementById(`status-${deviceId}`);
-        const originalContent = statusElement.innerHTML;
+    
+    function updateBulkButtons() {
+        const hasSelection = $('.device-checkbox:checked').length > 0;
+        $('#bulkTestBtn, #bulkSyncBtn, #bulkClearBtn').prop('disabled', !hasSelection);
+    }
+    
+    // Clear selection
+    $('#bulkClearBtn').click(function() {
+        $('.device-checkbox, #selectAllDevices').prop('checked', false);
+        updateSelectedCount();
+        updateBulkButtons();
+        $('#resultsSection').addClass('hidden');
+    });
+    
+    // Bulk test connection
+    $('#bulkTestBtn').click(function() {
+        performBulkOperation('test', 'Testing Device Connections');
+    });
+    
+    // Bulk sync
+    $('#bulkSyncBtn').click(function() {
+        performBulkOperation('sync', 'Syncing Device Data');
+    });
+    
+    // Single device test
+    $('.test-single-btn').click(function() {
+        const deviceId = $(this).data('device-id');
+        performSingleOperation(deviceId, 'test', 'Testing Device Connection');
+    });
+    
+    // Single device sync
+    $('.sync-single-btn').click(function() {
+        const deviceId = $(this).data('device-id');
+        performSingleOperation(deviceId, 'sync', 'Syncing Device Data');
+    });
+    
+    function performBulkOperation(operation, title) {
+        const selectedDevices = $('.device-checkbox:checked');
+        if (selectedDevices.length === 0) {
+            showToast('Please select at least one device.', 'warning');
+            return;
+        }
         
-        statusElement.innerHTML = '<span class="badge bg-warning">Testing...</span>';
-
-        $.ajax({
-            url: '{% url "hr_payroll:zkteco_test_connection_api" %}',
-            method: 'POST',
-            data: {
-                'device_ids': [deviceId],
-                'csrfmiddlewaretoken': csrftoken
-            },
-            success: function(response) {
-                if (response.results && response.results.length > 0) {
-                    const result = response.results[0];
-                    if (result.success) {
-                        statusElement.innerHTML = '<span class="badge bg-success">Online</span>';
-                        showAlert(`Device "${result.device_name}" is online`, 'success');
-                    } else {
-                        statusElement.innerHTML = '<span class="badge bg-danger">Offline</span>';
-                        showAlert(`Device "${result.device_name}" is offline: ${result.message}`, 'danger');
-                    }
-                }
-            },
-            error: function() {
-                statusElement.innerHTML = originalContent;
-                showAlert('Failed to test connection', 'danger');
-            }
+        showProgressModal(title);
+        
+        const formData = new FormData();
+        selectedDevices.each(function() {
+            formData.append('device_ids', $(this).val());
         });
-    }
-
-    function checkSelectedConnections() {
-        const selectedDevices = getSelectedDevices();
-        if (selectedDevices.length === 0) {
-            showAlert('Please select at least one device', 'warning');
-            return;
-        }
-
-        showLoading('Testing selected device connections...');
-
-        // Update status for selected devices
-        selectedDevices.forEach(deviceId => {
-            const statusElement = document.getElementById(`status-${deviceId}`);
-            statusElement.innerHTML = '<span class="badge bg-warning">Testing...</span>';
-        });
-
+        
+        const url = operation === 'test' ? 
+            "{% url 'hr_payroll:zkteco_test_connection_api' %}" : 
+            "{% url 'hr_payroll:zkteco_sync_devices_api' %}";
+        
+        setButtonLoading($(`#bulk${operation === 'test' ? 'Test' : 'Sync'}Btn`), true);
+        
         $.ajax({
-            url: '{% url "hr_payroll:zkteco_test_connection_api" %}',
-            method: 'POST',
-            data: {
-                'device_ids': selectedDevices,
-                'csrfmiddlewaretoken': csrftoken
-            },
+            url: url,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
-                if (response.results) {
-                    let onlineCount = 0;
-                    response.results.forEach(result => {
-                        const statusElement = document.getElementById(`status-${result.device_id}`);
-                        if (result.success) {
-                            statusElement.innerHTML = '<span class="badge bg-success">Online</span>';
-                            onlineCount++;
-                        } else {
-                            statusElement.innerHTML = '<span class="badge bg-danger">Offline</span>';
-                        }
-                    });
-                    showAlert(`Connection test completed. ${onlineCount} of ${response.results.length} devices are online.`, 'success');
-                }
+                hideProgressModal();
+                displayResults(response.results, operation);
+                showToast(`${title} completed successfully!`, 'success');
             },
-            error: function() {
-                showAlert('Failed to test connections', 'danger');
-                // Reset status elements
-                selectedDevices.forEach(deviceId => {
-                    const statusElement = document.getElementById(`status-${deviceId}`);
-                    statusElement.innerHTML = '<span class="badge bg-secondary">Unknown</span>';
-                });
+            error: function(xhr) {
+                hideProgressModal();
+                handleAjaxError(xhr, title);
             },
             complete: function() {
-                hideLoading();
+                setButtonLoading($(`#bulk${operation === 'test' ? 'Test' : 'Sync'}Btn`), false);
             }
         });
     }
-
-    function bulkImportEmployees() {
-        const selectedDevices = getSelectedDevices();
-        if (selectedDevices.length === 0) {
-            showAlert('Please select at least one device', 'warning');
-            return;
-        }
-
-        if (!confirm(`Import employees from ${selectedDevices.length} selected device(s)?`)) {
-            return;
-        }
-
-        showLoading('Importing employees from selected devices...');
-
+    
+    function performSingleOperation(deviceId, operation, title) {
+        showProgressModal(title);
+        
+        const formData = new FormData();
+        formData.append('device_ids', deviceId);
+        
+        const url = operation === 'test' ? 
+            "{% url 'hr_payroll:zkteco_test_connection_api' %}" : 
+            "{% url 'hr_payroll:zkteco_sync_devices_api' %}";
+        
+        const button = $(`.${operation}-single-btn[data-device-id="${deviceId}"]`);
+        setButtonLoading(button, true);
+        
         $.ajax({
-            url: '{% url "hr_payroll:zkteco_import_employees_api" %}',
-            method: 'POST',
-            data: {
-                'device_ids': selectedDevices,
-                'csrfmiddlewaretoken': csrftoken
-            },
+            url: url,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
-                if (response.results) {
-                    let totalImported = 0;
-                    let totalUpdated = 0;
-                    let totalErrors = 0;
-
-                    response.results.forEach(result => {
-                        totalImported += result.imported_count || 0;
-                        totalUpdated += result.updated_count || 0;
-                        totalErrors += result.error_count || 0;
-                    });
-
-                    let message = `Employee import completed!\n`;
-                    message += `✓ Imported: ${totalImported} employees\n`;
-                    message += `✓ Updated: ${totalUpdated} employees\n`;
-                    if (totalErrors > 0) {
-                        message += `✗ Errors: ${totalErrors} employees\n`;
-                    }
-
-                    alert(message);
-                    showAlert(`Successfully processed employee data from ${selectedDevices.length} device(s)`, 'success');
-                }
+                hideProgressModal();
+                displayResults(response.results, operation);
+                showToast(`${title} completed successfully!`, 'success');
             },
-            error: function() {
-                showAlert('Failed to import employees', 'danger');
+            error: function(xhr) {
+                hideProgressModal();
+                handleAjaxError(xhr, title);
             },
             complete: function() {
-                hideLoading();
+                setButtonLoading(button, false);
             }
         });
     }
-
-    function toggleDeviceStatus(deviceId) {
-        if (!confirm('Are you sure you want to toggle the device status?')) {
-            return;
-        }
-
-        // This would require an API endpoint to toggle device status
-        showAlert('Device status toggle functionality needs to be implemented', 'info');
+    
+    function showProgressModal(title) {
+        $('#modalTitle').text(title);
+        $('#progressModal').removeClass('hidden');
+        $('#progressBar').css('width', '0%');
+        $('#progressText').text('Initializing operation...');
     }
+    
+    function hideProgressModal() {
+        $('#progressModal').addClass('hidden');
+    }
+    
+    function displayResults(results, operation) {
+        let html = '';
+        let successCount = 0;
+        let failureCount = 0;
+        
+        results.forEach(function(result) {
+            if (result.success) {
+                successCount++;
+            } else {
+                failureCount++;
+            }
+            
+            const statusClass = result.success ? 'green' : 'red';
+            const statusIcon = result.success ? 'check-circle' : 'times-circle';
+            
+            html += `
+                <div class="border border-${statusClass}-200 rounded-lg mb-4">
+                    <div class="bg-${statusClass}-50 px-4 py-3 border-b border-${statusClass}-200">
+                        <h4 class="text-sm font-medium text-${statusClass}-800 flex items-center">
+                            <i class="fas fa-${statusIcon} mr-2"></i>
+                            ${result.device_name} (ID: ${result.device_id})
+                        </h4>
+                    </div>
+                    <div class="px-4 py-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm"><strong>Status:</strong> 
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${statusClass}-100 text-${statusClass}-800">
+                                        ${result.success ? (operation === 'test' ? 'Connected' : 'Synced') : 'Failed'}
+                                    </span>
+                                </p>
+                                <p class="text-sm mt-1"><strong>Message:</strong> ${result.message}</p>
+                            </div>
+                            <div>
+            `;
+            
+            if (result.success && result.details) {
+                if (operation === 'test') {
+                    html += `
+                        <p class="text-sm"><strong>Device Name:</strong> ${result.details.device_name || 'N/A'}</p>
+                        <p class="text-sm"><strong>Firmware:</strong> ${result.details.firmware_version || 'N/A'}</p>
+                        <p class="text-sm"><strong>Total Users:</strong> ${result.details.total_users || 0}</p>
+                        <p class="text-sm"><strong>Total Attendance:</strong> ${result.details.total_attendance || 0}</p>
+                    `;
+                } else {
+                    html += `
+                        <p class="text-sm"><strong>Users Synced:</strong> ${result.details.users_synced || 0}</p>
+                        <p class="text-sm"><strong>Attendance Synced:</strong> ${result.details.attendance_synced || 0}</p>
+                        <p class="text-sm"><strong>Sync Duration:</strong> ${result.details.sync_duration || 'N/A'}</p>
+                    `;
+                }
+            }
+            
+            html += `
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        // Add summary
+        const operationTitle = operation === 'test' ? 'Connection Test' : 'Data Sync';
+        const summaryHtml = `
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 class="text-sm font-medium text-blue-800 mb-2">
+                    <i class="fas fa-chart-pie mr-2"></i>${operationTitle} Summary
+                </h4>
+                <div class="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                        <span class="text-blue-700">Total Devices:</span>
+                        <span class="font-medium">${results.length}</span>
+                    </div>
+                    <div>
+                        <span class="text-green-700">Successful:</span>
+                        <span class="font-medium text-green-600">${successCount}</span>
+                    </div>
+                    <div>
+                        <span class="text-red-700">Failed:</span>
+                        <span class="font-medium text-red-600">${failureCount}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        $('#operationResults').html(summaryHtml + html);
+        $('#resultsSection').removeClass('hidden');
+        
+        // Scroll to results
+        $('html, body').animate({
+            scrollTop: $('#resultsSection').offset().top - 100
+        }, 500);
+    }
+    
+    function handleAjaxError(xhr, operation) {
+        let errorMessage = `${operation} failed.`;
+        
+        if (xhr.responseJSON && xhr.responseJSON.error) {
+            errorMessage = xhr.responseJSON.error;
+        }
+        
+        showToast(errorMessage, 'error');
+        console.error(`${operation} error:`, xhr);
+    }
+    
+    // Initialize
+    updateSelectedCount();
+    updateBulkButtons();
+});
 </script>
 {% endblock %}

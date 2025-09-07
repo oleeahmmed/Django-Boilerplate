@@ -147,24 +147,31 @@ class ZKConnectionTestView(PermissionRequiredMixin, View):
     permission_required = 'hr_payroll.test_zkdevice_connection'
     
     def post(self, request):
-        device_ids = request.POST.getlist('device_ids')
-        if not device_ids:
-            return JsonResponse({'error': 'No devices selected'}, status=400)
-        
         try:
-            device_ids = [int(device_id) for device_id in device_ids]
-            devices = ZkDevice.objects.filter(id__in=device_ids)
+            device_ids = request.POST.getlist('device_ids')
+            if not device_ids:
+                return JsonResponse({'error': 'No devices selected'}, status=400)
             
+            # Convert to integers and validate
+            try:
+                device_ids = [int(device_id) for device_id in device_ids]
+            except (ValueError, TypeError):
+                return JsonResponse({'error': 'Invalid device IDs provided'}, status=400)
+            
+            # Get devices
+            devices = ZkDevice.objects.filter(id__in=device_ids, is_active=True)
+            if not devices.exists():
+                return JsonResponse({'error': 'No valid devices found'}, status=400)
+            
+            # Test connections
             checker = ZKTecoConnectionChecker()
             results = checker.check_multiple_devices(devices)
             
             return JsonResponse({'results': results})
             
-        except ValueError:
-            return JsonResponse({'error': 'Invalid device IDs'}, status=400)
         except Exception as e:
-            logger.error(f"Error testing connections: {str(e)}")
-            return JsonResponse({'error': str(e)}, status=500)
+            logger.error(f"Error in connection test: {str(e)}")
+            return JsonResponse({'error': f'Connection test failed: {str(e)}'}, status=500)
 
 @method_decorator(staff_member_required, name='dispatch')
 class ZKConnectionTestPageView(PermissionRequiredMixin, TemplateView):
