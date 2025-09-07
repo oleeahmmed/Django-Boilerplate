@@ -1,0 +1,495 @@
+{% extends 'zkteco/base.html' %}
+
+{% block title %}Employee Import{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active">Employee Import</li>
+{% endblock %}
+
+{% block content %}
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Employee Import</h1>
+            <p class="text-muted mb-0">Import employee data from ZKTeco devices</p>
+        </div>
+    </div>
+
+    <!-- Import Options -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog me-2"></i>Import Options
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="importOptionsForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="updateExisting" checked>
+                                    <label class="form-check-label" for="updateExisting">
+                                        Update existing employees
+                                    </label>
+                                    <small class="form-text text-muted d-block">Update names and IDs of existing employees</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="activateEmployees" checked>
+                                    <label class="form-check-label" for="activateEmployees">
+                                        Activate imported employees
+                                    </label>
+                                    <small class="form-text text-muted d-block">Set imported employees as active</small>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Selection -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-fingerprint me-2"></i>Select Devices
+                    </h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-success" onclick="testSelectedConnections()">
+                            <i class="fas fa-wifi me-2"></i>Test Selected
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="importFromSelected()">
+                            <i class="fas fa-users-cog me-2"></i>Import Employees
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if devices %}
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <button class="btn btn-outline-secondary btn-sm me-2" onclick="selectAllDevices()">
+                                    <i class="fas fa-check-square me-1"></i>Select All
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm me-2" onclick="selectActiveDevices()">
+                                    <i class="fas fa-check me-1"></i>Active Only
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
+                                    <i class="fas fa-square me-1"></i>Clear All
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row" id="deviceGrid">
+                            {% for device in devices %}
+                                <div class="col-lg-6 col-xl-4 mb-3">
+                                    <div class="card device-card h-100" data-device-id="{{ device.id }}">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input device-checkbox" type="checkbox" 
+                                                           value="{{ device.id }}" id="device{{ device.id }}"
+                                                           {% if device.is_active %}checked{% endif %}>
+                                                    <label class="form-check-label" for="device{{ device.id }}">
+                                                        <h6 class="mb-0">{{ device.name }}</h6>
+                                                    </label>
+                                                </div>
+                                                <div class="connection-status" id="status-{{ device.id }}">
+                                                    {% if device.is_active %}
+                                                        <span class="badge bg-success">Active</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Inactive</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            <div class="device-info">
+                                                <p class="text-muted mb-1">{{ device.company.name }}</p>
+                                                <p class="text-muted mb-2">
+                                                    <code>{{ device.ip_address }}:{{ device.port }}</code>
+                                                </p>
+                                                <small class="text-muted">
+                                                    Last synced: 
+                                                    {% if device.last_synced %}
+                                                        {{ device.last_synced|date:"M d, H:i" }}
+                                                    {% else %}
+                                                        Never
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+
+                                            <!-- Import Status (Initially Hidden) -->
+                                            <div class="import-status mt-3" id="import-{{ device.id }}" style="display: none;">
+                                                <hr>
+                                                <div class="row text-center">
+                                                    <div class="col-4">
+                                                        <small class="text-success d-block">Imported</small>
+                                                        <strong class="text-success" id="imported-{{ device.id }}">0</strong>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <small class="text-info d-block">Updated</small>
+                                                        <strong class="text-info" id="updated-{{ device.id }}">0</strong>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <small class="text-danger d-block">Errors</small>
+                                                        <strong class="text-danger" id="errors-{{ device.id }}">0</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-fingerprint fa-3x text-muted mb-3"></i>
+                            <h5>No ZKTeco devices found</h5>
+                            <p class="text-muted">Add devices in the admin panel to import employee data.</p>
+                            <a href="/admin/hr_payroll/zkdevice/add/" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Device
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Progress -->
+    <div class="row mb-4" id="importProgress" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-progress-bar me-2"></i>Import Progress
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3" style="height: 30px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="progressBar" role="progressbar" style="width: 0%">
+                            <span id="progressText">0%</span>
+                        </div>
+                    </div>
+                    <div id="currentDevice" class="text-center text-muted">
+                        Ready to start import...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Results -->
+    <div class="row" id="importResults" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Import Results
+                    </h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="exportResults()">
+                        <i class="fas fa-download me-2"></i>Export Report
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="resultsSummary" class="mb-4">
+                        <!-- Results summary will be populated here -->
+                    </div>
+                    <div id="detailedResults">
+                        <!-- Detailed results will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .device-card {
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid #dee2e6;
+    }
+
+    .device-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .device-card.selected {
+        border-color: var(--primary-color);
+        background-color: rgba(37, 99, 235, 0.05);
+    }
+
+    .device-card.importing {
+        border-color: var(--warning-color);
+        background-color: rgba(217, 119, 6, 0.05);
+    }
+
+    .device-card.success {
+        border-color: var(--success-color);
+        background-color: rgba(5, 150, 105, 0.05);
+    }
+
+    .device-card.error {
+        border-color: var(--danger-color);
+        background-color: rgba(220, 38, 38, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let importInProgress = false;
+    let importResults = [];
+
+    $(document).ready(function() {
+        initializeEventListeners();
+    });
+
+    function initializeEventListeners() {
+        // Device card click to toggle checkbox
+        $('.device-card').click(function(e) {
+            if (e.target.type !== 'checkbox') {
+                const checkbox = $(this).find('.device-checkbox');
+                checkbox.prop('checked', !checkbox.prop('checked'));
+                updateDeviceCardAppearance();
+            }
+        });
+
+        // Checkbox change handler
+        $('.device-checkbox').change(function() {
+            updateDeviceCardAppearance();
+        });
+
+        updateDeviceCardAppearance();
+    }
+
+    function updateDeviceCardAppearance() {
+        $('.device-checkbox').each(function() {
+            const deviceCard = $(this).closest('.device-card');
+            if ($(this).is(':checked')) {
+                deviceCard.addClass('selected');
+            } else {
+                deviceCard.removeClass('selected');
+            }
+        });
+    }
+
+    function selectAllDevices() {
+        $('.device-checkbox').prop('checked', true);
+        updateDeviceCardAppearance();
+    }
+
+    function selectActiveDevices() {
+        $('.device-checkbox').prop('checked', false);
+        $('.badge:contains("Active")').each(function() {
+            const deviceCard = $(this).closest('.device-card');
+            deviceCard.find('.device-checkbox').prop('checked', true);
+        });
+        updateDeviceCardAppearance();
+    }
+
+    function clearSelection() {
+        $('.device-checkbox').prop('checked', false);
+        updateDeviceCardAppearance();
+    }
+
+    function getSelectedDevices() {
+        const selected = [];
+        $('.device-checkbox:checked').each(function() {
+            selected.push(parseInt($(this).val()));
+        });
+        return selected;
+    }
+
+    function testSelectedConnections() {
+        const selectedDevices = getSelectedDevices();
+        if (selectedDevices.length === 0) {
+            showAlert('Please select at least one device', 'warning');
+            return;
+        }
+
+        showLoading('Testing device connections...');
+
+        // Update status display
+        selectedDevices.forEach(deviceId => {
+            $(`#status-${deviceId}`).html('<span class="badge bg-warning">Testing...</span>');
+        });
+
+        $.ajax({
+            url: '{% url "hr_payroll:zkteco_test_connection_api" %}',
+            method: 'POST',
+            data: {
+                'device_ids': selectedDevices,
+                'csrfmiddlewaretoken': csrftoken
+            },
+            success: function(response) {
+                if (response.results) {
+                    response.results.forEach(result => {
+                        const statusElement = $(`#status-${result.device_id}`);
+                        if (result.success) {
+                            statusElement.html('<span class="badge bg-success">Online</span>');
+                        } else {
+                            statusElement.html('<span class="badge bg-danger">Offline</span>');
+                        }
+                    });
+                    showAlert('Connection test completed', 'success');
+                }
+            },
+            error: function() {
+                showAlert('Failed to test connections', 'danger');
+            },
+            complete: function() {
+                hideLoading();
+            }
+        });
+    }
+
+    function importFromSelected() {
+        if (importInProgress) {
+            showAlert('Import already in progress', 'warning');
+            return;
+        }
+
+        const selectedDevices = getSelectedDevices();
+        if (selectedDevices.length === 0) {
+            showAlert('Please select at least one device to import from', 'warning');
+            return;
+        }
+
+        const updateExisting = $('#updateExisting').is(':checked');
+        const activateEmployees = $('#activateEmployees').is(':checked');
+
+        const confirmMessage = `Import employees from ${selectedDevices.length} selected device(s)?
+        
+Options:
+• Update existing employees: ${updateExisting ? 'Yes' : 'No'}
+• Activate imported employees: ${activateEmployees ? 'Yes' : 'No'}
+
+This process may take several minutes.`;
+
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        startImportProcess(selectedDevices);
+    }
+
+    function startImportProcess(deviceIds) {
+        importInProgress = true;
+        importResults = [];
+
+        // Show progress section
+        $('#importProgress').show();
+        $('#importResults').hide();
+        
+        // Reset progress
+        updateProgress(0, deviceIds.length, 'Starting import...');
+
+        // Reset all device cards
+        $('.device-card').removeClass('importing success error');
+        $('.import-status').hide();
+
+        // Start importing from each device
+        importFromDevices(deviceIds, 0);
+    }
+
+    function importFromDevices(deviceIds, currentIndex) {
+        if (currentIndex >= deviceIds.length) {
+            // All devices processed
+            completeImportProcess();
+            return;
+        }
+
+        const deviceId = deviceIds[currentIndex];
+        const deviceCard = $(`.device-card[data-device-id="${deviceId}"]`);
+        const deviceName = deviceCard.find('h6').text();
+
+        // Update progress
+        updateProgress(currentIndex, deviceIds.length, `Importing from ${deviceName}...`);
+        
+        // Mark device as importing
+        deviceCard.addClass('importing');
+
+        $.ajax({
+            url: '{% url "hr_payroll:zkteco_import_employees_api" %}',
+            method: 'POST',
+            data: {
+                'device_ids': [deviceId],
+                'update_existing': $('#updateExisting').is(':checked'),
+                'activate_employees': $('#activateEmployees').is(':checked'),
+                'csrfmiddlewaretoken': csrftoken
+            },
+            success: function(response) {
+                if (response.results && response.results.length > 0) {
+                    const result = response.results[0];
+                    importResults.push(result);
+                    
+                    // Update device display
+                    updateDeviceImportStatus(deviceId, result);
+                    
+                    if (result.error_count > 0) {
+                        deviceCard.removeClass('importing').addClass('error');
+                    } else {
+                        deviceCard.removeClass('importing').addClass('success');
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`Import failed for device ${deviceId}:`, error);
+                const errorResult = {
+                    device_id: deviceId,
+                    device_name: deviceName,
+                    imported_count: 0,
+                    updated_count: 0,
+                    error_count: 1,
+                    errors: [`Import failed: ${error}`]
+                };
+                importResults.push(errorResult);
+                updateDeviceImportStatus(deviceId, errorResult);
+                deviceCard.removeClass('importing').addClass('error');
+            },
+            complete: function() {
+                // Move to next device after a short delay
+                setTimeout(() => {
+                    importFromDevices(deviceIds, currentIndex + 1);
+                }, 500);
+            }
+        });
+    }
+
+    function updateProgress(current, total, message) {
+        const percentage = Math.round((current / total) * 100);
+        $('#progressBar').css('width', `${percentage}%`);
+        $('#progressText').text(`${percentage}%`);
+        $('#currentDevice').text(message);
+    }
+
+    function updateDeviceImportStatus(deviceId, result) {
+        $(`#imported-${deviceId}`).text(result.imported_count || 0);
+        $(`#updated-${deviceId}`).text(result.updated_count || 0);
+        $(`#errors-${deviceId}`).text(result.error_count || 0);
+        $(`#import-${deviceId}`).show();
+    }
+
+    function completeImportProcess() {
+        importInProgress = false;
+        
+        // Update final progress
+        updateProgress(importResults.length, importResults.length, 'Import completed!');
+        
+        // Show results
+        setTimeout(() => {
+            $('#importProgress').hide();
+            displayImportResults();
+            $('#importResults').show();
+        }, 

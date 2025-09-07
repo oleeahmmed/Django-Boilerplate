@@ -1,0 +1,731 @@
+{% extends 'zkteco/base.html' %}
+
+{% block title %}Attendance Import{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active">Attendance Import</li>
+{% endblock %}
+
+{% block content %}
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Attendance Import</h1>
+            <p class="text-muted mb-0">Sync and import attendance data from ZKTeco devices</p>
+        </div>
+    </div>
+
+    <!-- Import Process Steps -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="step-indicator">
+                                <div class="step-number active">1</div>
+                                <h6 class="mt-2">Select Devices</h6>
+                                <small class="text-muted">Choose devices to sync from</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="step-indicator">
+                                <div class="step-number">2</div>
+                                <h6 class="mt-2">Sync Data</h6>
+                                <small class="text-muted">Fetch attendance logs</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="step-indicator">
+                                <div class="step-number">3</div>
+                                <h6 class="mt-2">Preview & Select</h6>
+                                <small class="text-muted">Review before import</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="step-indicator">
+                                <div class="step-number">4</div>
+                                <h6 class="mt-2">Import</h6>
+                                <small class="text-muted">Save to database</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Options -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog me-2"></i>Sync Options
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="syncOptionsForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="dateFrom" class="form-label">Date From (Optional)</label>
+                                <input type="date" class="form-control" id="dateFrom" name="date_from">
+                                <small class="form-text text-muted">Leave empty to sync all available data</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="dateTo" class="form-label">Date To (Optional)</label>
+                                <input type="date" class="form-control" id="dateTo" name="date_to">
+                                <small class="form-text text-muted">Leave empty to sync up to current date</small>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="skipDuplicates" checked>
+                                    <label class="form-check-label" for="skipDuplicates">
+                                        Skip duplicate records
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="autoImport">
+                                    <label class="form-check-label" for="autoImport">
+                                        Auto-import after sync (skip preview)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Selection -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-fingerprint me-2"></i>Select Devices for Sync
+                    </h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="testSelectedConnections()">
+                            <i class="fas fa-wifi me-2"></i>Test Selected
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="syncFromSelected()">
+                            <i class="fas fa-sync-alt me-2"></i>Sync Attendance
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if devices %}
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <button class="btn btn-outline-secondary btn-sm me-2" onclick="selectAllDevices()">
+                                    <i class="fas fa-check-square me-1"></i>Select All
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm me-2" onclick="selectActiveDevices()">
+                                    <i class="fas fa-check me-1"></i>Active Only
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
+                                    <i class="fas fa-square me-1"></i>Clear All
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row" id="deviceGrid">
+                            {% for device in devices %}
+                                <div class="col-lg-6 col-xl-4 mb-3">
+                                    <div class="card device-card h-100" data-device-id="{{ device.id }}">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input device-checkbox" type="checkbox" 
+                                                           value="{{ device.id }}" id="device{{ device.id }}"
+                                                           {% if device.is_active %}checked{% endif %}>
+                                                    <label class="form-check-label" for="device{{ device.id }}">
+                                                        <h6 class="mb-0">{{ device.name }}</h6>
+                                                    </label>
+                                                </div>
+                                                <div class="connection-status" id="status-{{ device.id }}">
+                                                    {% if device.is_active %}
+                                                        <span class="badge bg-success">Active</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Inactive</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            <div class="device-info">
+                                                <p class="text-muted mb-1">{{ device.company.name }}</p>
+                                                <p class="text-muted mb-2">
+                                                    <code>{{ device.ip_address }}:{{ device.port }}</code>
+                                                </p>
+                                                <small class="text-muted">
+                                                    Last synced: 
+                                                    {% if device.last_synced %}
+                                                        {{ device.last_synced|date:"M d, H:i" }}
+                                                    {% else %}
+                                                        Never
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+
+                                            <!-- Sync Results (Initially Hidden) -->
+                                            <div class="sync-results mt-3" id="sync-{{ device.id }}" style="display: none;">
+                                                <hr>
+                                                <div class="row text-center">
+                                                    <div class="col-4">
+                                                        <small class="text-primary d-block">Total</small>
+                                                        <strong class="text-primary" id="total-{{ device.id }}">0</strong>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <small class="text-success d-block">Ready</small>
+                                                        <strong class="text-success" id="ready-{{ device.id }}">0</strong>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <small class="text-warning d-block">Duplicates</small>
+                                                        <strong class="text-warning" id="duplicates-{{ device.id }}">0</strong>
+                                                    </div>
+                                                </div>
+                                                <div class="text-center mt-2">
+                                                    <a href="#" class="btn btn-sm btn-outline-primary preview-btn" 
+                                                       id="preview-{{ device.id }}" style="display: none;">
+                                                        <i class="fas fa-eye me-1"></i>Preview & Import
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-fingerprint fa-3x text-muted mb-3"></i>
+                            <h5>No ZKTeco devices found</h5>
+                            <p class="text-muted">Add devices in the admin panel to sync attendance data.</p>
+                            <a href="/admin/hr_payroll/zkdevice/add/" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Device
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Progress -->
+    <div class="row mb-4" id="syncProgress" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sync-alt me-2"></i>Sync Progress
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3" style="height: 30px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="progressBar" role="progressbar" style="width: 0%">
+                            <span id="progressText">0%</span>
+                        </div>
+                    </div>
+                    <div id="currentDevice" class="text-center text-muted">
+                        Ready to start sync...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Summary -->
+    <div class="row" id="syncSummary" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Sync Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="summaryContent">
+                        <!-- Summary content will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .step-indicator {
+        position: relative;
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin: 0 auto;
+        transition: all 0.2s;
+    }
+
+    .step-number.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .step-number.completed {
+        background-color: var(--success-color);
+        color: white;
+    }
+
+    .device-card {
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid #dee2e6;
+    }
+
+    .device-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .device-card.selected {
+        border-color: var(--primary-color);
+        background-color: rgba(37, 99, 235, 0.05);
+    }
+
+    .device-card.syncing {
+        border-color: var(--warning-color);
+        background-color: rgba(217, 119, 6, 0.05);
+    }
+
+    .device-card.synced {
+        border-color: var(--success-color);
+        background-color: rgba(5, 150, 105, 0.05);
+    }
+
+    .device-card.error {
+        border-color: var(--danger-color);
+        background-color: rgba(220, 38, 38, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let syncInProgress = false;
+    let syncResults = [];
+
+    $(document).ready(function() {
+        initializeEventListeners();
+        setDefaultDates();
+    });
+
+    function initializeEventListeners() {
+        // Device card click to toggle checkbox
+        $('.device-card').click(function(e) {
+            if (e.target.type !== 'checkbox') {
+                const checkbox = $(this).find('.device-checkbox');
+                checkbox.prop('checked', !checkbox.prop('checked'));
+                updateDeviceCardAppearance();
+            }
+        });
+
+        // Checkbox change handler
+        $('.device-checkbox').change(function() {
+            updateDeviceCardAppearance();
+        });
+
+        updateDeviceCardAppearance();
+    }
+
+    function setDefaultDates() {
+        // Set default date range to last 7 days
+        const today = new Date();
+        const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        
+        $('#dateTo').val(today.toISOString().split('T')[0]);
+        $('#dateFrom').val(lastWeek.toISOString().split('T')[0]);
+    }
+
+    function updateDeviceCardAppearance() {
+        $('.device-checkbox').each(function() {
+            const deviceCard = $(this).closest('.device-card');
+            if ($(this).is(':checked')) {
+                deviceCard.addClass('selected');
+            } else {
+                deviceCard.removeClass('selected');
+            }
+        });
+    }
+
+    function selectAllDevices() {
+        $('.device-checkbox').prop('checked', true);
+        updateDeviceCardAppearance();
+    }
+
+    function selectActiveDevices() {
+        $('.device-checkbox').prop('checked', false);
+        $('.badge:contains("Active")').each(function() {
+            const deviceCard = $(this).closest('.device-card');
+            deviceCard.find('.device-checkbox').prop('checked', true);
+        });
+        updateDeviceCardAppearance();
+    }
+
+    function clearSelection() {
+        $('.device-checkbox').prop('checked', false);
+        updateDeviceCardAppearance();
+    }
+
+    function getSelectedDevices() {
+        const selected = [];
+        $('.device-checkbox:checked').each(function() {
+            selected.push(parseInt($(this).val()));
+        });
+        return selected;
+    }
+
+    function testSelectedConnections() {
+        const selectedDevices = getSelectedDevices();
+        if (selectedDevices.length === 0) {
+            showAlert('Please select at least one device', 'warning');
+            return;
+        }
+
+        showLoading('Testing device connections...');
+
+        // Update status display
+        selectedDevices.forEach(deviceId => {
+            $(`#status-${deviceId}`).html('<span class="badge bg-warning">Testing...</span>');
+        });
+
+        $.ajax({
+            url: '{% url "hr_payroll:zkteco_test_connection_api" %}',
+            method: 'POST',
+            data: {
+                'device_ids': selectedDevices,
+                'csrfmiddlewaretoken': csrftoken
+            },
+            success: function(response) {
+                if (response.results) {
+                    response.results.forEach(result => {
+                        const statusElement = $(`#status-${result.device_id}`);
+                        if (result.success) {
+                            statusElement.html('<span class="badge bg-success">Online</span>');
+                        } else {
+                            statusElement.html('<span class="badge bg-danger">Offline</span>');
+                        }
+                    });
+                    showAlert('Connection test completed', 'success');
+                }
+            },
+            error: function() {
+                showAlert('Failed to test connections', 'danger');
+            },
+            complete: function() {
+                hideLoading();
+            }
+        });
+    }
+
+    function syncFromSelected() {
+        if (syncInProgress) {
+            showAlert('Sync already in progress', 'warning');
+            return;
+        }
+
+        const selectedDevices = getSelectedDevices();
+        if (selectedDevices.length === 0) {
+            showAlert('Please select at least one device to sync from', 'warning');
+            return;
+        }
+
+        const dateFrom = $('#dateFrom').val();
+        const dateTo = $('#dateTo').val();
+        const skipDuplicates = $('#skipDuplicates').is(':checked');
+        const autoImport = $('#autoImport').is(':checked');
+
+        let confirmMessage = `Sync attendance data from ${selectedDevices.length} selected device(s)?`;
+        if (dateFrom || dateTo) {
+            confirmMessage += `\n\nDate range: ${dateFrom || 'Beginning'} to ${dateTo || 'Now'}`;
+        }
+        confirmMessage += `\nOptions: Skip duplicates: ${skipDuplicates ? 'Yes' : 'No'}, Auto-import: ${autoImport ? 'Yes' : 'No'}`;
+
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        startSyncProcess(selectedDevices);
+    }
+
+    function startSyncProcess(deviceIds) {
+        syncInProgress = true;
+        syncResults = [];
+
+        // Show progress section
+        $('#syncProgress').show();
+        $('#syncSummary').hide();
+        
+        // Reset progress
+        updateProgress(0, deviceIds.length, 'Starting sync...');
+
+        // Reset all device cards
+        $('.device-card').removeClass('syncing synced error');
+        $('.sync-results').hide();
+
+        // Update step indicator
+        updateStepIndicator(2);
+
+        // Start syncing from each device
+        syncFromDevices(deviceIds, 0);
+    }
+
+    function syncFromDevices(deviceIds, currentIndex) {
+        if (currentIndex >= deviceIds.length) {
+            // All devices processed
+            completeSyncProcess();
+            return;
+        }
+
+        const deviceId = deviceIds[currentIndex];
+        const deviceCard = $(`.device-card[data-device-id="${deviceId}"]`);
+        const deviceName = deviceCard.find('h6').text();
+
+        // Update progress
+        updateProgress(currentIndex, deviceIds.length, `Syncing from ${deviceName}...`);
+        
+        // Mark device as syncing
+        deviceCard.addClass('syncing');
+
+        $.ajax({
+            url: '{% url "hr_payroll:zkteco_sync_attendance_api" %}',
+            method: 'POST',
+            data: {
+                'device_ids': [deviceId],
+                'date_from': $('#dateFrom').val(),
+                'date_to': $('#dateTo').val(),
+                'csrfmiddlewaretoken': csrftoken
+            },
+            success: function(response) {
+                if (response.results && response.results.length > 0) {
+                    const result = response.results[0];
+                    syncResults.push(result);
+                    
+                    // Update device display
+                    updateDeviceSyncStatus(deviceId, result);
+                    
+                    if (result.success) {
+                        deviceCard.removeClass('syncing').addClass('synced');
+                    } else {
+                        deviceCard.removeClass('syncing').addClass('error');
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`Sync failed for device ${deviceId}:`, error);
+                const errorResult = {
+                    device_id: deviceId,
+                    device_name: deviceName,
+                    success: false,
+                    message: `Sync failed: ${error}`,
+                    logs_count: 0,
+                    ready_count: 0
+                };
+                syncResults.push(errorResult);
+                updateDeviceSyncStatus(deviceId, errorResult);
+                deviceCard.removeClass('syncing').addClass('error');
+            },
+            complete: function() {
+                // Move to next device after a short delay
+                setTimeout(() => {
+                    syncFromDevices(deviceIds, currentIndex + 1);
+                }, 500);
+            }
+        });
+    }
+
+    function updateProgress(current, total, message) {
+        const percentage = Math.round((current / total) * 100);
+        $('#progressBar').css('width', `${percentage}%`);
+        $('#progressText').text(`${percentage}%`);
+        $('#currentDevice').text(message);
+    }
+
+    function updateDeviceSyncStatus(deviceId, result) {
+        if (result.success) {
+            $(`#total-${deviceId}`).text(result.logs_count || 0);
+            $(`#ready-${deviceId}`).text(result.ready_count || 0);
+            $(`#duplicates-${deviceId}`).text((result.logs_count || 0) - (result.ready_count || 0));
+            
+            // Show preview button if there are logs ready for import
+            if (result.ready_count > 0) {
+                const previewBtn = $(`#preview-${deviceId}`);
+                previewBtn.attr('href', `{% url 'hr_payroll:zkteco_attendance_preview' 0 %}`.replace('0', deviceId));
+                previewBtn.show();
+            }
+        }
+        
+        $(`#sync-${deviceId}`).show();
+    }
+
+    function updateStepIndicator(step) {
+        $('.step-number').removeClass('active completed');
+        for (let i = 1; i <= step; i++) {
+            if (i < step) {
+                $(`.step-number:eq(${i-1})`).addClass('completed');
+            } else {
+                $(`.step-number:eq(${i-1})`).addClass('active');
+            }
+        }
+    }
+
+    function completeSyncProcess() {
+        syncInProgress = false;
+        
+        // Update final progress
+        updateProgress(syncResults.length, syncResults.length, 'Sync completed!');
+        updateStepIndicator(3);
+        
+        // Show results
+        setTimeout(() => {
+            $('#syncProgress').hide();
+            displaySyncSummary();
+            $('#syncSummary').show();
+        }, 1000);
+    }
+
+    function displaySyncSummary() {
+        const successfulSyncs = syncResults.filter(r => r.success).length;
+        const totalLogs = syncResults.reduce((sum, r) => sum + (r.logs_count || 0), 0);
+        const totalReady = syncResults.reduce((sum, r) => sum + (r.ready_count || 0), 0);
+        const totalDuplicates = totalLogs - totalReady;
+
+        // Summary
+        const summaryHtml = `
+            <div class="row text-center mb-4">
+                <div class="col-md-3">
+                    <div class="border rounded p-3">
+                        <h3 class="text-primary">${totalLogs}</h3>
+                        <small class="text-muted">Total Logs Synced</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3">
+                        <h3 class="text-success">${totalReady}</h3>
+                        <small class="text-muted">Ready to Import</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3">
+                        <h3 class="text-warning">${totalDuplicates}</h3>
+                        <small class="text-muted">Duplicates Skipped</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3">
+                        <h3 class="text-info">${successfulSyncs}/${syncResults.length}</h3>
+                        <small class="text-muted">Successful Syncs</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center mb-4">
+                ${totalReady > 0 ? `
+                    <div class="text-center">
+                        <h5>Next Steps</h5>
+                        <p class="text-muted">You can now preview and import the synced attendance data</p>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="previewAllReadyLogs()">
+                                <i class="fas fa-eye me-2"></i>Preview All Ready Logs
+                            </button>
+                            <button class="btn btn-outline-success" onclick="importAllReadyLogs()">
+                                <i class="fas fa-download me-2"></i>Import All Ready Logs
+                            </button>
+                        </div>
+                    </div>
+                ` : `
+                    <div class="text-center">
+                        <h5>No New Data</h5>
+                        <p class="text-muted">No new attendance records were found to import</p>
+                    </div>
+                `}
+            </div>
+        `;
+
+        // Detailed results
+        let detailedHtml = '<h6>Device-wise Results:</h6>';
+        syncResults.forEach(result => {
+            const statusClass = result.success ? 'border-success' : 'border-danger';
+            const statusIcon = result.success ? 'fa-check-circle text-success' : 'fa-times-circle text-danger';
+
+            detailedHtml += `
+                <div class="card ${statusClass} mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6><i class="fas ${statusIcon} me-2"></i>${result.device_name}</h6>
+                                <p class="mb-1">${result.message}</p>
+                                ${result.success ? `
+                                    <div class="row">
+                                        <div class="col-sm-4">
+                                            <small class="text-muted">Total logs:</small> <strong>${result.logs_count || 0}</strong>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <small class="text-muted">Ready:</small> <strong class="text-success">${result.ready_count || 0}</strong>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <small class="text-muted">Duplicates:</small> <strong class="text-warning">${(result.logs_count || 0) - (result.ready_count || 0)}</strong>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div>
+                                ${result.success && result.ready_count > 0 ? 
+                                    `<a href="{% url 'hr_payroll:zkteco_attendance_preview' 0 %}".replace('0', result.device_id) class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>Preview
+                                    </a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        $('#summaryContent').html(summaryHtml + detailedHtml);
+        
+        const message = totalReady > 0 ? 
+            `Sync completed! ${totalReady} attendance records are ready for import.` :
+            'Sync completed, but no new records were found.';
+        showAlert(message, totalReady > 0 ? 'success' : 'info');
+    }
+
+    function previewAllReadyLogs() {
+        // Find first device with ready logs and redirect to its preview
+        const deviceWithLogs = syncResults.find(r => r.success && r.ready_count > 0);
+        if (deviceWithLogs) {
+            window.location.href = `{% url 'hr_payroll:zkteco_attendance_preview' 0 %}`.replace('0', deviceWithLogs.device_id);
+        } else {
+            showAlert('No logs available for preview', 'warning');
+        }
+    }
+
+    function importAllReadyLogs() {
+        // This would require implementing a bulk import endpoint
+        showAlert('Bulk import functionality needs to be implemented', 'info');
+    }
+</script>
+{% endblock %}

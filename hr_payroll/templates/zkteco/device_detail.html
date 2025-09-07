@@ -1,0 +1,402 @@
+{% extends 'zkteco/base.html' %}
+
+{% block title %}{{ device.name }} - Device Details{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'hr_payroll:zkteco_device_list' %}">Devices</a></li>
+    <li class="breadcrumb-item active">{{ device.name }}</li>
+{% endblock %}
+
+{% block content %}
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">{{ device.name }}</h1>
+            <p class="text-muted mb-0">{{ device.company.name }}</p>
+        </div>
+        <div>
+            <button class="btn btn-outline-primary me-2" onclick="testConnection()">
+                <i class="fas fa-wifi me-2"></i>Test Connection
+            </button>
+            <a href="/admin/hr_payroll/zkdevice/{{ device.id }}/change/" class="btn btn-primary">
+                <i class="fas fa-edit me-2"></i>Edit Device
+            </a>
+        </div>
+    </div>
+
+    <!-- Connection Status Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" id="connectionStatusCard">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            <i class="fas fa-fingerprint fa-3x text-muted" id="connectionIcon"></i>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 id="connectionStatus">Connection Status Unknown</h5>
+                            <p class="text-muted mb-0" id="connectionDetails">Click "Test Connection" to check device status</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div id="deviceInfo" style="display: none;">
+                                <small class="text-muted">Device Time: <span id="deviceTime">--</span></small><br>
+                                <small class="text-muted">Firmware: <span id="firmwareVersion">--</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Information -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Device Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td width="40%" class="text-muted">Device Name:</td>
+                            <td><strong>{{ device.name }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Company:</td>
+                            <td>{{ device.company.name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">IP Address:</td>
+                            <td><code>{{ device.ip_address }}</code></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Port:</td>
+                            <td><code>{{ device.port }}</code></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Status:</td>
+                            <td>
+                                {% if device.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Last Synced:</td>
+                            <td>
+                                {% if device.last_synced %}
+                                    {{ device.last_synced|date:"M d, Y H:i" }}
+                                {% else %}
+                                    <span class="text-muted">Never</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Created:</td>
+                            <td>{{ device.created_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                        {% if device.description %}
+                        <tr>
+                            <td class="text-muted">Description:</td>
+                            <td>{{ device.description }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h4 class="text-primary mb-1" id="totalUsers">--</h4>
+                                <small class="text-muted">Total Users</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h4 class="text-success mb-1">{{ employees_count }}</h4>
+                                <small class="text-muted">Employees</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-warning mb-1">{{ weekly_attendance }}</h4>
+                            <small class="text-muted">Weekly Logs</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-success" onclick="importEmployees()">
+                            <i class="fas fa-users-cog me-2"></i>Import Employees
+                        </button>
+                        <button class="btn btn-outline-warning" onclick="syncAttendance()">
+                            <i class="fas fa-calendar-plus me-2"></i>Sync Attendance
+                        </button>
+                        <a href="{% url 'hr_payroll:zkteco_attendance_preview' device.id %}" class="btn btn-outline-info">
+                            <i class="fas fa-eye me-2"></i>View Attendance Preview
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Attendance Logs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Attendance Logs
+                    </h5>
+                    <a href="{% url 'hr_payroll:zkteco_attendance_preview' device.id %}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_logs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Employee ID</th>
+                                        <th>Timestamp</th>
+                                        <th>Source</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in recent_logs %}
+                                        <tr>
+                                            <td>
+                                                <div>
+                                                    <h6 class="mb-1">{{ log.employee.name }}</h6>
+                                                    <small class="text-muted">{{ log.employee.department.name }}</small>
+                                                </div>
+                                            </td>
+                                            <td>{{ log.employee.employee_id }}</td>
+                                            <td>{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ log.get_source_type_display }}</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-times fa-2x text-muted mb-3"></i>
+                            <h6>No attendance logs found</h6>
+                            <p class="text-muted">Sync attendance data from this device to see logs here.</p>
+                            <button class="btn btn-primary" onclick="syncAttendance()">
+                                <i class="fas fa-sync-alt me-2"></i>Sync Now
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let connectionData = null;
+
+    $(document).ready(function() {
+        // Auto-test connection on page load
+        setTimeout(testConnection, 1000);
+    });
+
+    function testConnection() {
+        const statusCard = document.getElementById('connectionStatusCard');
+        const statusElement = document.getElementById('connectionStatus');
+        const detailsElement = document.getElementById('connectionDetails');
+        const iconElement = document.getElementById('connectionIcon');
+        
+        // Update UI to show testing state
+        statusCard.className = 'card border-warning';
+        statusElement.textContent = 'Testing Connection...';
+        detailsElement.textContent = 'Please wait while we test the device connection';
+        iconElement.className = 'fas fa-spinner fa-spin fa-3x text-warning';
+
+        $.ajax({
+            url: '{% url "hr_payroll:zkteco_test_connection_api" %}',
+            method: 'POST',
+            data: {
+                'device_ids': [{{ device.id }}],
+                'csrfmiddlewaretoken': csrftoken
+            },
+            success: function(response) {
+                if (response.results && response.results.length > 0) {
+                    const result = response.results[0];
+                    connectionData = result;
+                    updateConnectionStatus(result);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Connection test failed:', error);
+                updateConnectionStatus({
+                    success: false,
+                    message: 'Failed to test connection: ' + error,
+                    details: {}
+                });
+            }
+        });
+    }
+
+    function updateConnectionStatus(result) {
+        const statusCard = document.getElementById('connectionStatusCard');
+        const statusElement = document.getElementById('connectionStatus');
+        const detailsElement = document.getElementById('connectionDetails');
+        const iconElement = document.getElementById('connectionIcon');
+        const deviceInfoElement = document.getElementById('deviceInfo');
+        
+        if (result.success) {
+            // Success state
+            statusCard.className = 'card border-success';
+            statusElement.innerHTML = '<i class="fas fa-check-circle text-success me-2"></i>Device Online';
+            detailsElement.textContent = result.message || 'Device is connected and responding';
+            iconElement.className = 'fas fa-fingerprint fa-3x text-success';
+            
+            // Update device statistics
+            if (result.details) {
+                document.getElementById('totalUsers').textContent = result.details.total_users || 0;
+                
+                // Show device info
+                if (result.details.device_time) {
+                    document.getElementById('deviceTime').textContent = new Date(result.details.device_time).toLocaleString();
+                }
+                if (result.details.firmware_version) {
+                    document.getElementById('firmwareVersion').textContent = result.details.firmware_version;
+                }
+                deviceInfoElement.style.display = 'block';
+            }
+        } else {
+            // Error state
+            statusCard.className = 'card border-danger';
+            statusElement.innerHTML = '<i class="fas fa-times-circle text-danger me-2"></i>Device Offline';
+            detailsElement.textContent = result.message || 'Unable to connect to device';
+            iconElement.className = 'fas fa-fingerprint fa-3x text-danger';
+            deviceInfoElement.style.display = 'none';
+            document.getElementById('totalUsers').textContent = '--';
+        }
+    }
+
+    function importEmployees() {
+        if (connectionData && !connectionData.success) {
+            showAlert('Device is offline. Please check connection first.', 'warning');
+            return;
+        }
+
+        if (!confirm('Import employees from this device? This may take a few moments.')) {
+            return;
+        }
+
+        showLoading('Importing employees from device...');
+
+        $.ajax({
+            url: '{% url "hr_payroll:zkteco_import_employees_api" %}',
+            method: 'POST',
+            data: {
+                'device_ids': [{{ device.id }}],
+                'csrfmiddlewaretoken': csrftoken
+            },
+            success: function(response) {
+                if (response.results && response.results.length > 0) {
+                    const result = response.results[0];
+                    
+                    let message = `Employee import completed!\n`;
+                    message += `✓ Imported: ${result.imported_count || 0} employees\n`;
+                    message += `✓ Updated: ${result.updated_count || 0} employees\n`;
+                    
+                    if (result.error_count > 0) {
+                        message += `✗ Errors: ${result.error_count} employees\n`;
+                        if (result.errors && result.errors.length > 0) {
+                            message += `\nFirst few errors:\n${result.errors.slice(0, 3).join('\n')}`;
+                        }
+                    }
+                    
+                    alert(message);
+                    showAlert('Employee import completed successfully', 'success');
+                }
+            },
+            error: function() {
+                showAlert('Failed to import employees', 'danger');
+            },
+            complete: function() {
+                hideLoading();
+            }
+        });
+    }
+
+    function syncAttendance() {
+        if (connectionData && !connectionData.success) {
+            showAlert('Device is offline. Please check connection first.', 'warning');
+            return;
+        }
+
+        if (!confirm('Sync attendance data from this device? This will fetch recent attendance logs.')) {
+            return;
+        }
+
+        showLoading('Syncing attendance data...');
+
+        $.ajax({
+            url: '{% url "hr_payroll:zkteco_sync_attendance_api" %}',
+            method: 'POST',
+            data: {
+                'device_ids': [{{ device.id }}],
+                'csrfmiddlewaretoken': csrftoken
+            },
+            success: function(response) {
+                if (response.results && response.results.length > 0) {
+                    const result = response.results[0];
+                    
+                    if (result.success) {
+                        showAlert(`Attendance sync completed. Found ${result.logs_count} logs, ${result.ready_count} ready to import.`, 'success');
+                        
+                        // Redirect to preview page
+                        setTimeout(() => {
+                            window.location.href = '{% url "hr_payroll:zkteco_attendance_preview" device.id %}';
+                        }, 2000);
+                    } else {
+                        showAlert('Sync failed: ' + result.message, 'danger');
+                    }
+                }
+            },
+            error: function() {
+                showAlert('Failed to sync attendance data', 'danger');
+            },
+            complete: function() {
+                hideLoading();
+            }
+        });
+    }
+</script>
+{% endblock %}
+        

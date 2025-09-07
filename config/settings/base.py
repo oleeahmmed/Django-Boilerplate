@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     # Your apps
     'Authentication',
     'core',
+    'hr_payroll',
 ]
 
 # 2. allauth Step 2
