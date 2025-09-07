@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     # Your apps
     'Authentication',
     'core',
+    'cardealing',
+
 ]
 
 # 2. allauth Step 2
