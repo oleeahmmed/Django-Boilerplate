@@ -1,0 +1,593 @@
+{% extends 'ecommerce/base.html' %}
+
+{% block title %}Checkout - {{ store_name }}{% endblock %}
+
+{% block content %}
+<main class="bg-gray-50 min-h-screen py-8">
+  <div class="max-w-screen-xl mx-auto px-3 md:px-10">
+    
+    <!-- Page Header -->
+    <div class="mb-8">
+      <nav class="flex" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="{% url 'ecommerce:home' %}" class="text-gray-700 hover:text-green-600">Home</a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <span class="text-gray-400 mx-2">/</span>
+              <span class="text-gray-500">Checkout</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+      <h1 class="text-3xl font-bold text-gray-900 mt-4">Checkout</h1>
+    </div>
+
+    <form id="checkoutForm" method="post" action="{% url 'ecommerce:place_order' %}">
+      {% csrf_token %}
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Column: Billing & Shipping -->
+        <div class="lg:col-span-2 space-y-6">
+          
+          <!-- Customer Information (for guests) -->
+          {% if not user.is_authenticated %}
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
+            <div class="mb-4">
+              <p class="text-sm text-gray-600 mb-4">
+                Already have an account? 
+                <a href="/auth/login?next={% url 'ecommerce:checkout' %}" class="text-green-600 hover:text-green-700 font-medium">Sign in</a>
+              </p>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Billing Address -->
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-semibold text-gray-900">Billing Address</h2>
+              {% if user.is_authenticated and addresses %}
+                <select id="billingAddressSelect" class="text-sm bg-gray-50 border border-gray-300 rounded px-3 py-1">
+                  <option value="">Enter new address</option>
+                  {% for address in addresses %}
+                    <option value="{{ address.id }}" 
+                            data-first-name="{{ address.first_name }}"
+                            data-last-name="{{ address.last_name }}"
+                            data-company="{{ address.company }}"
+                            data-address-line-1="{{ address.address_line_1 }}"
+                            data-address-line-2="{{ address.address_line_2 }}"
+                            data-city="{{ address.city }}"
+                            data-state="{{ address.state }}"
+                            data-postal-code="{{ address.postal_code }}"
+                            data-country="{{ address.country }}"
+                            data-phone="{{ address.phone }}">
+                      {{ address.full_name }} - {{ address.city }}
+                    </option>
+                  {% endfor %}
+                </select>
+              {% endif %}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="billing_first_name" class="block text-sm font-medium text-gray-700 mb-1">
+                  First Name <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="billing_first_name" name="billing_first_name" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                       value="{% if user.is_authenticated %}{{ user.first_name }}{% endif %}">
+              </div>
+              
+              <div>
+                <label for="billing_last_name" class="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="billing_last_name" name="billing_last_name" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                       value="{% if user.is_authenticated %}{{ user.last_name }}{% endif %}">
+              </div>
+              
+              <div>
+                <label for="billing_email" class="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address <span class="text-red-500">*</span>
+                </label>
+                <input type="email" id="billing_email" name="billing_email" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                       value="{% if user.is_authenticated %}{{ user.email }}{% endif %}">
+              </div>
+              
+              <div>
+                <label for="billing_phone" class="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number <span class="text-red-500">*</span>
+                </label>
+                <input type="tel" id="billing_phone" name="billing_phone" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+              </div>
+              
+              <div class="md:col-span-2">
+                <label for="billing_company" class="block text-sm font-medium text-gray-700 mb-1">
+                  Company (Optional)
+                </label>
+                <input type="text" id="billing_company" name="billing_company"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+              </div>
+              
+              <div class="md:col-span-2">
+                <label for="billing_address_line_1" class="block text-sm font-medium text-gray-700 mb-1">
+                  Address Line 1 <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="billing_address_line_1" name="billing_address_line_1" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                       placeholder="Street address">
+              </div>
+              
+              <div class="md:col-span-2">
+                <label for="billing_address_line_2" class="block text-sm font-medium text-gray-700 mb-1">
+                  Address Line 2 (Optional)
+                </label>
+                <input type="text" id="billing_address_line_2" name="billing_address_line_2"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                       placeholder="Apartment, suite, etc.">
+              </div>
+              
+              <div>
+                <label for="billing_city" class="block text-sm font-medium text-gray-700 mb-1">
+                  City <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="billing_city" name="billing_city" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+              </div>
+              
+              <div>
+                <label for="billing_state" class="block text-sm font-medium text-gray-700 mb-1">
+                  State/Division
+                </label>
+                <input type="text" id="billing_state" name="billing_state"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+              </div>
+              
+              <div>
+                <label for="billing_postal_code" class="block text-sm font-medium text-gray-700 mb-1">
+                  Postal Code
+                </label>
+                <input type="text" id="billing_postal_code" name="billing_postal_code"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+              </div>
+              
+              <div>
+                <label for="billing_country" class="block text-sm font-medium text-gray-700 mb-1">
+                  Country <span class="text-red-500">*</span>
+                </label>
+                <select id="billing_country" name="billing_country" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                  <option value="Bangladesh">Bangladesh</option>
+                  <option value="India">India</option>
+                  <option value="Pakistan">Pakistan</option>
+                  <option value="United States">United States</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                </select>
+              </div>
+            </div>
+
+            {% if user.is_authenticated %}
+            <div class="mt-4">
+              <label class="flex items-center">
+                <input type="checkbox" id="save_billing_address" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                <span class="ml-2 text-sm text-gray-600">Save this address for future orders</span>
+              </label>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Shipping Address -->
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-semibold text-gray-900">Shipping Address</h2>
+            </div>
+            
+            <div class="mb-4">
+              <label class="flex items-center">
+                <input type="checkbox" id="same_as_billing" name="same_as_billing" checked
+                       class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                <span class="ml-2 text-sm text-gray-600">Same as billing address</span>
+              </label>
+            </div>
+            
+            <div id="shipping_address_fields" class="hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="shipping_first_name" class="block text-sm font-medium text-gray-700 mb-1">
+                    First Name <span class="text-red-500">*</span>
+                  </label>
+                  <input type="text" id="shipping_first_name" name="shipping_first_name"
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                </div>
+                
+                <div>
+                  <label for="shipping_last_name" class="block text-sm font-medium text-gray-700 mb-1">
+                    Last Name <span class="text-red-500">*</span>
+                  </label>
+                  <input type="text" id="shipping_last_name" name="shipping_last_name"
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label for="shipping_company" class="block text-sm font-medium text-gray-700 mb-1">
+                    Company (Optional)
+                  </label>
+                  <input type="text" id="shipping_company" name="shipping_company"
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label for="shipping_address_line_1" class="block text-sm font-medium text-gray-700 mb-1">
+                    Address Line 1 <span class="text-red-500">*</span>
+                  </label>
+                  <input type="text" id="shipping_address_line_1" name="shipping_address_line_1"
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label for="shipping_address_line_2" class="block text-sm font-medium text-gray-700 mb-1">
+                    Address Line 2 (Optional)
+                  </label>
+                  <input type="text" id="shipping_address_line_2" name="shipping_address_line_2"
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                </div>
+                
+                <div>
+                  <label for="shipping_city" class="block text-sm font-medium text-gray-700 mb-1">
+                    City <span class="text-red-500">*</span>
+                  </label>
+                  <input type="text" id="shipping_city" name="shipping_city"
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                </div>
+                
+                <div>
+                  <label for="shipping_state" class="block text-sm font-medium text-gray-700 mb-1">
+                    State/Division
+                  </label>
+                  <input type="text" id="shipping_state" name="shipping_state"
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                </div>
+                
+                <div>
+                  <label for="shipping_postal_code" class="block text-sm font-medium text-gray-700 mb-1">
+                    Postal Code
+                  </label>
+                  <input type="text" id="shipping_postal_code" name="shipping_postal_code"
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                </div>
+                
+                <div>
+                  <label for="shipping_country" class="block text-sm font-medium text-gray-700 mb-1">
+                    Country <span class="text-red-500">*</span>
+                  </label>
+                  <select id="shipping_country" name="shipping_country"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                    <option value="Bangladesh">Bangladesh</option>
+                    <option value="India">India</option>
+                    <option value="Pakistan">Pakistan</option>
+                    <option value="United States">United States</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shipping Method -->
+          {% if shipping_methods %}
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Shipping Method</h2>
+            <div class="space-y-3">
+              {% for method in shipping_methods %}
+                <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input type="radio" name="shipping_method_id" value="{{ method.id }}" 
+                         class="text-green-600 focus:ring-green-500" 
+                         {% if forloop.first %}checked{% endif %}
+                         onchange="calculateShipping()">
+                  <div class="ml-3 flex-1">
+                    <div class="flex items-center justify-between">
+                      <span class="font-medium text-gray-900">{{ method.name }}</span>
+                      <span class="text-green-600 font-semibold">
+                        {% if method.base_cost == 0 %}
+                          Free
+                        {% else %}
+                          {{ currency_symbol }}{{ method.base_cost }}
+                        {% endif %}
+                      </span>
+                    </div>
+                    {% if method.description %}
+                      <p class="text-sm text-gray-600 mt-1">{{ method.description }}</p>
+                    {% endif %}
+                    <p class="text-xs text-gray-500 mt-1">
+                      Delivery: {{ method.min_delivery_days }}-{{ method.max_delivery_days }} days
+                    </p>
+                  </div>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Payment Method -->
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Payment Method</h2>
+            <div class="space-y-3">
+              {% for method_value, method_name in payment_methods %}
+                <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input type="radio" name="payment_method" value="{{ method_value }}" 
+                         class="text-green-600 focus:ring-green-500"
+                         {% if method_value == 'cod' %}checked{% endif %}>
+                  <div class="ml-3">
+                    <span class="font-medium text-gray-900">{{ method_name }}</span>
+                    {% if method_value == 'cod' %}
+                      <p class="text-sm text-gray-600 mt-1">Pay when you receive your order</p>
+                    {% elif method_value == 'bkash' %}
+                      <p class="text-sm text-gray-600 mt-1">Pay securely with bKash mobile banking</p>
+                    {% elif method_value == 'nagad' %}
+                      <p class="text-sm text-gray-600 mt-1">Pay securely with Nagad mobile banking</p>
+                    {% elif method_value == 'card' %}
+                      <p class="text-sm text-gray-600 mt-1">Pay with credit or debit card</p>
+                    {% endif %}
+                  </div>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Order Notes -->
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Notes (Optional)</h2>
+            <textarea name="customer_notes" id="customer_notes" rows="4" 
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                      placeholder="Special instructions for your order..."></textarea>
+          </div>
+        </div>
+
+        <!-- Right Column: Order Summary -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-lg shadow-sm p-6 sticky top-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
+            
+            <!-- Cart Items -->
+            <div class="space-y-4 mb-6">
+              {% for item in cart_items %}
+                <div class="flex items-center space-x-3">
+                  <div class="relative">
+                    {% if item.product.images.all %}
+                      <img src="{{ item.product.images.first.image.url }}" 
+                           alt="{{ item.product.name }}" 
+                           class="w-16 h-16 object-cover rounded-lg">
+                    {% else %}
+                      <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-400 text-xs">No Image</span>
+                      </div>
+                    {% endif %}
+                    <span class="absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {{ item.quantity }}
+                    </span>
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="font-medium text-gray-900 text-sm">{{ item.product.name }}</h4>
+                    {% if item.variant %}
+                      <p class="text-xs text-gray-600">{{ item.variant.name }}</p>
+                    {% endif %}
+                    <p class="text-sm text-green-600 font-semibold">
+                      {{ currency_symbol }}{{ item.total_price }}
+                    </p>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Coupon Code -->
+            <div class="mb-6">
+              <div class="flex space-x-2">
+                <input type="text" id="coupon_code" placeholder="Coupon code" 
+                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-sm">
+                <button type="button" onclick="applyCoupon()" 
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+                  Apply
+                </button>
+              </div>
+              <div id="coupon_message" class="mt-2 text-sm"></div>
+            </div>
+
+            <!-- Order Totals -->
+            <div class="space-y-3 border-t pt-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Subtotal ({{ cart.total_items }} items)</span>
+                <span class="font-medium" id="subtotal">{{ currency_symbol }}{{ subtotal }}</span>
+              </div>
+              
+              {% if discount_amount > 0 %}
+              <div class="flex justify-between text-sm text-green-600">
+                <span>Discount</span>
+                <span id="discount_amount">-{{ currency_symbol }}{{ discount_amount }}</span>
+              </div>
+              {% endif %}
+              
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Shipping</span>
+                <span id="shipping_cost">Calculated at next step</span>
+              </div>
+              
+              <div class="flex justify-between text-lg font-semibold border-t pt-3">
+                <span>Total</span>
+                <span class="text-green-600" id="total_amount">{{ currency_symbol }}{{ subtotal }}</span>
+              </div>
+            </div>
+
+            <!-- Place Order Button -->
+            <button type="submit" 
+                    class="w-full mt-6 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 font-semibold transition-colors duration-200">
+              Place Order
+            </button>
+
+            <!-- Security Notice -->
+            <div class="mt-4 text-center">
+              <p class="text-xs text-gray-500">
+                🔒 Your payment information is secure and encrypted
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</main>
+
+<script>
+// Toggle shipping address fields
+document.getElementById('same_as_billing').addEventListener('change', function() {
+  const shippingFields = document.getElementById('shipping_address_fields');
+  if (this.checked) {
+    shippingFields.classList.add('hidden');
+  } else {
+    shippingFields.classList.remove('hidden');
+  }
+});
+
+// Auto-fill billing address from saved addresses
+document.getElementById('billingAddressSelect')?.addEventListener('change', function() {
+  if (this.value) {
+    const option = this.options[this.selectedIndex];
+    document.getElementById('billing_first_name').value = option.dataset.firstName || '';
+    document.getElementById('billing_last_name').value = option.dataset.lastName || '';
+    document.getElementById('billing_company').value = option.dataset.company || '';
+    document.getElementById('billing_address_line_1').value = option.dataset.addressLine1 || '';
+    document.getElementById('billing_address_line_2').value = option.dataset.addressLine2 || '';
+    document.getElementById('billing_city').value = option.dataset.city || '';
+    document.getElementById('billing_state').value = option.dataset.state || '';
+    document.getElementById('billing_postal_code').value = option.dataset.postalCode || '';
+    document.getElementById('billing_country').value = option.dataset.country || '';
+    document.getElementById('billing_phone').value = option.dataset.phone || '';
+  }
+});
+
+// Apply coupon function
+function applyCoupon() {
+  const couponCode = document.getElementById('coupon_code').value.trim();
+  const messageDiv = document.getElementById('coupon_message');
+  
+  if (!couponCode) {
+    messageDiv.innerHTML = '<span class="text-red-600">Please enter a coupon code</span>';
+    return;
+  }
+  
+  fetch('{% url "ecommerce:apply_coupon" %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: `coupon_code=${encodeURIComponent(couponCode)}`
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      messageDiv.innerHTML = `<span class="text-green-600">${data.message}</span>`;
+      document.getElementById('discount_amount').textContent = `-{{ currency_symbol }}${data.discount_amount}`;
+      updateTotal();
+    } else {
+      messageDiv.innerHTML = `<span class="text-red-600">${data.message}</span>`;
+    }
+  })
+  .catch(error => {
+    messageDiv.innerHTML = '<span class="text-red-600">Error applying coupon</span>';
+  });
+}
+
+// Calculate shipping function
+function calculateShipping() {
+  const selectedMethod = document.querySelector('input[name="shipping_method_id"]:checked');
+  if (!selectedMethod) return;
+  
+  fetch('{% url "ecommerce:calculate_shipping" %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: `shipping_method_id=${selectedMethod.value}`
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById('shipping_cost').textContent = 
+        data.shipping_cost === '0.00' ? 'Free' : `{{ currency_symbol }}${data.shipping_cost}`;
+      document.getElementById('total_amount').textContent = `{{ currency_symbol }}${data.total}`;
+    }
+  })
+  .catch(error => {
+    console.error('Error calculating shipping:', error);
+  });
+}
+
+// Update total function
+function updateTotal() {
+  const subtotal = parseFloat(document.getElementById('subtotal').textContent.replace('{{ currency_symbol }}', ''));
+  const discountElement = document.getElementById('discount_amount');
+  const discount = discountElement ? parseFloat(discountElement.textContent.replace('-{{ currency_symbol }}', '')) : 0;
+  const shippingElement = document.getElementById('shipping_cost');
+  const shipping = shippingElement.textContent === 'Free' || shippingElement.textContent === 'Calculated at next step' ? 0 : 
+                   parseFloat(shippingElement.textContent.replace('{{ currency_symbol }}', ''));
+  
+  const total = subtotal - discount + shipping;
+  document.getElementById('total_amount').textContent = `{{ currency_symbol }}${total.toFixed(2)}`;
+}
+
+// Initialize shipping calculation on page load
+document.addEventListener('DOMContentLoaded', function() {
+  calculateShipping();
+});
+
+function addToCart(product) {
+  fetch('{% url "ecommerce:add_to_cart" %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: `product_id=${product.id}&quantity=1`
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Update cart count in header
+      document.getElementById('cartCount').textContent = data.cart_count;
+      document.getElementById('fixedCartCount').textContent = `${data.cart_count} Items`;
+      document.getElementById('fixedCartTotal').textContent = `{{ currency_symbol }}${data.cart_total}`;
+      
+      // Show success message
+      showNotification(data.message, 'success');
+    } else {
+      showNotification(data.message, 'error');
+    }
+  })
+  .catch(error => {
+    showNotification('Error adding to cart', 'error');
+  });
+}
+
+// Show notification function
+function showNotification(message, type) {
+  const notification = document.createElement('div');
+  notification.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg text-white ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.remove();
+  }, 3000);
+}
+</script>
+{% endblock %}

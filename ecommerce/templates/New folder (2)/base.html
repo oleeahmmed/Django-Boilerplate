@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Chaldal - Online Grocery Shopping{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    .sidebar-transition {
+      transition: transform 0.3s ease-in-out;
+    }
+    .dropdown-menu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-in-out;
+    }
+    .dropdown-menu.open {
+      max-height: 500px;
+    }
+    .cart-badge {
+      animation: bounce 0.5s ease-in-out;
+    }
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+    .hero-slider {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .shipping-zone-item {
+      transition: all 0.2s ease;
+    }
+    .shipping-zone-item:hover {
+      background-color: #f0fdf4;
+    }
+    .shipping-zone-item.selected {
+      background-color: #dcfce7;
+      border-color: #16a34a;
+    }
+    .modal {
+      backdrop-filter: blur(4px);
+    }
+    .chaldal-gradient {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .premium-card {
+      background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .cart-item-hover:hover {
+      background: linear-gradient(145deg, #f0fdf4 0%, #ecfdf5 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .premium-button {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      transition: all 0.3s ease;
+    }
+    .premium-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+    .floating-cart {
+      background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .quantity-badge {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: #1f2937;
+      font-weight: 700;
+    }
+    .loading-spinner {
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #10b981;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .notification {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 0.3s, transform 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .notification.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .notification.success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .notification.error {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-green-50 min-h-screen">
+  <!-- Notification container -->
+  <div id="notification" class="notification hidden">
+    <span id="notificationText"></span>
+  </div>
+
+  <!-- Enhanced header with Chaldal green theme -->
+  <header class="fixed top-0 left-0 right-0 z-50 chaldal-gradient shadow-xl">
+    <div class="flex items-center justify-between px-4 py-3">
+      <!-- Mobile Menu Button -->
+      <button id="mobileMenuBtn" class="md:hidden text-white hover:bg-white/20 p-2 rounded-lg transition-all">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+      
+      <!-- Desktop Menu Button -->
+      <button id="desktopMenuBtn" class="hidden md:block text-white hover:bg-white/20 p-2 rounded-lg transition-all">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+      
+      <!-- Logo -->
+      <div class="flex-1 text-center md:text-left md:flex-none md:ml-4">
+        <a href="{% url 'ecommerce:index' %}" class="inline-block">
+          <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+            <span class="text-white font-bold text-xl">🛒 Chaldal</span>
+          </div>
+        </a>
+      </div>
+      
+      <!-- Search Bar (Desktop) -->
+      <div class="hidden md:flex flex-1 max-w-2xl mx-4">
+        <form method="GET" action="{% url 'ecommerce:search_results' %}" class="relative w-full">
+          <input type="text" name="q" placeholder="Search for products (e.g. eggs, milk, potato)" 
+                 class="w-full px-6 py-3 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-white/50 bg-white/95 backdrop-blur-sm shadow-lg">
+          <button type="submit" class="absolute right-2 top-2 h-8 w-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:from-green-600 hover:to-emerald-700 flex items-center justify-center transition-all">
+            <i class="fas fa-search text-white text-sm"></i>
+          </button>
+        </form>
+      </div>
+      
+      <!-- Navigation Links -->
+      <div class="hidden md:flex items-center space-x-4">
+        <!-- Location Selector -->
+        <button id="locationSelector" class="text-white hover:bg-white/20 flex items-center px-3 py-2 rounded-lg transition-all">
+          <i class="fas fa-map-marker-alt text-yellow-300 mr-2"></i>
+          <span id="selectedLocationName" class="font-semibold">
+            {% if selected_shipping_zone_id %}
+              {% for zone in shipping_zones %}
+                {% if zone.id == selected_shipping_zone_id|add:0 %}{{ zone.name }}{% endif %}
+              {% endfor %}
+            {% else %}
+              Select Area
+            {% endif %}
+          </span>
+          <i class="fas fa-chevron-down ml-2 text-sm"></i>
+        </button>
+        
+        <!-- Cart Page Link -->
+        <a href="{% url 'ecommerce:cart' %}" class="text-white hover:bg-white/20 flex items-center px-3 py-2 rounded-lg transition-all">
+          <i class="fas fa-shopping-cart mr-2"></i>
+          Cart
+        </a>
+        
+        {% if user.is_authenticated %}
+          <a href="{% url 'ecommerce:account' %}" class="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-all">
+            Account
+          </a>
+          <a href="{% url 'ecommerce:logout_view' %}" class="text-white hover:bg-white/20 px-3 py-2 rounded-lg transition-all">
+            Logout
+          </a>
+        {% else %}
+          <a href="{% url 'ecommerce:login_view' %}" class="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-all">
+            Login
+          </a>
+        {% endif %}
+      </div>
+      
+      <!-- Cart -->
+      <div class="relative">
+        <button id="cartBtn" class="text-white p-3 hover:bg-white/20 rounded-lg transition-all">
+          <i class="fas fa-shopping-bag text-xl"></i>
+          {% if cart_count > 0 %}
+            <span id="headerCartCount" class="absolute -top-1 -right-1 quantity-badge text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg">
+              {{ cart_count }}
+            </span>
+          {% endif %}
+        </button>
+      </div>
+    </div>
+    
+    <!-- Mobile Search -->
+    <div class="md:hidden px-4 pb-3">
+      <form method="GET" action="{% url 'ecommerce:search_results' %}" class="relative">
+        <input type="text" name="q" placeholder="Search for products" 
+               class="w-full px-4 py-3 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-white/50 bg-white/95 backdrop-blur-sm">
+        <button type="submit" class="absolute right-3 top-3">
+          <i class="fas fa-search text-gray-600"></i>
+        </button>
+      </form>
+      
+      <!-- Mobile Location Selector -->
+      <button id="mobileLocationSelector" class="w-full mt-3 bg-white/20 backdrop-blur-sm text-white px-4 py-3 rounded-xl flex items-center justify-between hover:bg-white/30 transition-all">
+        <div class="flex items-center">
+          <i class="fas fa-map-marker-alt text-yellow-300 mr-2"></i>
+          <span id="mobileSelectedLocationName">
+            {% if selected_shipping_zone_id %}
+              {% for zone in shipping_zones %}
+                {% if zone.id == selected_shipping_zone_id|add:0 %}{{ zone.name }}{% endif %}
+              {% endfor %}
+            {% else %}
+              Select Delivery Area
+            {% endif %}
+          </span>
+        </div>
+        <i class="fas fa-chevron-down"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Location Selection Modal -->
+  <div id="locationModal" class="fixed inset-0 bg-black bg-opacity-50 z-60 hidden modal">
+    <div class="flex items-center justify-center min-h-screen px-4">
+      <div class="premium-card rounded-2xl shadow-2xl max-w-md w-full max-h-96 overflow-hidden">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xl font-bold text-gray-900">Select Delivery Area</h3>
+            <button id="closeLocationModal" class="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-all">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <p class="text-sm text-gray-600 mt-2">Choose your area to see delivery charges</p>
+        </div>
+        
+        <div id="shippingZonesList" class="overflow-y-auto max-h-64">
+          {% for zone in shipping_zones %}
+            <div class="shipping-zone-item p-4 border-b border-gray-100 cursor-pointer hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 transition-all {% if zone.id == selected_shipping_zone_id|add:0 %}selected bg-gradient-to-r from-green-50 to-emerald-50{% endif %}" 
+                 data-zone-id="{{ zone.id }}" data-zone-name="{{ zone.name }}" data-zone-charge="{{ zone.charge }}">
+              <div class="flex justify-between items-center">
+                <div>
+                  <h4 class="font-semibold text-gray-900">{{ zone.name }}</h4>
+                  <p class="text-sm text-gray-600">Delivery charge: <span class="font-bold text-green-600">৳{{ zone.charge }}</span></p>
+                </div>
+                {% if zone.id == selected_shipping_zone_id|add:0 %}
+                  <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                {% endif %}
+              </div>
+            </div>
+          {% empty %}
+            <div class="p-6 text-center text-gray-500">
+              <i class="fas fa-map-marker-alt text-4xl mb-3 text-gray-300"></i>
+              <p>No delivery areas available</p>
+            </div>
+          {% endfor %}
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+          <button id="clearLocationBtn" class="text-sm text-gray-600 hover:text-red-500 flex items-center transition-all">
+            <i class="fas fa-times-circle mr-2"></i>
+            Clear selection
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Overlay -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden backdrop-blur-sm"></div>
+  
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed left-0 top-0 h-full w-80 premium-card shadow-2xl z-50 transform -translate-x-full sidebar-transition">
+    <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold text-gray-900">Categories</h2>
+        <button id="closeSidebar" class="text-gray-500 hover:text-gray-700 hover:bg-gray-200 p-2 rounded-lg transition-all">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="overflow-y-auto h-full pb-20">
+      <!-- Category Buttons -->
+      <div class="p-6 border-b border-gray-200">
+        <div class="grid grid-cols-3 gap-3">
+          <button class="premium-button text-white p-4 rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition-all">
+            <i class="fas fa-shopping-basket block mb-2 text-lg"></i>
+            Grocery
+          </button>
+          <button class="border-2 border-green-500 text-green-600 p-4 rounded-xl text-sm font-bold hover:bg-green-50 transition-all">
+            <i class="fas fa-pills block mb-2 text-lg"></i>
+            Pharmacy
+          </button>
+          <button class="border-2 border-green-500 text-green-600 p-4 rounded-xl text-sm font-bold hover:bg-green-50 transition-all">
+            <i class="fas fa-utensils block mb-2 text-lg"></i>
+            Cookups
+          </button>
+        </div>
+      </div>
+      
+      <!-- Menu Items -->
+      <nav class="p-4">
+        <ul class="space-y-2">
+          <li>
+            <a href="#" class="flex items-center justify-between p-3 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 rounded-xl transition-all">
+              <span class="flex items-center">
+                <i class="fas fa-tag text-green-500 mr-3 text-lg"></i>
+                <span class="font-medium">Offers</span>
+              </span>
+              <span class="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg">53</span>
+            </a>
+          </li>
+          
+          <li>
+            <a href="{% url 'ecommerce:wishlist' %}" class="flex items-center p-3 hover:bg-gradient-to-r hover:from-pink-50 hover:to-red-50 rounded-xl transition-all">
+              <i class="fas fa-heart text-red-500 mr-3 text-lg"></i>
+              <span class="font-medium">Favourites</span>
+            </a>
+          </li>
+          
+          <!-- Dynamic Categories from Database -->
+          {% for category in categories %}
+            <li>
+              <a href="{% url 'ecommerce:category_view' category.slug %}" class="flex items-center p-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 rounded-xl transition-all">
+                <i class="fas fa-folder text-gray-600 mr-3 text-lg"></i>
+                <span class="font-medium">{{ category.name }}</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Enhanced Cart Sidebar with AJAX functionality -->
+  <aside id="cartSidebar" class="fixed right-0 top-0 h-full w-96 premium-card shadow-2xl z-50 transform translate-x-full sidebar-transition">
+    <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fas fa-shopping-bag text-gray-700 mr-3 text-xl"></i>
+          <span id="cartItemCount" class="font-bold text-lg text-gray-900">
+            {{ cart_count|default:0 }} ITEM{{ cart_count|pluralize|upper }}
+          </span>
+        </div>
+        <button id="closeCart" class="text-gray-500 hover:text-gray-700 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg text-sm font-medium hover:bg-white transition-all shadow-md">
+          Close
+        </button>
+      </div>
+    </div>
+
+    <!-- Enhanced Delivery Info -->
+    <div id="deliveryInfoSection" class="{% if delivery_fee == 0 %}bg-gradient-to-r from-blue-500 to-purple-600{% else %}bg-gradient-to-r from-green-500 to-emerald-600{% endif %} text-white p-4 shadow-lg">
+      <div class="flex items-center justify-between">
+        {% if delivery_fee == 0 %}
+          <span class="text-sm font-medium">Select area for delivery charge</span>
+          <button id="selectAreaBtn" class="bg-white/20 backdrop-blur-sm px-3 py-2 rounded-lg text-xs font-bold hover:bg-white/30 transition-all">
+            Select
+          </button>
+        {% else %}
+          <span class="text-sm font-medium">Delivery charge for selected area</span>
+          <div class="flex items-center">
+            <span class="font-bold text-lg">৳ {{ delivery_fee }}</span>
+            <button id="changeAreaBtn" class="ml-3 bg-white/20 backdrop-blur-sm px-3 py-2 rounded-lg text-xs font-bold hover:bg-white/30 transition-all">
+              Change
+            </button>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Express Delivery -->
+    <div class="p-4 border-b border-gray-200 bg-gradient-to-r from-yellow-50 to-orange-50">
+      <div class="flex items-center">
+        <i class="fas fa-bolt text-yellow-500 mr-3 text-lg"></i>
+        <span class="font-semibold text-gray-800">Express Delivery Available</span>
+        <span class="ml-auto bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs px-2 py-1 rounded-full font-bold">60 min</span>
+      </div>
+    </div>
+    
+    <div id="cartItems" class="flex-1 overflow-y-auto">
+      {% if cart_items %}
+        {% for item in cart_items %}
+          <div class="cart-item-hover p-4 border-b border-gray-100 transition-all" data-item-id="{{ item.product.id }}">
+            <div class="flex items-center space-x-4">
+              <!-- AJAX quantity controls -->
+              <div class="flex flex-col items-center">
+                <span class="text-xl font-bold quantity-display text-gray-800">{{ item.quantity }}</span>
+                <div class="flex flex-col space-y-2 mt-2">
+                  <!-- Increase Quantity Button -->
+                  <button onclick="updateCartQuantityAjax('{{ item.product.id }}', {{ item.quantity|add:1 }})" class="w-8 h-8 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-lg flex items-center justify-center hover:from-green-500 hover:to-green-600 transition-all shadow-md hover:shadow-lg">
+                    <i class="fas fa-plus text-xs"></i>
+                  </button>
+                  <!-- Decrease Quantity Button -->
+                  <button onclick="updateCartQuantityAjax('{{ item.product.id }}', {{ item.quantity|add:-1 }})" class="w-8 h-8 bg-gradient-to-r from-red-400 to-red-500 text-white rounded-lg flex items-center justify-center hover:from-red-500 hover:to-red-600 transition-all shadow-md hover:shadow-lg">
+                    <i class="fas fa-minus text-xs"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center overflow-hidden shadow-md">
+                <img src="{% if item.product.images.first %}{{ item.product.images.first.image.url }}{% else %}/static/images/placeholder.png{% endif %}" 
+                     alt="{{ item.product.name }}" class="max-w-full max-h-full object-contain">
+              </div>
+              
+              <div class="flex-1">
+                <h4 class="font-semibold text-sm text-gray-900 mb-1">{{ item.product.name }}</h4>
+                <p class="text-xs text-gray-600">৳{{ item.product.get_price }} per piece</p>
+                <div class="flex items-center mt-1">
+                  <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">In Stock</span>
+                </div>
+              </div>
+              
+              <div class="text-right">
+                <p class="font-bold text-lg text-gray-900 item-total">৳ {{ item.total_price }}</p>
+                <!-- AJAX remove item button -->
+                <button onclick="removeFromCartAjax('{{ item.product.id }}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition-all mt-2">
+                  <i class="fas fa-trash text-sm"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div id="emptyCart" class="text-center py-12">
+          <div class="bg-gradient-to-br from-gray-100 to-gray-200 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-shopping-cart text-gray-400 text-3xl"></i>
+          </div>
+          <p class="text-gray-500 font-medium">Your cart is empty</p>
+          <p class="text-gray-400 text-sm mt-1">Add some products to get started</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Enhanced Special Code Section -->
+    <div class="p-4 border-t border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
+      <div class="flex items-center justify-center text-gray-700 cursor-pointer hover:text-purple-600 transition-all">
+        <i class="fas fa-gift mr-2 text-purple-500"></i>
+        <span class="font-medium">Have a special code?</span>
+        <i class="fas fa-chevron-down ml-2 text-sm"></i>
+      </div>
+    </div>
+    
+    <div id="cartFooter" class="p-6 bg-gradient-to-r from-gray-50 to-gray-100">
+      <a href="{% url 'ecommerce:cart' %}" id="viewCartBtn" class="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 rounded-xl hover:from-gray-700 hover:to-gray-800 flex items-center justify-center text-lg font-semibold mb-4 shadow-lg hover:shadow-xl transition-all">
+        <i class="fas fa-shopping-cart mr-2"></i>
+        <span>View Full Cart</span>
+      </a>
+      
+      {% if cart_items %}
+        <a href="{% url 'ecommerce:checkout' %}" id="placeOrderBtn" class="w-full premium-button text-white py-4 rounded-xl flex items-center justify-between text-lg font-bold shadow-lg hover:shadow-xl transition-all">
+          <span>Proceed to Checkout</span>
+          <span id="cartTotal" class="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg">৳ {{ cart_total|default:0 }}</span>
+        </a>
+      {% else %}
+        <button disabled class="w-full bg-gray-400 text-white py-4 rounded-xl flex items-center justify-center text-lg font-semibold cursor-not-allowed opacity-60">
+          <span>Cart is Empty</span>
+        </button>
+      {% endif %}
+      
+      <!-- Enhanced Payment Methods -->
+      <div class="flex justify-center mt-4 space-x-4">
+        <div class="bg-white p-2 rounded-lg shadow-md">
+          <i class="fab fa-cc-mastercard text-2xl text-blue-600"></i>
+        </div>
+        <div class="bg-white p-2 rounded-lg shadow-md">
+          <i class="fab fa-cc-visa text-2xl text-blue-800"></i>
+        </div>
+        <div class="bg-white p-2 rounded-lg shadow-md">
+          <i class="fas fa-mobile-alt text-2xl text-green-600"></i>
+        </div>
+        <div class="bg-white p-2 rounded-lg shadow-md">
+          <i class="fas fa-money-bill-wave text-2xl text-yellow-600"></i>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Enhanced Floating Bag Button -->
+  {% if cart_count > 0 %}
+    <div id="floatingBag" class="fixed bottom-20 right-6 z-40 md:bottom-6">
+      <div class="relative">
+        <button id="floatingBagBtn" class="floating-cart text-white shadow-2xl rounded-2xl p-5 hover:shadow-3xl transition-all transform hover:scale-105 flex flex-col items-center min-w-[90px]">
+          <i class="fas fa-shopping-bag text-yellow-400 text-2xl mb-2"></i>
+          <span class="quantity-badge text-xs px-2 py-1 rounded-full font-bold">
+            {{ cart_count }} ITEM{{ cart_count|pluralize|upper }}
+          </span>
+        </button>
+        <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-white shadow-xl rounded-lg px-3 py-2 text-sm font-bold text-gray-800">
+          ৳ <span class="text-green-600">{{ cart_total|default:0 }}</span>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Main Content -->
+  <main class="pt-28 md:pt-24">
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <!-- JavaScript with AJAX cart functionality -->
+  <script>
+    // Django URLs for AJAX calls
+    const djangoUrls = {
+      addToCart: "{% url 'ecommerce:add_to_cart' %}",
+      updateCart: "{% url 'ecommerce:update_cart' %}",
+      removeFromCart: "{% url 'ecommerce:remove_from_cart' %}",
+      cartCount: "{% url 'ecommerce:cart_count' %}",
+      cartData: "{% url 'ecommerce:cart_data' %}", // Added cart data endpoint
+      setShippingZone: "{% url 'ecommerce:set_shipping_zone' %}",
+      getShippingZones: "{% url 'ecommerce:get_shipping_zones' %}"
+    };
+    
+    // CSRF Token for Django
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken');
+    
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      const notificationText = document.getElementById('notificationText');
+      
+      if (notification && notificationText) {
+        notificationText.textContent = message;
+        notification.className = `notification ${type} show`;
+        
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+          notification.classList.remove('show');
+        }, 3000);
+      } else {
+        // Fallback to creating notification if not exists
+        const notif = document.createElement('div');
+        notif.className = `notification ${type} show`;
+        notif.innerHTML = `<span>${message}</span>`;
+        document.body.appendChild(notif);
+        
+        setTimeout(() => {
+          notif.classList.remove('show');
+          setTimeout(() => document.body.removeChild(notif), 300);
+        }, 3000);
+      }
+    }
+    
+    async function updateCartCounters() {
+      try {
+        const response = await fetch(djangoUrls.cartCount, { 
+          credentials: 'same-origin',
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        const count = data?.count ?? 0;
+        const total = data?.total ?? 0;
+        
+        // Update all cart counter elements
+        const elements = {
+          headerCartCount: document.getElementById('headerCartCount'),
+          cartItemCount: document.getElementById('cartItemCount'),
+          floatingBagCount: document.querySelector('#floatingBag .quantity-badge'),
+          cartTotal: document.getElementById('cartTotal'),
+          floatingBagTotal: document.querySelector('#floatingBag .text-green-600')
+        };
+        
+        // Update header cart badge
+        if (elements.headerCartCount) {
+          if (count > 0) {
+            elements.headerCartCount.textContent = count;
+            elements.headerCartCount.style.display = 'flex';
+          } else {
+            elements.headerCartCount.style.display = 'none';
+          }
+        }
+        
+        // Update cart item count text
+        if (elements.cartItemCount) {
+          elements.cartItemCount.textContent = `${count} ITEM${count !== 1 ? 'S' : ''}`;
+        }
+        
+        // Update floating bag
+        const floatingBag = document.getElementById('floatingBag');
+        if (floatingBag) {
+          if (count > 0) {
+            floatingBag.style.display = 'block';
+            if (elements.floatingBagCount) {
+              elements.floatingBagCount.textContent = `${count} ITEM${count !== 1 ? 'S' : ''}`;
+            }
+            if (elements.floatingBagTotal) {
+              elements.floatingBagTotal.textContent = total;
+            }
+          } else {
+            floatingBag.style.display = 'none';
+          }
+        }
+        
+        // Update cart total
+        if (elements.cartTotal) {
+          elements.cartTotal.textContent = `৳ ${total}`;
+        }
+        
+        return { count, total };
+      } catch (error) {
+        console.error('Error updating cart counters:', error);
+        return { count: 0, total: 0 };
+      }
+    }
+    
+    function updateProductQuantityDisplays(productId, quantity) {
+      const productControls = document.querySelector(`.product-controls[data-id="${productId}"]`);
+      
+      if (productControls) {
+        if (quantity > 0) {
+          // Show quantity controls with current quantity
+          productControls.innerHTML = `
+            <div class="flex items-center justify-between bg-gradient-to-r from-green-50 to-emerald-100 rounded-xl p-3 border border-green-200">
+              <button class="w-10 h-10 bg-gradient-to-r from-red-400 to-red-500 text-white rounded-xl flex items-center justify-center hover:from-red-500 hover:to-red-600 transition-all shadow-md"
+                      onclick="updateCartQuantityAjax('${productId}', ${quantity - 1})">
+                <i class="fas fa-minus text-sm"></i>
+              </button>
+              <span class="font-bold text-lg text-gray-800 mx-3 js-qty">${quantity}</span>
+              <button class="w-10 h-10 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-xl flex items-center justify-center hover:from-green-500 hover:to-green-600 transition-all shadow-md"
+                      onclick="updateCartQuantityAjax('${productId}', ${quantity + 1})">
+                <i class="fas fa-plus text-sm"></i>
+              </button>
+            </div>
+          `;
+        } else {
+          // Show add to cart button
+          productControls.innerHTML = `
+            <button class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all font-bold shadow-lg hover:shadow-xl transform hover:scale-105"
+                    onclick="addToCartAjax('${productId}', 1)">
+              <i class="fas fa-cart-plus mr-2"></i>Add to Cart
+            </button>
+          `;
+        }
+      }
+    }
+    
+    async function refreshCartSidebar() {
+      try {
+        const response = await fetch(djangoUrls.cartData || djangoUrls.cartCount, {
+          credentials: 'same-origin',
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        
+        // Update cart items in sidebar
+        const cartItemsContainer = document.getElementById('cartItems');
+        const emptyCart = document.getElementById('emptyCart');
+        
+        if (cartItemsContainer) {
+          if (data.items && data.items.length > 0) {
+            // Hide empty cart message
+            if (emptyCart) emptyCart.style.display = 'none';
+            
+            // Update cart items
+            cartItemsContainer.innerHTML = '';
+            data.items.forEach(item => {
+              const itemHTML = `
+                <div class="cart-item-hover p-4 border-b border-gray-100 transition-all" data-item-id="${item.product_id}">
+                  <div class="flex items-center space-x-4">
+                    <div class="flex flex-col items-center">
+                      <span class="text-xl font-bold quantity-display text-gray-800">${item.quantity}</span>
+                      <div class="flex flex-col space-y-2 mt-2">
+                        <button onclick="updateCartQuantityAjax('${item.product_id}', ${item.quantity + 1})" class="w-8 h-8 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-lg flex items-center justify-center hover:from-green-500 hover:to-green-600 transition-all shadow-md hover:shadow-lg">
+                          <i class="fas fa-plus text-xs"></i>
+                        </button>
+                        <button onclick="updateCartQuantityAjax('${item.product_id}', ${item.quantity - 1})" class="w-8 h-8 bg-gradient-to-r from-red-400 to-red-500 text-white rounded-lg flex items-center justify-center hover:from-red-500 hover:to-red-600 transition-all shadow-md hover:shadow-lg">
+                          <i class="fas fa-minus text-xs"></i>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center overflow-hidden shadow-md">
+                      <img src="${item.image || '/static/images/placeholder.png'}" 
+                           alt="${item.name}" class="max-w-full max-h-full object-contain">
+                    </div>
+                    
+                    <div class="flex-1">
+                      <h4 class="font-semibold text-sm text-gray-900 mb-1">${item.name}</h4>
+                      <p class="text-xs text-gray-600">৳${item.price} per piece</p>
+                      <div class="flex items-center mt-1">
+                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">In Stock</span>
+                      </div>
+                    </div>
+                    
+                    <div class="text-right">
+                      <p class="font-bold text-lg text-gray-900 item-total">৳ ${item.total}</p>
+                      <button onclick="removeFromCartAjax('${item.product_id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition-all mt-2">
+                        <i class="fas fa-trash text-sm"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `;
+              cartItemsContainer.insertAdjacentHTML('beforeend', itemHTML);
+            });
+          } else {
+            // Show empty cart message
+            if (emptyCart) emptyCart.style.display = 'block';
+            cartItemsContainer.innerHTML = '';
+          }
+        }
+        
+      } catch (error) {
+        console.error('Error refreshing cart sidebar:', error);
+      }
+    }
+    
+    async function addToCartAjax(productId, quantity = 1) {
+      try {
+        const response = await fetch(djangoUrls.addToCart, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+          },
+          body: JSON.stringify({ 
+            product_id: productId, 
+            quantity: quantity 
+          })
+        });
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification(data.message || 'Added to cart successfully!', 'success');
+          
+          // Update product display with new quantity
+          const newQuantity = data.new_quantity || quantity;
+          updateProductQuantityDisplays(productId, newQuantity);
+          
+          // Update all cart counters
+          await updateCartCounters();
+          
+          // Refresh cart sidebar content
+          await refreshCartSidebar();
+          
+        } else {
+          showNotification(data.error || 'Error adding to cart', 'error');
+        }
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        showNotification('Error adding to cart. Please try again.', 'error');
+      }
+    }
+    
+    async function updateCartQuantityAjax(productId, quantity) {
+      if (quantity <= 0) {
+        return removeFromCartAjax(productId);
+      }
+      
+      try {
+        const response = await fetch(djangoUrls.updateCart, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+          },
+          body: JSON.stringify({ 
+            product_id: productId, 
+            quantity: quantity 
+          })
+        });
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification(data.message || 'Cart updated successfully!', 'success');
+          
+          // Update product display
+          updateProductQuantityDisplays(productId, quantity);
+          
+          // Update all cart counters
+          await updateCartCounters();
+          
+          // Refresh cart sidebar content
+          await refreshCartSidebar();
+          
+        } else {
+          showNotification(data.error || 'Error updating cart', 'error');
+        }
+      } catch (error) {
+        console.error('Error updating cart:', error);
+        showNotification('Error updating cart. Please try again.', 'error');
+      }
+    }
+    
+    async function removeFromCartAjax(productId) {
+      if (!confirm('Are you sure you want to remove this item from your cart?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(djangoUrls.removeFromCart, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+          },
+          body: JSON.stringify({ 
+            product_id: productId 
+          })
+        });
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showNotification(data.message || 'Item removed from cart', 'success');
+          
+          // Update product display to show add to cart button
+          updateProductQuantityDisplays(productId, 0);
+          
+          // Update all cart counters
+          await updateCartCounters();
+          
+          // Refresh cart sidebar content
+          await refreshCartSidebar();
+          
+        } else {
+          showNotification(data.error || 'Error removing item', 'error');
+        }
+      } catch (error) {
+        console.error('Error removing from cart:', error);
+        showNotification('Error removing item. Please try again.', 'error');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize cart counters
+      updateCartCounters();
+      
+      // Load cart sidebar data if cart is not empty
+      const cartCount = document.getElementById('cartItemCount');
+      if (cartCount && !cartCount.textContent.includes('0 ITEM')) {
+        refreshCartSidebar();
+      }
+
+      // UI functionality
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const desktopMenuBtn = document.getElementById('desktopMenuBtn');
+      const sidebar = document.getElementById('sidebar');
+      const sidebarOverlay = document.getElementById('sidebarOverlay');
+      const closeSidebar = document.getElementById('closeSidebar');
+      
+      // Cart sidebar functionality  
+      const cartBtn = document.getElementById('cartBtn');
+      const floatingBagBtn = document.getElementById('floatingBagBtn');
+      const cartSidebar = document.getElementById('cartSidebar');
+      const closeCart = document.getElementById('closeCart');
+      
+      // Location modal functionality
+      const locationSelector = document.getElementById('locationSelector');
+      const mobileLocationSelector = document.getElementById('mobileLocationSelector');
+      const locationModal = document.getElementById('locationModal');
+      const closeLocationModal = document.getElementById('closeLocationModal');
+      const selectAreaBtn = document.getElementById('selectAreaBtn');
+      const clearLocationBtn = document.getElementById('clearLocationBtn');
+      
+      // Open menu sidebar
+      if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', function() {
+          sidebar.classList.remove('-translate-x-full');
+          sidebarOverlay.classList.remove('hidden');
+        });
+      }
+      
+      if (desktopMenuBtn) {
+        desktopMenuBtn.addEventListener('click', function() {
+          sidebar.classList.remove('-translate-x-full');
+          sidebarOverlay.classList.remove('hidden');
+        });
+      }
+      
+      // Close menu sidebar
+      if (closeSidebar) {
+        closeSidebar.addEventListener('click', function() {
+          sidebar.classList.add('-translate-x-full');
+          sidebarOverlay.classList.add('hidden');
+        });
+      }
+      
+      // Open cart sidebar
+      if (cartBtn) {
+        cartBtn.addEventListener('click', function() {
+          cartSidebar.classList.remove('translate-x-full');
+          sidebarOverlay.classList.remove('hidden');
+        });
+      }
+      
+      if (floatingBagBtn) {
+        floatingBagBtn.addEventListener('click', function() {
+          cartSidebar.classList.remove('translate-x-full');
+          sidebarOverlay.classList.remove('hidden');
+        });
+      }
+      
+      // Close cart sidebar
+      if (closeCart) {
+        closeCart.addEventListener('click', function() {
+          cartSidebar.classList.add('translate-x-full');
+          sidebarOverlay.classList.add('hidden');
+        });
+      }
+      
+      // Location modal functionality
+      if (locationSelector) {
+        locationSelector.addEventListener('click', function() {
+          locationModal.classList.remove('hidden');
+        });
+      }
+      
+      if (mobileLocationSelector) {
+        mobileLocationSelector.addEventListener('click', function() {
+          locationModal.classList.remove('hidden');
+        });
+      }
+      
+      if (closeLocationModal) {
+        closeLocationModal.addEventListener('click', function() {
+          locationModal.classList.add('hidden');
+        });
+      }
+      
+      // Select area button in delivery info
+      document.addEventListener('click', function(e) {
+        if (e.target.id === 'selectAreaBtn' || e.target.id === 'changeAreaBtn') {
+          locationModal.classList.remove('hidden');
+        }
+      });
+      
+      // Shipping zone selection
+      document.querySelectorAll('.shipping-zone-item').forEach(item => {
+        item.addEventListener('click', function() {
+          const zoneId = this.dataset.zoneId;
+          const zoneName = this.dataset.zoneName;
+          const zoneCharge = parseFloat(this.dataset.zoneCharge);
+          
+          // Remove selected class from all items
+          document.querySelectorAll('.shipping-zone-item').forEach(i => {
+            i.classList.remove('selected');
+            const icon = i.querySelector('i.fa-check-circle');
+            if (icon) icon.remove();
+          });
+          
+          // Add selected class to clicked item
+          this.classList.add('selected');
+          this.innerHTML += '<i class="fas fa-check-circle text-green-500 text-xl"></i>';
+          
+          setShippingZone(zoneId, zoneName, zoneCharge);
+        });
+      });
+      
+      // Clear location button
+      if (clearLocationBtn) {
+        clearLocationBtn.addEventListener('click', function() {
+          setShippingZone(null, null, 0);
+        });
+      }
+      
+      // Close sidebars when clicking overlay
+      if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+          sidebar.classList.add('-translate-x-full');
+          cartSidebar.classList.add('translate-x-full');
+          sidebarOverlay.classList.add('hidden');
+        });
+      }
+      
+      // Close location modal when clicking outside
+      if (locationModal) {
+        locationModal.addEventListener('click', function(e) {
+          if (e.target === locationModal) {
+            locationModal.classList.add('hidden');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

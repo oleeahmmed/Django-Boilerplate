@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     # Your apps
     'Authentication',
     'core',
+    'ecommerce',
 ]
 
 # 2. allauth Step 2
@@ -107,6 +108,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                 'ecommerce.context_processors.ecommerce_context',
+
             ],
         },
     },

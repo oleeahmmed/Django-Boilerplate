@@ -1,0 +1,504 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreshMart - Premium Online Grocery Shopping</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #ff6b35;
+      --primary-dark: #e55a2b;
+      --neutral-50: #fafafa;
+      --neutral-100: #f5f5f5;
+      --neutral-200: #e5e5e5;
+      --neutral-300: #d4d4d4;
+      --neutral-800: #262626;
+    }
+
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .sidebar-transition {
+      transition: transform 0.4s ease-in-out;
+    }
+
+    .dropdown-menu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-in-out;
+    }
+
+    .dropdown-menu.open {
+      max-height: 300px;
+    }
+
+    .product-card {
+      transition: all 0.3s ease;
+      border: 1px solid var(--neutral-200);
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+      border-color: var(--primary-color);
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .header-blur {
+      background: rgba(255, 107, 53, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .search-glow:focus {
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+      border-color: var(--primary-color);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-neutral-50 to-neutral-100">
+  <!-- Enhanced Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 header-blur shadow-md">
+    <div class="flex items-center justify-between px-6 py-4">
+      <button id="mobileMenuBtn" class="md:hidden text-white p-2 rounded-lg hover:bg-white hover:bg-opacity-20">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+      <div class="flex-1 text-center md:text-left md:flex-none md:ml-6">
+        <a href="#" class="flex items-center">
+          <div class="bg-white p-2 rounded-lg mr-3">
+            <i class="fas fa-shopping-basket text-2xl" style="color: var(--primary-color);"></i>
+          </div>
+          <div class="text-white">
+            <h1 class="text-2xl font-bold">FreshMart</h1>
+            <p class="text-xs opacity-90">Premium Groceries</p>
+          </div>
+        </a>
+      </div>
+      <div class="hidden md:flex flex-1 max-w-2xl mx-6">
+        <div class="relative w-full">
+          <input type="text" placeholder="Search for fresh products..." class="w-full px-4 py-2 rounded-l-xl border-0 focus:outline-none search-glow text-gray-700">
+          <button class="absolute right-0 top-0 h-full px-4 bg-white rounded-r-xl hover:bg-gray-50">
+            <i class="fas fa-search text-gray-600"></i>
+          </button>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center space-x-4">
+        <div class="text-white flex items-center bg-white bg-opacity-20 px-3 py-1 rounded-lg">
+          <i class="fas fa-map-marker-alt text-red-300 mr-2"></i>
+          <span class="font-semibold">Dhaka, BD</span>
+        </div>
+        <a href="#" class="btn-primary px-4 py-2 rounded-lg font-semibold flex items-center">
+          <i class="fas fa-user mr-2"></i>Login
+        </a>
+        <button id="cartBtn" class="text-white p-2 hover:bg-white hover:bg-opacity-20 rounded-lg relative">
+          <i class="fas fa-shopping-cart text-xl"></i>
+          <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+        </button>
+      </div>
+      <div class="md:hidden px-6">
+        <div class="relative">
+          <input type="text" placeholder="Search..." class="w-full px-4 py-2 rounded-xl border-0 focus:outline-none search-glow">
+          <button class="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <i class="fas fa-search text-gray-600"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar Overlay -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+  <!-- Enhanced Sidebar -->
+  <aside id="sidebar" class="fixed left-0 top-0 h-full w-72 glass-effect shadow-xl z-50 transform -translate-x-full sidebar-transition">
+    <div class="p-6 border-b border-gray-200">
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold text-gray-800">Categories</h2>
+        <button id="closeSidebar" class="text-gray-500 hover:text-gray-700 p-2 rounded-lg">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+    </div>
+    <div class="overflow-y-auto h-full p-6">
+      <ul class="space-y-3">
+        <li>
+          <button class="dropdown-toggle w-full flex items-center p-3 hover:bg-gray-100 rounded-lg" data-target="groceryDropdown">
+            <i class="fas fa-shopping-basket text-green-500 mr-3"></i>
+            <span class="font-medium">Grocery</span>
+            <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+          </button>
+          <ul id="groceryDropdown" class="dropdown-menu ml-10 mt-2 space-y-2">
+            <li><a href="#" class="block p-2 hover:bg-gray-100 rounded-lg text-gray-700">Fresh Vegetables</a></li>
+            <li><a href="#" class="block p-2 hover:bg-gray-100 rounded-lg text-gray-700">Seasonal Fruits</a></li>
+            <li><a href="#" class="block p-2 hover:bg-gray-100 rounded-lg text-gray-700">Dairy & Eggs</a></li>
+            <li><a href="#" class="block p-2 hover:bg-gray-100 rounded-lg text-gray-700">Meat & Fish</a></li>
+          </ul>
+        </li>
+        <li>
+          <button class="dropdown-toggle w-full flex items-center p-3 hover:bg-gray-100 rounded-lg" data-target="personalCareDropdown">
+            <i class="fas fa-user text-purple-500 mr-3"></i>
+            <span class="font-medium">Personal Care</span>
+            <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+          </button>
+          <ul id="personalCareDropdown" class="dropdown-menu ml-10 mt-2 space-y-2">
+            <li><a href="#" class="block p-2 hover:bg-gray-100 rounded-lg text-gray-700">Women's Care</a></li>
+            <li><a href="#" class="block p-2 hover:bg-gray-100 rounded-lg text-gray-700">Men's Care</a></li>
+            <li><a href="#" class="block p-2 hover:bg-gray-100 rounded-lg text-gray-700">Handwash</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#" class="flex items-center p-3 hover:bg-gray-100 rounded-lg">
+            <i class="fas fa-tag text-red-500 mr-3"></i>
+            <span class="font-medium">Special Offers</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="flex items-center p-3 hover:bg-gray-100 rounded-lg">
+            <i class="fas fa-heart text-pink-500 mr-3"></i>
+            <span class="font-medium">Favourites</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Enhanced Cart Sidebar -->
+  <aside id="cartSidebar" class="fixed right-0 top-0 h-full w-80 bg-white shadow-xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out border-l border-gray-100">
+    <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+      <div class="flex items-center space-x-4">
+        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-shopping-bag text-xl" style="color: var(--primary-color);"></i>
+        </div>
+        <div>
+          <span id="cartItemCount" class="font-semibold text-gray-900">0 Items</span>
+          <p class="text-sm text-gray-500">in your cart</p>
+        </div>
+      </div>
+      <button id="closeCart" class="text-gray-600 hover:text-gray-900 p-2 rounded-full">
+        <i class="fas fa-times text-lg"></i>
+      </button>
+    </div>
+    <div id="cartItems" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <!-- Cart items will be dynamically inserted here -->
+    </div>
+    <div id="cartFooter" class="p-6 bg-gray-50 border-t border-gray-100">
+      <button id="placeOrderBtn" class="w-full btn-primary py-3 rounded-xl hover:bg-red-600 flex items-center justify-between text-lg font-bold">
+        <span>Proceed to Checkout</span>
+        <span id="cartTotal">৳ 0.00</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Enhanced Floating Bag Button -->
+  <div id="floatingBag" class="fixed bottom-8 right-8 z-40 hidden md:block">
+    <div class="relative">
+      <button id="floatingBagBtn" class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-3 hover:shadow-md transition-all flex flex-col items-center min-w-[80px]">
+        <i class="fas fa-shopping-bag text-2xl mb-1" style="color: var(--primary-color);"></i>
+        <span id="floatingBagCount" class="font-bold text-sm" style="color: var(--primary-color);">0 Items</span>
+      </button>
+      <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-white shadow-md rounded-lg px-3 py-1 text-sm font-semibold border border-gray-200">
+        ৳ <span id="floatingBagTotal">0.00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="pt-20 md:pt-16">
+    <!-- Enhanced Quick Categories -->
+    <section class="py-12 bg-white">
+      <div class="container mx-auto px-6">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl font-bold mb-2" style="color: var(--neutral-800);">Shop by Category</h2>
+          <p class="text-lg text-gray-600">Discover fresh products across all categories</p>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {% for category in featured_categories %}
+            <a href="{% url 'shop:product_list_by_category' category.slug %}" class="text-center p-4 rounded-xl hover:shadow-md transition-all bg-gray-50 border border-gray-200">
+              <div class="w-16 h-16 mx-auto mb-2 bg-green-500 rounded-lg flex items-center justify-center">
+                <i class="{{ category.icon_class|default:'fas fa-carrot' }} text-white text-2xl"></i>
+              </div>
+              <h3 class="font-semibold text-gray-800">{{ category.name }}</h3>
+              <p class="text-sm text-gray-600 mt-1">{{ category.description|default:"Fresh & Organic" }}</p>
+            </a>
+          {% empty %}
+            <p class="col-span-full text-center text-gray-600">No categories available</p>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- Enhanced Featured Products -->
+    <section class="py-12 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div class="container mx-auto px-6">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl font-bold mb-2" style="color: var(--neutral-800);">Featured Products</h2>
+          <p class="text-lg text-gray-600">Handpicked fresh products just for you</p>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {% for product in featured_products %}
+            <div class="product-card bg-white rounded-xl overflow-hidden">
+              <div class="aspect-square bg-gray-50 flex items-center justify-center p-4 relative">
+                <img src="{% if product.images.first %}{{ product.images.first.image.url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}" 
+                     alt="{{ product.name }}" class="max-w-full max-h-full object-contain">
+                <div class="absolute top-3 right-3 text-white text-xs px-2 py-1 rounded-full font-bold {% if product.discount_price %}bg-red-500{% else %}bg-green-500{% endif %}">
+                  {% if product.discount_price %}
+                    {{ product.discount_percent|floatformat:0 }}% OFF
+                  {% else %}
+                    {{ product.tags.first.name|default:"FRESH" }}
+                  {% endif %}
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="font-semibold text-gray-800 mb-2">{{ product.name }}</h3>
+                <p class="text-sm text-gray-600 mb-2">{{ product.short_description|default:"Premium quality" }}</p>
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xl font-bold" style="color: var(--primary-color);">{{ currency_symbol }}{{ product.current_price }}</span>
+                    {% if product.discount_price %}
+                      <span class="text-sm text-gray-500 line-through">{{ currency_symbol }}{{ product.price }}</span>
+                    {% endif %}
+                  </div>
+                  <div class="flex items-center text-yellow-400">
+                    <i class="fas fa-star text-sm"></i>
+                    <span class="text-sm text-gray-600 ml-1">{{ product.avg_rating|floatformat:1 }}</span>
+                  </div>
+                </div>
+                <div class="product-controls" data-id="home-{{ product.id }}">
+                  <form action="{% url 'shop:cart_add' product.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="add-to-cart w-full btn-primary py-2 rounded-lg font-semibold" 
+                            data-id="home-{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.current_price }}" data-image="{% if product.images.first %}{{ product.images.first.image.url }}{% else %}{% static 'images/placeholder.jpg' %}{% endif %}">
+                      <i class="fas fa-cart-plus mr-2"></i>Add to Cart
+                    </button>
+                    <div class="quantity-controls hidden flex items-center justify-between mt-2">
+                      <button type="button" class="decrease-btn w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300" data-id="home-{{ product.id }}">
+                        <i class="fas fa-minus text-gray-600"></i>
+                      </button>
+                      <span class="quantity-display font-bold text-lg">0</span>
+                      <button type="button" class="increase-btn w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300" data-id="home-{{ product.id }}">
+                        <i class="fas fa-plus text-gray-600"></i>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <p class="col-span-full text-center text-gray-600">No featured products available</p>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // DOM elements
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const closeSidebar = document.getElementById('closeSidebar');
+    const cartBtn = document.getElementById('cartBtn');
+    const cartSidebar = document.getElementById('cartSidebar');
+    const closeCart = document.getElementById('closeCart');
+    const floatingBagBtn = document.getElementById('floatingBagBtn');
+    const cartItems = document.getElementById('cartItems');
+    const cartItemCount = document.getElementById('cartItemCount');
+    const floatingBagCount = document.getElementById('floatingBagCount');
+    const cartCount = document.getElementById('cartCount');
+    const cartTotal = document.getElementById('cartTotal');
+    const floatingBagTotal = document.getElementById('floatingBagTotal');
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+    // State
+    let cart = JSON.parse('{{ cart_items_json|escapejs }}' || '[]');
+
+    // Toggle sidebar
+    mobileMenuBtn.addEventListener('click', () => {
+      sidebar.classList.remove('-translate-x-full');
+      sidebarOverlay.classList.remove('hidden');
+    });
+    closeSidebar.addEventListener('click', () => {
+      sidebar.classList.add('-translate-x-full');
+      sidebarOverlay.classList.add('hidden');
+    });
+    sidebarOverlay.addEventListener('click', () => {
+      sidebar.classList.add('-translate-x-full');
+      cartSidebar.classList.add('translate-x-full');
+      sidebarOverlay.classList.add('hidden');
+    });
+
+    // Toggle cart
+    cartBtn.addEventListener('click', () => {
+      cartSidebar.classList.remove('translate-x-full');
+      sidebarOverlay.classList.remove('hidden');
+    });
+    floatingBagBtn.addEventListener('click', () => {
+      cartSidebar.classList.remove('translate-x-full');
+      sidebarOverlay.classList.remove('hidden');
+    });
+    closeCart.addEventListener('click', () => {
+      cartSidebar.classList.add('translate-x-full');
+      sidebarOverlay.classList.add('hidden');
+    });
+
+    // Update cart UI
+    function updateCartUI() {
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const totalPrice = cart.reduce((sum, item) => sum + item.total, 0);
+
+      if (totalItems === 0) {
+        cartItems.innerHTML = `
+          <div class="text-center py-12">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-shopping-cart text-gray-300 text-3xl"></i>
+            </div>
+            <p class="text-gray-500 font-medium">Your cart is empty</p>
+            <p class="text-gray-400 text-sm mt-1">Add some products to get started</p>
+          </div>`;
+      } else {
+        cartItems.innerHTML = cart.map(item => `
+          <div class="p-4 border-b border-gray-200 flex items-center space-x-4">
+            <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-lg">
+            <div class="flex-1">
+              <h4 class="font-semibold text-gray-800">${item.name}</h4>
+              <p class="text-sm text-gray-500">৳ ${item.price.toFixed(2)}</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button class="decrease-btn w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300" data-id="${item.item_id}">
+                <i class="fas fa-minus text-gray-600"></i>
+              </button>
+              <span class="quantity text-lg font-bold">${item.quantity}</span>
+              <button class="increase-btn w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300" data-id="${item.item_id}">
+                <i class="fas fa-plus text-gray-600"></i>
+              </button>
+              <button class="remove-btn w-8 h-8 bg-red-200 rounded-full flex items-center justify-center hover:bg-red-300" data-id="${item.item_id}">
+                <i class="fas fa-trash text-red-600"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      cartItemCount.textContent = `${totalItems} Items`;
+      floatingBagCount.textContent = `${totalItems} Items`;
+      cartCount.textContent = totalItems;
+      cartTotal.textContent = `৳ ${totalPrice.toFixed(2)}`;
+      floatingBagTotal.textContent = totalPrice.toFixed(2);
+
+      if (totalItems > 0) document.getElementById('floatingBag').classList.remove('hidden');
+      else document.getElementById('floatingBag').classList.add('hidden');
+    }
+
+    // Handle cart actions
+    cartItems.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+
+      const itemId = btn.dataset.id;
+      const item = cart.find(i => i.item_id == itemId);
+
+      if (btn.classList.contains('increase-btn') && item) {
+        item.quantity += 1;
+        item.total = item.price * item.quantity;
+        updateCartUI();
+        updateCartOnServer(itemId, 'increase');
+      } else if (btn.classList.contains('decrease-btn') && item && item.quantity > 1) {
+        item.quantity -= 1;
+        item.total = item.price * item.quantity;
+        updateCartUI();
+        updateCartOnServer(itemId, 'decrease');
+      } else if (btn.classList.contains('remove-btn')) {
+        cart = cart.filter(i => i.item_id != itemId);
+        updateCartUI();
+        updateCartOnServer(itemId, 'remove');
+      }
+    });
+
+    // Add to cart
+    document.querySelectorAll('.add-to-cart').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const product = {
+          item_id: btn.dataset.id,
+          name: btn.dataset.name,
+          price: parseFloat(btn.dataset.price),
+          image: btn.dataset.image,
+          quantity: 1,
+          total: parseFloat(btn.dataset.price)
+        };
+        cart.push(product);
+        updateCartUI();
+        updateCartOnServer(product.item_id, 'add');
+      });
+    });
+
+    // AJAX to update cart on server
+    function updateCartOnServer(itemId, action) {
+      fetch('/shop/cart/update/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ item_id: itemId, action: action })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          cart = data.cart_items;
+          updateCartUI();
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+
+    // Proceed to checkout
+    placeOrderBtn.addEventListener('click', () => {
+      if (cart.length > 0) {
+        window.location.href = '{% url "shop:checkout" %}';
+      } else {
+        alert('Your cart is empty!');
+      }
+    });
+
+    // Toggle dropdowns
+    document.querySelectorAll('.dropdown-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.target;
+        const dropdown = document.getElementById(targetId);
+        const isOpen = dropdown.classList.contains('open');
+        document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('open'));
+        if (!isOpen) {
+          dropdown.classList.add('open');
+        }
+      });
+    });
+
+    // Initialize
+    updateCartUI();
+  </script>
+</body>
+</html>

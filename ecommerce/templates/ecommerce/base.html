@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ store_name }}{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      content: [],
+      theme: {
+        extend: {
+          fontFamily: {
+            ui_sans_serif: [
+              'ui-sans-serif',
+              'system-ui',
+              'sans-serif',
+              'Apple Color Emoji',
+              'Segoe UI Emoji',
+              'Segoe UI Symbol',
+              'Noto Color Emoji'
+            ]
+          }
+        }
+      }
+    };
+  </script>
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="text-gray-800 bg-white font-ui_sans_serif">
+  <!-- Header -->
+  <div class="sticky w-full z-20 top-0">
+    <!-- Top Bar -->
+    <div class="bg-gray-100 hidden md:block">
+      <div class="max-w-screen-2xl mx-auto px-3 md:px-10">
+        <div class="text-gray-600 text-xs font-medium flex items-center justify-between py-2">
+          <span class="flex items-center">
+            <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-1.svg" alt="Icon" class="h-3 w-3 mr-2" />
+            We are available 24/7, Need help?
+            <a href="tel://{{ contact_phone }}" class="text-green-600 font-bold ml-1">{{ contact_phone }}</a>
+          </span>
+          <div class="flex items-center">
+            <a href="/about-us">About Us</a>
+            <span class="mx-2">|</span>
+            <a href="/contact-us">Contact Us</a>
+            <span class="mx-2">|</span>
+            <a href="/auth/login">My Account</a>
+            <span class="mx-2">|</span>
+            <a href="/auth/login" class="flex items-center">
+              <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-2.svg" alt="Icon" class="h-3 w-3 mr-1" />
+              Login
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="bg-green-600 shadow-lg">
+      <div class="max-w-screen-2xl mx-auto px-3 md:px-10">
+        <div class="relative flex h-20 justify-between">
+          <!-- Logo -->
+          <div class="relative hidden md:flex items-center">
+            <a href="/" class="flex items-center">
+              <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/logo-light.svg" alt="{{ store_name }}" class="h-8" />
+            </a>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="flex-1 flex items-center px-6 md:px-0 md:mx-10">
+            <div class="w-full">
+              <form class="relative bg-white shadow-lg w-full overflow-hidden rounded-lg">
+                <label class="flex items-center py-0.5">
+                  <input 
+                    placeholder="Search for products (e.g. shirt, pant)" 
+                    class="text-gray-600 flex h-9 w-full pl-5 pr-3 py-1 rounded-lg outline-none" 
+                  />
+                </label>
+                <button type="submit" class="absolute flex items-center justify-center h-full w-12 md:w-14 right-0 top-0 bg-transparent">
+                  <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-3.svg" alt="Search" class="h-5 w-5" />
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Cart and User Actions -->
+          <div class="hidden md:flex items-center">
+            <!-- Cart Button -->
+            <button 
+              id="cartButton" 
+              type="button" 
+              aria-label="Cart with {{ cart_items_count }} items" 
+              class="relative text-white bg-transparent mx-2 p-2 rounded-full hover:bg-white hover:bg-opacity-10 transition-all duration-200"
+            >
+              <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-4.svg" alt="Cart" class="h-6 w-6" />
+              <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold{% if cart_items_count == 0 %} animate-pulse{% endif %}">{{ cart_items_count }}</span>
+            </button>
+
+            <!-- Notification -->
+            <button type="button" class="relative text-white bg-transparent mx-2 p-2 rounded-full hover:bg-white hover:bg-opacity-10 transition-all duration-200">
+              <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-5.svg" alt="Notification" class="h-6 w-6" />
+              <span class="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">3</span>
+            </button>
+
+            <span class="bg-white h-6 w-px mx-4"></span>
+
+            <!-- User Profile -->
+            <div class="relative">
+              <a href="/auth/login" class="flex items-center -m-1.5 p-1.5">
+                <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-6.svg" alt="Profile" class="h-6 w-6" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation -->
+    <div class="bg-white border-b border-gray-200 hidden md:block">
+      <div class="flex items-center h-12 justify-between max-w-screen-2xl mx-auto px-3 md:px-10">
+        <div class="flex">
+          <nav class="flex items-center">
+            <div class="relative mr-10 group">
+              <button type="button" class="flex items-center bg-transparent px-0 py-2 hover:text-green-600 transition-colors duration-200">
+                <span class="text-sm font-medium">Categories</span>
+                <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-7.svg" alt="Arrow" class="h-3 w-3 ml-1 transform group-hover:rotate-180 transition-transform duration-200" />
+              </button>
+              <!-- Categories Dropdown -->
+              <div class="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div class="p-2">
+                  {% for category in main_categories %}
+                    <a href="/search?category={{ category.slug }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded transition-colors duration-150">{{ category.name }}</a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            <a href="/about-us" class="text-sm font-medium mx-4 py-2 hover:text-green-600 transition-colors duration-200">About Us</a>
+            <a href="/contact-us" class="text-sm font-medium mx-4 py-2 hover:text-green-600 transition-colors duration-200">Contact Us</a>
+            <div class="relative mr-10 group">
+              <button type="button" class="text-sm font-medium flex items-center bg-transparent px-0 py-2 hover:text-green-600 transition-colors duration-200">
+                <span>Pages</span>
+                <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-7.svg" alt="Arrow" class="h-3 w-3 ml-1 transform group-hover:rotate-180 transition-transform duration-200" />
+              </button>
+              <!-- Pages Dropdown -->
+              <div class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div class="p-2">
+                  <a href="/privacy-policy" class="block px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded transition-colors duration-150">Privacy Policy</a>
+                  <a href="/terms-and-conditions" class="block px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded transition-colors duration-150">Terms & Conditions</a>
+                  <a href="/faq" class="block px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded transition-colors duration-150">FAQ</a>
+                  <a href="/help" class="block px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded transition-colors duration-150">Help Center</a>
+                </div>
+              </div>
+            </div>
+            <a href="/offers" class="relative text-orange-600 text-sm font-medium flex items-center bg-orange-100 ml-4 px-2 rounded">
+              Offers
+              <div class="absolute flex h-2 w-2 -right-1 -top-1">
+                <span class="absolute bg-red-400 flex h-2 w-2 rounded-full opacity-75"></span>
+                <span class="relative bg-orange-600 flex h-2 w-2 rounded-full"></span>
+              </div>
+            </a>
+          </nav>
+        </div>
+        <div class="flex">
+          <button type="button" class="flex items-center justify-center bg-transparent mt-2 p-0">
+            <span class="text-gray-700 text-sm font-medium flex items-center gap-1">
+              <div>🇬🇧</div>
+              <span>English</span>
+            </span>
+          </button>
+          <a href="/privacy-policy" class="text-sm font-medium mx-4 py-2">Privacy Policy</a>
+          <a href="/terms-and-conditions" class="text-sm font-medium mx-4 py-2">Terms & Conditions</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Sidebar -->
+  <div id="cartSidebar" class="fixed inset-0 z-50 hidden">
+    <!-- Overlay -->
+    <div id="cartOverlay" class="absolute inset-0 bg-black bg-opacity-50 transition-opacity duration-300"></div>
+    
+    <!-- Cart Panel -->
+    <div class="absolute right-0 top-0 h-full w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out" id="cartPanel">
+      <div class="flex flex-col h-full">
+        <!-- Cart Header -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-800">Shopping Cart</h2>
+          <button id="closeCart" class="text-gray-500 hover:text-gray-700 transition-colors duration-200 p-1 rounded-full hover:bg-gray-100">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Cart Items -->
+        <div class="flex-1 overflow-y-auto p-4">
+          <div id="cartItems" class="space-y-4">
+            <!-- Cart items will be dynamically added here -->
+            <div class="text-center text-gray-500 py-8" id="emptyCartMessage">
+              <div class="w-16 h-16 mx-auto mb-4 opacity-50 bg-gray-200 rounded-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"></path>
+                </svg>
+              </div>
+              <p class="text-gray-500 font-medium">Your cart is empty</p>
+              <p class="text-gray-400 text-sm mt-1">Add some products to get started</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cart Footer -->
+        <div class="border-t border-gray-200 p-4 bg-gray-50">
+          <div class="flex justify-between items-center mb-4">
+            <span class="font-semibold text-gray-700">Total:</span>
+            <span id="cartTotal" class="font-bold text-lg text-green-600">{{ currency_symbol }}0.00</span>
+          </div>
+          <button class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" id="checkoutBtn" disabled>
+            Proceed to Checkout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed Cart Widget -->
+  <div class="fixed right-0 top-1/2 transform -translate-y-1/2 z-40 hidden md:block">
+    <button id="fixedCartWidget" class="shadow-lg">
+      <div class="text-[oklch(0.373_0.034_259.733)] items-center bg-[oklch(0.962_0.018_272.314)] box-border caret-transparent flex flex-col justify-center outline-[oklab(0.704_-0.00914218_-0.0389412_/_0.5)] p-2 rounded-tl-[10px]">
+        <span class="text-[oklch(0.596_0.145_163.225)] text-2xl box-border caret-transparent block leading-8 min-h-0 min-w-0 outline-[oklab(0.704_-0.00914218_-0.0389412_/_0.5)] mb-1 md:min-h-[auto] md:min-w-[auto]">
+          <img src="https://c.animaapp.com/mf9yy6srig4Ymu/assets/icon-12.svg" alt="Icon" class="box-border caret-transparent h-6 outline-[oklab(0.704_-0.00914218_-0.0389412_/_0.5)] w-6">
+        </span>
+        <span id="fixedCartCount" class="text-sm font-medium box-border caret-transparent block leading-5 min-h-0 min-w-0 outline-[oklab(0.704_-0.00914218_-0.0389412_/_0.5)] px-2 md:min-h-[auto] md:min-w-[auto]">{{ cart_items_count }} Items</span>
+      </div>
+      <div class="text-white font-medium items-center bg-[oklch(0.508_0.118_165.612)] box-border caret-transparent flex flex-col justify-center outline-[oklab(0.704_-0.00914218_-0.0389412_/_0.5)] mx-auto p-2 rounded-bl-[10px]">
+        <span id="fixedCartTotal">{{ currency_symbol }}0.00</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- Main Content Area - This is where your page content goes -->
+  {% block content %}
+  <main class="bg-gray-50 min-h-screen">
+    <div class="max-w-screen-2xl mx-auto px-3 md:px-10 py-10">
+      <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">Welcome to {{ store_name }}</h1>
+        <p class="text-gray-600">Your main content area is ready for customization.</p>
+      </div>
+    </div>
+  </main>
+  {% endblock %}
+
+  <!-- Mobile Footer -->
+  <footer class="fixed flex items-center bg-green-600 h-16 justify-between w-full z-30 px-3 bottom-0 md:hidden">
+    <button class="relative flex items-center bg-transparent shrink-0 justify-center p-0">
+      <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-8.svg" alt="Menu" class="h-6 w-6" />
+    </button>
+    <a href="/" class="text-white">
+      <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-9.svg" alt="Home" class="h-6 w-6" />
+    </a>
+    <button id="mobileCartButton" class="relative text-white flex items-center bg-transparent h-9 justify-center w-9 p-0 hover:bg-white hover:bg-opacity-10 rounded-full transition-all duration-200">
+      <span class="absolute text-orange-100 text-xs font-bold flex items-center bg-orange-600 h-5 justify-center w-5 z-10 rounded-full right-0 top-0{% if cart_items_count == 0 %} animate-pulse{% endif %}">{{ cart_items_count }}</span>
+      <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-10.svg" alt="Cart" class="h-6 w-6" />
+    </button>
+    <button class="text-white bg-transparent p-0">
+      <a href="/auth/login">
+        <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-11.svg" alt="User" class="h-6 w-6" />
+      </a>
+    </button>
+  </footer>
+
+  <!-- Desktop Footer -->
+  <div class="w-full">
+    <div class="bg-white border-t border-gray-200">
+      <div class="max-w-screen-2xl mx-auto px-4 md:px-10">
+        <div class="grid grid-cols-2 md:grid-cols-12 gap-5 justify-between py-10 md:py-16">
+          <!-- Company -->
+          <div class="col-span-1 md:col-span-3 pb-3.5 md:pb-0">
+            <h3 class="font-medium mb-4 pb-0.5">Company</h3>
+            <ul class="text-sm flex flex-col list-none">
+              <li class="flex items-baseline text-left mb-3">
+                <a href="/about-us" class="text-gray-600 block w-full">About Us</a>
+              </li>
+              <li class="flex items-baseline text-left mb-3">
+                <a href="/contact-us" class="text-gray-600 block w-full">Contact Us</a>
+              </li>
+              <li class="flex items-baseline text-left mb-3">
+                <a href="#" class="text-gray-600 block w-full">Careers</a>
+              </li>
+              <li class="flex items-baseline text-left">
+                <a href="#" class="text-gray-600 block w-full">Latest News</a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Top Category -->
+          <div class="col-span-1 md:col-span-3 pb-3.5 md:pb-0">
+            <h3 class="font-medium mb-4 pb-0.5">Top Category</h3>
+            <ul class="text-sm flex flex-col list-none">
+              {% for category in main_categories|slice:":4" %}
+                <li class="flex items-baseline text-left mb-3">
+                  <a href="/search?category={{ category.slug }}" class="text-gray-600 block w-full">{{ category.name }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <!-- My Account -->
+          <div class="col-span-1 md:col-span-3 pb-3.5 md:pb-0">
+            <h3 class="font-medium mb-4 pb-0.5">My Account</h3>
+            <ul class="text-sm flex flex-col list-none">
+              <li class="flex items-baseline text-left mb-3">
+                <a href="#" class="text-gray-600 block w-full">Dashboard</a>
+              </li>
+              <li class="flex items-baseline text-left mb-3">
+                <a href="#" class="text-gray-600 block w-full">My Orders</a>
+              </li>
+              <li class="flex items-baseline text-left mb-3">
+                <a href="#" class="text-gray-600 block w-full">Recent Orders</a>
+              </li>
+              <li class="flex items-baseline text-left">
+                <a href="#" class="text-gray-600 block w-full">Update Profile</a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Logo and Contact -->
+          <div class="col-span-1 md:col-span-3 pb-3.5 md:pb-0">
+            <a href="/" class="mr-3 md:mr-12">
+              <div class="relative h-10 w-32">
+                <img alt="logo" src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/logo-color_el4zmy.svg" class="w-full" />
+              </div>
+            </a>
+            <p class="text-gray-600 text-sm mt-3">
+              987 Andre Plain Suite High Street 838, Lake Hestertown, USA<br />
+              Tel : {{ contact_phone }}<br />
+              Email : {{ contact_email }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Bottom Footer -->
+        <div class="flex justify-center py-4">
+          <p class="text-gray-500 text-sm">
+            Copyright 2025 @<a href="https://themeforest.net/user/htmllover" class="text-green-600">HtmlLover</a>, All rights reserved.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Cart functionality
+    let cartItems = [];
+    let cartCount = {{ cart_items_count }};
+    let cartTotal = 0;
+
+    // DOM elements
+    const cartButton = document.getElementById('cartButton');
+    const mobileCartButton = document.getElementById('mobileCartButton');
+    const fixedCartWidget = document.getElementById('fixedCartWidget');
+    const cartSidebar = document.getElementById('cartSidebar');
+    const cartPanel = document.getElementById('cartPanel');
+    const cartOverlay = document.getElementById('cartOverlay');
+    const closeCartButton = document.getElementById('closeCart');
+    const cartCountElement = document.getElementById('cartCount');
+    const cartItemsContainer = document.getElementById('cartItems');
+    const cartTotalElement = document.getElementById('cartTotal');
+    const fixedCartCount = document.getElementById('fixedCartCount');
+    const fixedCartTotal = document.getElementById('fixedCartTotal');
+
+    // Open cart
+    function openCart() {
+      cartSidebar.classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+      setTimeout(() => {
+        cartPanel.classList.remove('translate-x-full');
+        cartOverlay.classList.remove('opacity-0');
+      }, 10);
+    }
+
+    // Close cart
+    function closeCart() {
+      cartPanel.classList.add('translate-x-full');
+      cartOverlay.classList.add('opacity-0');
+      document.body.style.overflow = ''; // Restore scrolling
+      setTimeout(() => {
+        cartSidebar.classList.add('hidden');
+      }, 300);
+    }
+
+    // Update cart display
+    function updateCartDisplay() {
+      // Update cart count badges
+      cartCountElement.textContent = cartCount;
+      const mobileCartCount = document.querySelector('#mobileCartButton span');
+      if (mobileCartCount) {
+        mobileCartCount.textContent = cartCount;
+      }
+      
+      // Update fixed cart widget
+      fixedCartCount.textContent = `${cartCount} Items`;
+      fixedCartTotal.textContent = `{{ currency_symbol }}${cartTotal.toFixed(2)}`;
+      
+      // Update cart total
+      cartTotalElement.textContent = `{{ currency_symbol }}${cartTotal.toFixed(2)}`;
+      
+      // Update checkout button state
+      const checkoutBtn = document.getElementById('checkoutBtn');
+      if (cartItems.length === 0) {
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = 'Cart is Empty';
+      } else {
+        checkoutBtn.disabled = false;
+        checkoutBtn.textContent = 'Proceed to Checkout';
+      }
+
+      // Update cart items display
+      if (cartItems.length === 0) {
+        cartItemsContainer.innerHTML = `
+          <div class="text-center text-gray-500 py-8" id="emptyCartMessage">
+            <div class="w-16 h-16 mx-auto mb-4 opacity-50 bg-gray-200 rounded-full flex items-center justify-center">
+              <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"></path>
+              </svg>
+            </div>
+            <p class="text-gray-500 font-medium">Your cart is empty</p>
+            <p class="text-gray-400 text-sm mt-1">Add some products to get started</p>
+          </div>
+        `;
+      } else {
+        cartItemsContainer.innerHTML = cartItems.map(item => `
+          <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow duration-200">
+            <img src="${item.image}" alt="${item.name}" class="w-12 h-12 object-cover rounded-lg" />
+            <div class="flex-1">
+              <h4 class="font-medium text-sm text-gray-800">${item.name}</h4>
+              <p class="text-gray-500 text-xs">{{ currency_symbol }}${item.price.toFixed(2)} x ${item.quantity}</p>
+              <p class="text-green-600 text-sm font-medium">{{ currency_symbol }}${(item.price * item.quantity).toFixed(2)}</p>
+            </div>
+            <div class="flex flex-col space-y-1">
+              <button onclick="increaseQuantity(${item.id})" class="text-green-600 hover:text-green-700 p-1 rounded hover:bg-green-50 transition-colors duration-150">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </button>
+              <button onclick="decreaseQuantity(${item.id})" class="text-gray-600 hover:text-gray-700 p-1 rounded hover:bg-gray-50 transition-colors duration-150">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                </svg>
+              </button>
+            </div>
+            <button onclick="removeFromCart(${item.id})" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors duration-150">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
+          </div>
+        `).join('');
+      }
+      
+      // Update cart count badge visibility
+      if (cartCount > 0) {
+        cartCountElement.classList.remove('animate-pulse');
+        cartCountElement.classList.add('bg-red-500');
+        if (mobileCartCount) {
+          mobileCartCount.classList.remove('animate-pulse');
+          mobileCartCount.classList.add('bg-orange-600');
+        }
+      } else {
+        cartCountElement.classList.add('animate-pulse');
+        if (mobileCartCount) {
+          mobileCartCount.classList.add('animate-pulse');
+        }
+      }
+    }
+
+    // Add item to cart (example function)
+    function addToCart(item) {
+      const existingItem = cartItems.find(cartItem => cartItem.id === item.id);
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        cartItems.push({ ...item, quantity: 1 });
+      }
+      cartCount += 1;
+      cartTotal += item.price;
+      updateCartDisplay();
+    }
+
+    // Increase quantity
+    function increaseQuantity(itemId) {
+      const item = cartItems.find(cartItem => cartItem.id === itemId);
+      if (item) {
+        item.quantity += 1;
+        cartCount += 1;
+        cartTotal += item.price;
+        updateCartDisplay();
+      }
+    }
+
+    // Decrease quantity
+    function decreaseQuantity(itemId) {
+      const item = cartItems.find(cartItem => cartItem.id === itemId);
+      if (item && item.quantity > 1) {
+        item.quantity -= 1;
+        cartCount -= 1;
+        cartTotal -= item.price;
+        updateCartDisplay();
+      }
+    }
+
+    // Remove item from cart
+    function removeFromCart(itemId) {
+      const itemIndex = cartItems.findIndex(item => item.id === itemId);
+      if (itemIndex > -1) {
+        const item = cartItems[itemIndex];
+        cartCount -= item.quantity;
+        cartTotal -= item.price * item.quantity;
+        cartItems.splice(itemIndex, 1);
+        updateCartDisplay();
+      }
+    }
+
+    // Event listeners
+    cartButton.addEventListener('click', openCart);
+    mobileCartButton.addEventListener('click', openCart);
+    fixedCartWidget.addEventListener('click', openCart);
+    closeCartButton.addEventListener('click', closeCart);
+    cartOverlay.addEventListener('click', closeCart);
+
+    // Close cart with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape' && !cartSidebar.classList.contains('hidden')) {
+        closeCart();
+      }
+    });
+
+    // Initialize cart display
+    updateCartDisplay();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

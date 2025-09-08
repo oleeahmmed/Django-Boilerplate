@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chaldal - Handwash Products{% endblock %}
+
+{% block content %}
+ Main product listing content extending base template 
+<div class="container mx-auto px-4 pb-20">
+   Breadcrumb 
+  <div class="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+    <a href="{% url 'product_list' %}" class="hover:text-red-500">Home</a>
+    <i class="fas fa-chevron-right text-xs"></i>
+    <span>Personal Care</span>
+    <i class="fas fa-chevron-right text-xs"></i>
+    <span class="text-red-500">Handwash</span>
+  </div>
+
+   Category Header 
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Handwash</h1>
+      <p class="text-gray-600">{{ products.count }} products found</p>
+    </div>
+    
+     Sort Options 
+    <div class="hidden md:flex items-center space-x-4">
+      <select class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-red-500">
+        <option>Sort by: Relevance</option>
+        <option>Price: Low to High</option>
+        <option>Price: High to Low</option>
+        <option>Name: A to Z</option>
+        <option>Name: Z to A</option>
+      </select>
+    </div>
+  </div>
+
+   Product Grid 
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    {% for product in products %}
+    <div class="product-card bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-4">
+       Product Image 
+      <div class="aspect-square mb-3 flex items-center justify-center bg-gray-50 rounded">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="max-w-full max-h-full object-contain">
+      </div>
+      
+       Product Info 
+      <div class="space-y-2">
+        <h3 class="font-semibold text-sm text-gray-800 line-clamp-2">{{ product.name }}</h3>
+        <p class="text-xs text-gray-600">{{ product.weight }}</p>
+        
+         Price 
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="font-bold text-red-600">৳{{ product.price }}</span>
+            {% if product.original_price %}
+            <span class="text-xs text-gray-500 line-through ml-1">৳{{ product.original_price }}</span>
+            {% endif %}
+          </div>
+          {% if product.discount_percentage %}
+          <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded">{{ product.discount_percentage }}% OFF</span>
+          {% endif %}
+        </div>
+        
+         Stock Status 
+        {% if product.stock > 0 %}
+        <p class="text-xs text-green-600">✓ In Stock ({{ product.stock }} available)</p>
+        {% else %}
+        <p class="text-xs text-red-600">✗ Out of Stock</p>
+        {% endif %}
+        
+         Fixed product controls to match JavaScript class names and functionality 
+        <div class="product-controls mt-3" data-id="{{ product.id }}">
+           Add to Cart Button 
+          <button class="add-to-cart w-full bg-red-500 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-red-600 transition-colors" 
+                  data-id="{{ product.id }}" 
+                  data-name="{{ product.name }}" 
+                  data-price="{{ product.price }}" 
+                  data-image="{{ product.image.url }}"
+                  {% if product.stock == 0 %}disabled{% endif %}>
+            {% if product.stock > 0 %}
+            <i class="fas fa-shopping-cart mr-1"></i> Add to Cart
+            {% else %}
+            Out of Stock
+            {% endif %}
+          </button>
+          
+           Quantity Controls (Hidden by default) 
+          <div class="quantity-controls hidden flex items-center justify-between">
+            <button class="decrease-btn w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600" data-id="{{ product.id }}">
+              <i class="fas fa-minus"></i>
+            </button>
+            <span class="quantity-display font-semibold text-sm min-w-[30px] text-center">1</span>
+            <button class="increase-btn w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600" data-id="{{ product.id }}">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full text-center py-12">
+      <i class="fas fa-search text-gray-300 text-4xl mb-4"></i>
+      <h3 class="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
+      <p class="text-gray-500">Try adjusting your search or browse our categories.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+   Pagination 
+  {% if is_paginated %}
+  <div class="flex justify-center mt-8">
+    <nav class="flex items-center space-x-2">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+         class="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50">
+        <i class="fas fa-chevron-left"></i>
+      </a>
+      {% endif %}
+      
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="px-3 py-2 bg-red-500 text-white rounded">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+           class="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+      
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+         class="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50">
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      {% endif %}
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
