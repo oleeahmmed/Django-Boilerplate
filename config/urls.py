@@ -29,7 +29,8 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),  # Allauth
     path('dj-rest-auth/', include('dj_rest_auth.urls')),  # REST auth
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),  # Social registration
-    
+    path('api/', include('Authentication.urls')),
+
     path('auth/google/', GoogleLogin.as_view(), name='google_login'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
