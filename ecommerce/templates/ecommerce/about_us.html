@@ -1,0 +1,86 @@
+{% extends 'ecommerce/base.html' %}
+{% load static %}
+
+{% block title %}
+  About Us - {{ store_name|default:"Grocery Store" }}
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-screen-2xl mx-auto px-4 md:px-10 py-12 bg-gray-50">
+
+  <!-- Hero Section -->
+  <div class="flex justify-center py-10 lg:py-20 bg-indigo-100 w-full bg-cover bg-no-repeat bg-bottom" style="background-image: url('{% static 'images/section-bg.jpg' %}');">
+    <div class="flex mx-auto w-full max-w-screen-2xl px-3 sm:px-10">
+      <div class="w-full flex justify-center flex-col relative">
+        <h2 class="text-xl md:text-3xl lg:text-4xl font-bold text-black text-center">About Us</h2>
+      </div>
+    </div>
+  </div>
+  <!-- Main Content -->
+  <div class="bg-white dark:bg-gray-900 dark:text-gray-200">
+    <div class="max-w-screen-2xl mx-auto py-10 lg:py-20 px-4 sm:px-10">
+      <!-- Welcome Section -->
+      <div class="grid grid-flow-row lg:grid-cols-2 gap-4 lg:gap-16 items-center">
+        <div>
+          <h3 class="text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white mb-4">Welcome to {{ store_name|default:"Grocery Store" }}</h3>
+          <div class="mt-3 text-base text-gray-600 dark:text-gray-300 leading-7">
+            <p>Holistically seize parallel metrics and functional ROI. Seamlessly revolutionize error-free internal or organic sources before effective scenarios. Progressively incentivize state-of-the-art applications for efficient intellectual capital. Credibly leverage distinctive mindshare through cutting-edge schemas.</p>
+            <p class="mt-4">Dynamically embrace diverse customer service and installed base paradigms. Credibly seize enterprise-wide experiences for end-to-end data. Professionally brand flexible alignments and cost-effective architectures.</p>
+          </div>
+          <!-- Stats Section -->
+          <div class="grid md:grid-cols-2 gap-6 mt-8">
+            <div class="p-6 bg-green-50 dark:bg-gray-800 rounded-lg shadow-sm transition-transform duration-300 hover:scale-105">
+              <span class="text-3xl font-extrabold text-gray-800 dark:text-white block mb-2">8K</span>
+              <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-1">Lovely Customers</h4>
+              <p class="text-gray-600 dark:text-gray-400 opacity-90">Competently productize virtual models without performance.</p>
+            </div>
+            <div class="p-6 bg-green-50 dark:bg-gray-800 rounded-lg shadow-sm transition-transform duration-300 hover:scale-105">
+              <span class="text-3xl font-extrabold text-gray-800 dark:text-white block mb-2">10K</span>
+              <h4 class="text-lg font-bold text-gray-800 dark:text-white mb-1">Listed Products</h4>
+              <p class="text-gray-600 dark:text-gray-400 opacity-90">Dynamically morph team-driven partnerships after vertical.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-10 lg:mt-0">
+          <img alt="About Us" loading="lazy" width="920" height="750" class="rounded-lg shadow-md w-full object-cover" src="{% static 'images/about-image.jpg' %}" />
+        </div>
+      </div>
+
+      <!-- Additional Info -->
+      <div class="mt-10 lg:mt-16 text-base text-gray-600 dark:text-gray-300 leading-7">
+        <p>Holistically seize parallel metrics and functional ROI. Seamlessly revolutionize error-free internal or organic sources before effective scenarios. Progressively incentivize state-of-the-art applications for efficient intellectual capital. Credibly leverage existing distinctive mindshare through cutting-edge schemas. Proactively procrastinate team-building paradigms to coordinate client-centric, transparent internal processes.</p>
+        <p class="mt-4">Appropriately visualize market-driven data before one-to-one scenarios. Collaboratively productize multifunctional ROI through intuitive supply chains. Enthusiastically seize revolutionary value and process-centric services.</p>
+      </div>
+
+      <!-- Banner Image -->
+      <div class="mt-10 lg:mt-12">
+        <img alt="Store Banner" loading="lazy" width="1920" height="570" class="block rounded-lg w-full object-cover shadow-md" src="{% static 'images/store-banner.jpg' %}" />
+      </div>
+    </div>
+
+    <!-- Our Team -->
+    <div class="bg-gray-50 dark:bg-gray-800 py-10 lg:py-20">
+      <div class="max-w-screen-2xl mx-auto px-4 sm:px-10">
+        <div class="relative flex flex-col sm:flex-row sm:items-end justify-between mb-8">
+          <div class="max-w-2xl">
+            <h3 class="text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white mb-2">Our Team</h3>
+            <p class="mt-2 text-base text-gray-600 dark:text-gray-300">We’re impartial and independent, and every day we create distinctive, world-class programs to reintermediate backend supply chains.</p>
+          </div>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-6 gap-x-5 gap-y-8 xl:gap-x-8">
+          {% for member in team_members %}
+            <div class="max-w-sm">
+              <img alt="{{ member.name }}" loading="lazy" width="420" height="420" class="block rounded-lg shadow-md w-full object-cover" src="{% static 'images/team/'|add:member.image %}" />
+              <div class="py-4">
+                <h5 class="text-lg font-semibold text-gray-800 dark:text-white">{{ member.name }}</h5>
+                <span class="text-sm text-gray-600 dark:text-gray-400 opacity-75">{{ member.role }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+{% endblock %}

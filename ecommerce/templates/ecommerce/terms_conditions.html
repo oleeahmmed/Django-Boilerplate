@@ -1,0 +1,126 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script>{% extends 'ecommerce/base.html' %}
+{% load static %}
+
+{% block title %}
+  Terms & Conditions - {{ store_name|default:"Grocery Store" }}
+{% endblock %}
+
+{% block content %}
+  <!-- Hero Section -->
+  <div class="flex justify-center py-10 lg:py-20 bg-indigo-100 w-full bg-cover bg-no-repeat bg-bottom" style="background-image: url('{% static 'images/section-bg.jpg' %}');">
+    <div class="flex mx-auto w-full max-w-screen-2xl px-3 sm:px-10">
+      <div class="w-full flex justify-center flex-col relative">
+        <h2 class="text-xl md:text-3xl lg:text-4xl font-bold text-black text-center">Terms & Conditions</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="bg-white dark:bg-gray-900 dark:text-gray-200 py-10 lg:py-20">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-10">
+      <div class="max-w-4xl mx-auto bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md p-8">
+        <h3 class="text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white mb-4">Welcome to {{ store_name|default:"Grocery Store" }}!</h3>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+          These terms and conditions outline the rules and regulations for the use of {{ store_name|default:"Grocery Store" }}'s website. By accessing this website, we assume you accept these terms and conditions. Do not continue to use {{ store_name|default:"Grocery Store" }} if you do not agree to take all of the terms and conditions stated on this page.
+        </p>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+          The following terminology applies to these Terms and Conditions, Privacy Statement, and Disclaimer Notice and all Agreements: "Client", "You", and "Your" refers to you, the person logging on this website and compliant with the Company’s terms and conditions. "The Company", "Ourselves", "We", "Our", and "Us" refers to our Company. "Party", "Parties", or "Us" refers to both the Client and ourselves. All terms refer to the offer, acceptance, and consideration of payment necessary to undertake the process of our assistance to the Client in the most appropriate manner for the express purpose of meeting the Client’s needs in respect of the provision of the Company’s stated services.
+        </p>
+
+        <h3 class="text-xl lg:text-2xl font-semibold text-gray-800 dark:text-white mb-4 mt-8">Cookies</h3>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+          We employ the use of cookies. By accessing {{ store_name|default:"Grocery Store" }}, you agree to use cookies in agreement with our Privacy Policy. Most interactive websites use cookies to let us retrieve the user’s details for each visit. Cookies are used by our website to enable the functionality of certain areas to make it easier for people visiting our website. Some of our affiliate/advertising partners may also use cookies.
+        </p>
+
+        <h3 class="text-xl lg:text-2xl font-semibold text-gray-800 dark:text-white mb-4 mt-8">License</h3>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+          Unless otherwise stated, {{ store_name|default:"Grocery Store" }} and/or its licensors own the intellectual property rights for all material on {{ store_name|default:"Grocery Store" }}. All intellectual property rights are reserved. You may access this from {{ store_name|default:"Grocery Store" }} for your own personal use, subject to restrictions set in these terms and conditions. You must not:
+        </p>
+        <ul class="list-decimal pl-6 text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+          <li>Identifiers (e.g., name, mailing address, email address, phone number, credit/debit card number)</li>
+          <li>Characteristics of protected classifications (e.g., gender, age)</li>
+          <li>Commercial information (e.g., products or services purchased, purchase history)</li>
+          <li>Internet or other electronic network activity (e.g., browse or search history)</li>
+          <li>Geo-location data (e.g., latitude or longitude)</li>
+          <li>Audio, electronic, visual, or similar information (e.g., recording of guest service calls)</li>
+          <li>Inferences drawn from any of the above (e.g., preferences or characteristics)</li>
+        </ul>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+          Parts of this website offer an opportunity for users to post and exchange opinions and information in certain areas of the website. {{ store_name|default:"Grocery Store" }} does not filter, edit, publish, or review comments prior to their presence on the website. Comments do not reflect the views and opinions of {{ store_name|default:"Grocery Store" }}, its agents, and/or affiliates. Comments reflect the views and opinions of the person who posts them. To the extent permitted by applicable laws, {{ store_name|default:"Grocery Store" }} shall not be liable for the comments or for any liability, damages, or expenses caused and/or suffered as a result of any use of and/or posting of and/or appearance of the comments on this website.
+        </p>
+
+        <h3 class="text-xl lg:text-2xl font-semibold text-gray-800 dark:text-white mb-4 mt-8">Content Liability</h3>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+          We shall not be held responsible for any content that appears on your website. You agree to protect and defend us against all claims that arise on your website. No link(s) should appear on any website that may be interpreted as libelous, obscene, or criminal, or which infringes, otherwise violates, or advocates the infringement or other violation of, any third-party rights. Without prior approval and written permission, you may not create frames around our webpages that alter in any way the visual presentation or appearance of our website.
+        </p>
+
+        <h3 class="text-xl lg:text-2xl font-semibold text-gray-800 dark:text-white mb-4 mt-8">Your Privacy</h3>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+          Please read our <a href="{% url 'ecommerce:privacy_policy' %}" class="text-green-600 hover:underline">Privacy Policy</a>.
+        </p>
+
+        <h3 class="text-xl lg:text-2xl font-semibold text-gray-800 dark:text-white mb-4 mt-8">Reservation of Rights</h3>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+          We reserve the right to request that you remove all links or any particular link to our website. You agree to immediately remove all links to our website upon request. We also reserve the right to amend these terms and conditions and its linking policy at any time. By continuously linking to our website, you agree to be bound to and follow these linking terms and conditions.
+        </p>
+
+        <h3 class="text-xl lg:text-2xl font-semibold text-gray-800 dark:text-white mb-4 mt-8">Disclaimer</h3>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+          To the maximum extent permitted by applicable law, we exclude all representations, warranties, and conditions relating to our website and the use of this website. Nothing in this disclaimer will:
+        </p>
+        <ul class="list-decimal pl-6 text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+          <li>Limit or exclude our or your liability for death or personal injury.</li>
+          <li>Limit or exclude our or your liability for fraud or fraudulent misrepresentation.</li>
+          <li>Limit any of our or your liabilities in any way that is not permitted under applicable law.</li>
+          <li>Exclude any of our or your liabilities that may not be excluded under applicable law.</li>
+        </ul>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+          The limitations and prohibitions of liability set in this section and elsewhere in this disclaimer: (a) are subject to the preceding paragraph; and (b) govern all liabilities arising under the disclaimer, including liabilities arising in contract, in tort, and for breach of statutory duty. As long as the website and the information and services on the website are provided free of charge, we will not be liable for any loss or damage of any nature.
+        </p>
+
+        <div class="text-center mt-8">
+          <p class="text-gray-600 dark:text-gray-300">Have more questions? <a href="{% url 'ecommerce:contact_us' %}" class="text-green-600 hover:underline font-medium transition-colors duration-200">Contact our support team</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -4,24 +4,44 @@
 
 {% block content %}
 <main class="bg-gray-50 min-h-screen py-8">
-  <div class="max-w-screen-xl mx-auto px-3 md:px-10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
-    <!-- Page Header -->
+    <!-- Enhanced Page Header -->
     <div class="mb-8">
-      <nav class="flex" aria-label="Breadcrumb">
+      <nav class="flex mb-4" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
           <li class="inline-flex items-center">
-            <a href="{% url 'ecommerce:home' %}" class="text-gray-700 hover:text-green-600">Home</a>
+            <a href="{% url 'ecommerce:home' %}" class="text-gray-600 hover:text-green-600 transition-colors duration-200 flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
+              </svg>
+              Home
+            </a>
           </li>
           <li>
             <div class="flex items-center">
-              <span class="text-gray-400 mx-2">/</span>
-              <span class="text-gray-500">Checkout</span>
+              <svg class="w-4 h-4 text-gray-400 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+              <span class="text-green-600 font-medium">Secure Checkout</span>
             </div>
           </li>
         </ol>
       </nav>
-      <h1 class="text-3xl font-bold text-gray-900 mt-4">Checkout</h1>
+      
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Secure Checkout</h1>
+          <p class="text-gray-600 mt-1">Complete your order safely and securely</p>
+        </div>
+        <div class="hidden md:flex items-center space-x-2 text-sm text-gray-500">
+          <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+          <span>SSL Secured</span>
+        </div>
+      </div>
     </div>
 
     <form id="checkoutForm" method="post" action="{% url 'ecommerce:place_order' %}">
@@ -30,27 +50,51 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         <!-- Left Column: Billing & Shipping -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-2 space-y-8">
           
           <!-- Customer Information (for guests) -->
           {% if not user.is_authenticated %}
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
-            <div class="mb-4">
-              <p class="text-sm text-gray-600 mb-4">
-                Already have an account? 
-                <a href="/auth/login?next={% url 'ecommerce:checkout' %}" class="text-green-600 hover:text-green-700 font-medium">Sign in</a>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center mb-4">
+              <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+              </div>
+              <h2 class="text-xl font-semibold text-gray-900">Contact Information</h2>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p class="text-sm text-blue-800 mb-3">
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Already have an account? Sign in to access saved addresses and faster checkout.
               </p>
+              <a href="/auth/login?next={% url 'ecommerce:checkout' %}" 
+                 class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                </svg>
+                Sign In
+              </a>
             </div>
           </div>
           {% endif %}
 
           <!-- Billing Address -->
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-semibold text-gray-900">Billing Address</h2>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-900">Billing Address</h2>
+              </div>
               {% if user.is_authenticated and addresses %}
-                <select id="billingAddressSelect" class="text-sm bg-gray-50 border border-gray-300 rounded px-3 py-1">
+                <select id="billingAddressSelect" class="text-sm bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
                   <option value="">Enter new address</option>
                   {% for address in addresses %}
                     <option value="{{ address.id }}" 
@@ -71,98 +115,106 @@
               {% endif %}
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label for="billing_first_name" class="block text-sm font-medium text-gray-700 mb-1">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-2">
+                <label for="billing_first_name" class="block text-sm font-medium text-gray-700">
                   First Name <span class="text-red-500">*</span>
                 </label>
                 <input type="text" id="billing_first_name" name="billing_first_name" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                       value="{% if user.is_authenticated %}{{ user.first_name }}{% endif %}">
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       value="{% if user.is_authenticated %}{{ user.first_name }}{% endif %}"
+                       placeholder="Enter your first name">
               </div>
               
-              <div>
-                <label for="billing_last_name" class="block text-sm font-medium text-gray-700 mb-1">
+              <div class="space-y-2">
+                <label for="billing_last_name" class="block text-sm font-medium text-gray-700">
                   Last Name <span class="text-red-500">*</span>
                 </label>
                 <input type="text" id="billing_last_name" name="billing_last_name" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                       value="{% if user.is_authenticated %}{{ user.last_name }}{% endif %}">
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       value="{% if user.is_authenticated %}{{ user.last_name }}{% endif %}"
+                       placeholder="Enter your last name">
               </div>
               
-              <div>
-                <label for="billing_email" class="block text-sm font-medium text-gray-700 mb-1">
+              <div class="space-y-2">
+                <label for="billing_email" class="block text-sm font-medium text-gray-700">
                   Email Address <span class="text-red-500">*</span>
                 </label>
                 <input type="email" id="billing_email" name="billing_email" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                       value="{% if user.is_authenticated %}{{ user.email }}{% endif %}">
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       value="{% if user.is_authenticated %}{{ user.email }}{% endif %}"
+                       placeholder="your@email.com">
               </div>
               
-              <div>
-                <label for="billing_phone" class="block text-sm font-medium text-gray-700 mb-1">
+              <div class="space-y-2">
+                <label for="billing_phone" class="block text-sm font-medium text-gray-700">
                   Phone Number <span class="text-red-500">*</span>
                 </label>
                 <input type="tel" id="billing_phone" name="billing_phone" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       placeholder="+880 1XXX-XXXXXX">
               </div>
               
-              <div class="md:col-span-2">
-                <label for="billing_company" class="block text-sm font-medium text-gray-700 mb-1">
+              <div class="md:col-span-2 space-y-2">
+                <label for="billing_company" class="block text-sm font-medium text-gray-700">
                   Company (Optional)
                 </label>
                 <input type="text" id="billing_company" name="billing_company"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       placeholder="Your company name">
               </div>
               
-              <div class="md:col-span-2">
-                <label for="billing_address_line_1" class="block text-sm font-medium text-gray-700 mb-1">
-                  Address Line 1 <span class="text-red-500">*</span>
+              <div class="md:col-span-2 space-y-2">
+                <label for="billing_address_line_1" class="block text-sm font-medium text-gray-700">
+                  Street Address <span class="text-red-500">*</span>
                 </label>
                 <input type="text" id="billing_address_line_1" name="billing_address_line_1" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                       placeholder="Street address">
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       placeholder="House number and street name">
               </div>
               
-              <div class="md:col-span-2">
-                <label for="billing_address_line_2" class="block text-sm font-medium text-gray-700 mb-1">
-                  Address Line 2 (Optional)
+              <div class="md:col-span-2 space-y-2">
+                <label for="billing_address_line_2" class="block text-sm font-medium text-gray-700">
+                  Apartment, Suite, etc. (Optional)
                 </label>
                 <input type="text" id="billing_address_line_2" name="billing_address_line_2"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                       placeholder="Apartment, suite, etc.">
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       placeholder="Apartment, suite, unit, building, floor, etc.">
               </div>
               
-              <div>
-                <label for="billing_city" class="block text-sm font-medium text-gray-700 mb-1">
+              <div class="space-y-2">
+                <label for="billing_city" class="block text-sm font-medium text-gray-700">
                   City <span class="text-red-500">*</span>
                 </label>
                 <input type="text" id="billing_city" name="billing_city" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       placeholder="Enter your city">
               </div>
               
-              <div>
-                <label for="billing_state" class="block text-sm font-medium text-gray-700 mb-1">
+              <div class="space-y-2">
+                <label for="billing_state" class="block text-sm font-medium text-gray-700">
                   State/Division
                 </label>
                 <input type="text" id="billing_state" name="billing_state"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       placeholder="State or division">
               </div>
               
-              <div>
-                <label for="billing_postal_code" class="block text-sm font-medium text-gray-700 mb-1">
+              <div class="space-y-2">
+                <label for="billing_postal_code" class="block text-sm font-medium text-gray-700">
                   Postal Code
                 </label>
                 <input type="text" id="billing_postal_code" name="billing_postal_code"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                       placeholder="Postal/ZIP code">
               </div>
               
-              <div>
-                <label for="billing_country" class="block text-sm font-medium text-gray-700 mb-1">
+              <div class="space-y-2">
+                <label for="billing_country" class="block text-sm font-medium text-gray-700">
                   Country <span class="text-red-500">*</span>
                 </label>
                 <select id="billing_country" name="billing_country" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
                   <option value="Bangladesh">Bangladesh</option>
                   <option value="India">India</option>
                   <option value="Pakistan">Pakistan</option>
@@ -173,101 +225,107 @@
             </div>
 
             {% if user.is_authenticated %}
-            <div class="mt-4">
+            <div class="mt-6 pt-6 border-t border-gray-200">
               <label class="flex items-center">
-                <input type="checkbox" id="save_billing_address" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                <span class="ml-2 text-sm text-gray-600">Save this address for future orders</span>
+                <input type="checkbox" id="save_billing_address" class="rounded border-gray-300 text-green-600 focus:ring-green-500 focus:ring-2">
+                <span class="ml-3 text-sm text-gray-600">Save this address for future orders</span>
               </label>
             </div>
             {% endif %}
           </div>
 
           <!-- Shipping Address -->
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <div class="flex items-center justify-between mb-4">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center mb-6">
+              <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+              </div>
               <h2 class="text-xl font-semibold text-gray-900">Shipping Address</h2>
             </div>
             
-            <div class="mb-4">
-              <label class="flex items-center">
+            <div class="mb-6">
+              <label class="flex items-center p-4 bg-green-50 border border-green-200 rounded-lg cursor-pointer hover:bg-green-100 transition-colors duration-200">
                 <input type="checkbox" id="same_as_billing" name="same_as_billing" checked
-                       class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                <span class="ml-2 text-sm text-gray-600">Same as billing address</span>
+                       class="rounded border-gray-300 text-green-600 focus:ring-green-500 focus:ring-2">
+                <span class="ml-3 text-sm font-medium text-green-800">Ship to the same address as billing</span>
               </label>
             </div>
             
-            <div id="shipping_address_fields" class="hidden">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label for="shipping_first_name" class="block text-sm font-medium text-gray-700 mb-1">
+            <div id="shipping_address_fields" class="hidden space-y-6">
+              <!-- Shipping address fields with enhanced styling -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label for="shipping_first_name" class="block text-sm font-medium text-gray-700">
                     First Name <span class="text-red-500">*</span>
                   </label>
                   <input type="text" id="shipping_first_name" name="shipping_first_name"
-                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
                 </div>
                 
-                <div>
-                  <label for="shipping_last_name" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="space-y-2">
+                  <label for="shipping_last_name" class="block text-sm font-medium text-gray-700">
                     Last Name <span class="text-red-500">*</span>
                   </label>
                   <input type="text" id="shipping_last_name" name="shipping_last_name"
-                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
                 </div>
                 
-                <div class="md:col-span-2">
-                  <label for="shipping_company" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="md:col-span-2 space-y-2">
+                  <label for="shipping_company" class="block text-sm font-medium text-gray-700">
                     Company (Optional)
                   </label>
                   <input type="text" id="shipping_company" name="shipping_company"
-                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
                 </div>
                 
-                <div class="md:col-span-2">
-                  <label for="shipping_address_line_1" class="block text-sm font-medium text-gray-700 mb-1">
-                    Address Line 1 <span class="text-red-500">*</span>
+                <div class="md:col-span-2 space-y-2">
+                  <label for="shipping_address_line_1" class="block text-sm font-medium text-gray-700">
+                    Street Address <span class="text-red-500">*</span>
                   </label>
                   <input type="text" id="shipping_address_line_1" name="shipping_address_line_1"
-                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
                 </div>
                 
-                <div class="md:col-span-2">
-                  <label for="shipping_address_line_2" class="block text-sm font-medium text-gray-700 mb-1">
-                    Address Line 2 (Optional)
+                <div class="md:col-span-2 space-y-2">
+                  <label for="shipping_address_line_2" class="block text-sm font-medium text-gray-700">
+                    Apartment, Suite, etc. (Optional)
                   </label>
                   <input type="text" id="shipping_address_line_2" name="shipping_address_line_2"
-                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
                 </div>
                 
-                <div>
-                  <label for="shipping_city" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="space-y-2">
+                  <label for="shipping_city" class="block text-sm font-medium text-gray-700">
                     City <span class="text-red-500">*</span>
                   </label>
                   <input type="text" id="shipping_city" name="shipping_city"
-                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
                 </div>
                 
-                <div>
-                  <label for="shipping_state" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="space-y-2">
+                  <label for="shipping_state" class="block text-sm font-medium text-gray-700">
                     State/Division
                   </label>
                   <input type="text" id="shipping_state" name="shipping_state"
-                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
                 </div>
                 
-                <div>
-                  <label for="shipping_postal_code" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="space-y-2">
+                  <label for="shipping_postal_code" class="block text-sm font-medium text-gray-700">
                     Postal Code
                   </label>
                   <input type="text" id="shipping_postal_code" name="shipping_postal_code"
-                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
                 </div>
                 
-                <div>
-                  <label for="shipping_country" class="block text-sm font-medium text-gray-700 mb-1">
+                <div class="space-y-2">
+                  <label for="shipping_country" class="block text-sm font-medium text-gray-700">
                     Country <span class="text-red-500">*</span>
                   </label>
                   <select id="shipping_country" name="shipping_country"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
                     <option value="Bangladesh">Bangladesh</option>
                     <option value="India">India</option>
                     <option value="Pakistan">Pakistan</option>
@@ -281,32 +339,46 @@
 
           <!-- Shipping Method -->
           {% if shipping_methods %}
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Shipping Method</h2>
-            <div class="space-y-3">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center mb-6">
+              <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                </svg>
+              </div>
+              <h2 class="text-xl font-semibold text-gray-900">Shipping Method</h2>
+            </div>
+            <div class="space-y-4">
               {% for method in shipping_methods %}
-                <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:border-green-300 hover:bg-green-50 cursor-pointer transition-all duration-200 group">
                   <input type="radio" name="shipping_method_id" value="{{ method.id }}" 
-                         class="text-green-600 focus:ring-green-500" 
+                         class="text-green-600 focus:ring-green-500 focus:ring-2" 
                          {% if forloop.first %}checked{% endif %}
                          onchange="calculateShipping()">
-                  <div class="ml-3 flex-1">
+                  <div class="ml-4 flex-1">
                     <div class="flex items-center justify-between">
-                      <span class="font-medium text-gray-900">{{ method.name }}</span>
-                      <span class="text-green-600 font-semibold">
-                        {% if method.base_cost == 0 %}
-                          Free
-                        {% else %}
-                          {{ currency_symbol }}{{ method.base_cost }}
+                      <div>
+                        <span class="font-semibold text-gray-900 group-hover:text-green-700">{{ method.name }}</span>
+                        {% if method.description %}
+                          <p class="text-sm text-gray-600 mt-1">{{ method.description }}</p>
                         {% endif %}
-                      </span>
+                        <p class="text-xs text-gray-500 mt-1 flex items-center">
+                          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          Delivery: {{ method.min_delivery_days }}-{{ method.max_delivery_days }} days
+                        </p>
+                      </div>
+                      <div class="text-right">
+                        <span class="text-lg font-bold text-green-600">
+                          {% if method.base_cost == 0 %}
+                            Free
+                          {% else %}
+                            {{ currency_symbol }}{{ method.base_cost }}
+                          {% endif %}
+                        </span>
+                      </div>
                     </div>
-                    {% if method.description %}
-                      <p class="text-sm text-gray-600 mt-1">{{ method.description }}</p>
-                    {% endif %}
-                    <p class="text-xs text-gray-500 mt-1">
-                      Delivery: {{ method.min_delivery_days }}-{{ method.max_delivery_days }} days
-                    </p>
                   </div>
                 </label>
               {% endfor %}
@@ -315,25 +387,59 @@
           {% endif %}
 
           <!-- Payment Method -->
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Payment Method</h2>
-            <div class="space-y-3">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center mb-6">
+              <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+              </div>
+              <h2 class="text-xl font-semibold text-gray-900">Payment Method</h2>
+            </div>
+            <div class="space-y-4">
               {% for method_value, method_name in payment_methods %}
-                <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:border-green-300 hover:bg-green-50 cursor-pointer transition-all duration-200 group">
                   <input type="radio" name="payment_method" value="{{ method_value }}" 
-                         class="text-green-600 focus:ring-green-500"
+                         class="text-green-600 focus:ring-green-500 focus:ring-2"
                          {% if method_value == 'cod' %}checked{% endif %}>
-                  <div class="ml-3">
-                    <span class="font-medium text-gray-900">{{ method_name }}</span>
-                    {% if method_value == 'cod' %}
-                      <p class="text-sm text-gray-600 mt-1">Pay when you receive your order</p>
-                    {% elif method_value == 'bkash' %}
-                      <p class="text-sm text-gray-600 mt-1">Pay securely with bKash mobile banking</p>
-                    {% elif method_value == 'nagad' %}
-                      <p class="text-sm text-gray-600 mt-1">Pay securely with Nagad mobile banking</p>
-                    {% elif method_value == 'card' %}
-                      <p class="text-sm text-gray-600 mt-1">Pay with credit or debit card</p>
-                    {% endif %}
+                  <div class="ml-4 flex-1">
+                    <div class="flex items-center">
+                      <div class="flex-1">
+                        <span class="font-semibold text-gray-900 group-hover:text-green-700">{{ method_name }}</span>
+                        {% if method_value == 'cod' %}
+                          <p class="text-sm text-gray-600 mt-1">Pay when you receive your order</p>
+                        {% elif method_value == 'bkash' %}
+                          <p class="text-sm text-gray-600 mt-1">Pay securely with bKash mobile banking</p>
+                        {% elif method_value == 'nagad' %}
+                          <p class="text-sm text-gray-600 mt-1">Pay securely with Nagad mobile banking</p>
+                        {% elif method_value == 'card' %}
+                          <p class="text-sm text-gray-600 mt-1">Pay with credit or debit card</p>
+                        {% endif %}
+                      </div>
+                      <div class="ml-4">
+                        {% if method_value == 'cod' %}
+                          <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                          </div>
+                        {% elif method_value == 'bkash' %}
+                          <div class="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center">
+                            <span class="text-xs font-bold text-pink-600">bK</span>
+                          </div>
+                        {% elif method_value == 'nagad' %}
+                          <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                            <span class="text-xs font-bold text-orange-600">N</span>
+                          </div>
+                        {% elif method_value == 'card' %}
+                          <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                            </svg>
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
                   </div>
                 </label>
               {% endfor %}
@@ -341,39 +447,56 @@
           </div>
 
           <!-- Order Notes -->
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Notes (Optional)</h2>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center mb-4">
+              <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+              </div>
+              <h2 class="text-xl font-semibold text-gray-900">Order Notes</h2>
+              <span class="ml-2 text-sm text-gray-500">(Optional)</span>
+            </div>
             <textarea name="customer_notes" id="customer_notes" rows="4" 
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                      placeholder="Special instructions for your order..."></textarea>
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 resize-none"
+                      placeholder="Special instructions for your order, delivery preferences, or any other notes..."></textarea>
           </div>
         </div>
 
         <!-- Right Column: Order Summary -->
         <div class="lg:col-span-1">
-          <div class="bg-white rounded-lg shadow-sm p-6 sticky top-8">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-8">
+            <div class="flex items-center mb-6">
+              <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+              </div>
+              <h2 class="text-xl font-semibold text-gray-900">Order Summary</h2>
+            </div>
             
             <!-- Cart Items -->
-            <div class="space-y-4 mb-6">
+            <div class="space-y-4 mb-6 max-h-64 overflow-y-auto">
               {% for item in cart_items %}
-                <div class="flex items-center space-x-3">
-                  <div class="relative">
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div class="relative flex-shrink-0">
                     {% if item.product.images.all %}
                       <img src="{{ item.product.images.first.image.url }}" 
                            alt="{{ item.product.name }}" 
                            class="w-16 h-16 object-cover rounded-lg">
                     {% else %}
                       <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <span class="text-gray-400 text-xs">No Image</span>
+                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
                       </div>
                     {% endif %}
-                    <span class="absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <span class="absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-medium">
                       {{ item.quantity }}
                     </span>
                   </div>
-                  <div class="flex-1">
-                    <h4 class="font-medium text-gray-900 text-sm">{{ item.product.name }}</h4>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-medium text-gray-900 text-sm truncate">{{ item.product.name }}</h4>
                     {% if item.variant %}
                       <p class="text-xs text-gray-600">{{ item.variant.name }}</p>
                     {% endif %}
@@ -385,13 +508,22 @@
               {% endfor %}
             </div>
 
-            <!-- Coupon Code -->
-            <div class="mb-6">
+            <!-- Enhanced Coupon Code Section -->
+            <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
+              <div class="flex items-center mb-3">
+                <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                <span class="font-medium text-gray-900">Have a coupon code?</span>
+              </div>
               <div class="flex space-x-2">
-                <input type="text" id="coupon_code" placeholder="Coupon code" 
-                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-sm">
+                <input type="text" id="coupon_code" placeholder="Enter coupon code" 
+                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm transition-all duration-200">
                 <button type="button" onclick="applyCoupon()" 
-                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium transition-colors duration-200 flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
                   Apply
                 </button>
               </div>
@@ -407,17 +539,27 @@
               
               {% if discount_amount > 0 %}
               <div class="flex justify-between text-sm text-green-600">
-                <span>Discount</span>
+                <span class="flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                  </svg>
+                  Discount
+                </span>
                 <span id="discount_amount">-{{ currency_symbol }}{{ discount_amount }}</span>
               </div>
               {% endif %}
               
               <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Shipping</span>
-                <span id="shipping_cost">Calculated at next step</span>
+                <span class="text-gray-600 flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                  </svg>
+                  Shipping
+                </span>
+                <span id="shipping_cost" class="font-medium">Calculated at next step</span>
               </div>
               
-              <div class="flex justify-between text-lg font-semibold border-t pt-3">
+              <div class="flex justify-between text-lg font-bold border-t pt-3">
                 <span>Total</span>
                 <span class="text-green-600" id="total_amount">{{ currency_symbol }}{{ subtotal }}</span>
               </div>
@@ -425,15 +567,21 @@
 
             <!-- Place Order Button -->
             <button type="submit" 
-                    class="w-full mt-6 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 font-semibold transition-colors duration-200">
-              Place Order
+                    class="w-full mt-6 bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-6 rounded-xl hover:from-green-700 hover:to-green-800 font-semibold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+              Place Order Securely
             </button>
 
             <!-- Security Notice -->
             <div class="mt-4 text-center">
-              <p class="text-xs text-gray-500">
-                🔒 Your payment information is secure and encrypted
-              </p>
+              <div class="flex items-center justify-center text-xs text-gray-500 bg-gray-50 rounded-lg py-2 px-3">
+                <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                Your payment information is secure and encrypted
+              </div>
             </div>
           </div>
         </div>
@@ -443,6 +591,21 @@
 </main>
 
 <script>
+// Enhanced JavaScript with better error handling and user feedback
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize shipping calculation on page load
+  calculateShipping();
+  
+  // Enhanced form validation
+  const form = document.getElementById('checkoutForm');
+  form.addEventListener('submit', function(e) {
+    if (!validateForm()) {
+      e.preventDefault();
+      showNotification('Please fill in all required fields correctly.', 'error');
+    }
+  });
+});
+
 // Toggle shipping address fields
 document.getElementById('same_as_billing').addEventListener('change', function() {
   const shippingFields = document.getElementById('shipping_address_fields');
@@ -457,28 +620,45 @@ document.getElementById('same_as_billing').addEventListener('change', function()
 document.getElementById('billingAddressSelect')?.addEventListener('change', function() {
   if (this.value) {
     const option = this.options[this.selectedIndex];
-    document.getElementById('billing_first_name').value = option.dataset.firstName || '';
-    document.getElementById('billing_last_name').value = option.dataset.lastName || '';
-    document.getElementById('billing_company').value = option.dataset.company || '';
-    document.getElementById('billing_address_line_1').value = option.dataset.addressLine1 || '';
-    document.getElementById('billing_address_line_2').value = option.dataset.addressLine2 || '';
-    document.getElementById('billing_city').value = option.dataset.city || '';
-    document.getElementById('billing_state').value = option.dataset.state || '';
-    document.getElementById('billing_postal_code').value = option.dataset.postalCode || '';
-    document.getElementById('billing_country').value = option.dataset.country || '';
-    document.getElementById('billing_phone').value = option.dataset.phone || '';
+    const fields = [
+      'billing_first_name', 'billing_last_name', 'billing_company',
+      'billing_address_line_1', 'billing_address_line_2', 'billing_city',
+      'billing_state', 'billing_postal_code', 'billing_country', 'billing_phone'
+    ];
+    
+    fields.forEach(field => {
+      const element = document.getElementById(field);
+      const dataKey = field.replace('billing_', '').replace(/_/g, '-');
+      if (element && option.dataset[toCamelCase(dataKey)]) {
+        element.value = option.dataset[toCamelCase(dataKey)];
+      }
+    });
   }
 });
 
-// Apply coupon function
+function toCamelCase(str) {
+  return str.replace(/-([a-z])/g, function(g) { return g[1].toUpperCase(); });
+}
+
+// Enhanced apply coupon function with better UX
 function applyCoupon() {
   const couponCode = document.getElementById('coupon_code').value.trim();
   const messageDiv = document.getElementById('coupon_message');
+  const applyButton = event.target;
   
   if (!couponCode) {
-    messageDiv.innerHTML = '<span class="text-red-600">Please enter a coupon code</span>';
+    showCouponMessage('Please enter a coupon code', 'error');
     return;
   }
+  
+  // Show loading state
+  applyButton.disabled = true;
+  applyButton.innerHTML = `
+    <svg class="w-4 h-4 mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+    </svg>
+    Applying...
+  `;
   
   fetch('{% url "ecommerce:apply_coupon" %}', {
     method: 'POST',
@@ -492,19 +672,132 @@ function applyCoupon() {
   .then(response => response.json())
   .then(data => {
     if (data.success) {
-      messageDiv.innerHTML = `<span class="text-green-600">${data.message}</span>`;
-      document.getElementById('discount_amount').textContent = `-{{ currency_symbol }}${data.discount_amount}`;
+      showCouponMessage(data.message, 'success');
+      
+      // Update discount amount display
+      let discountElement = document.getElementById('discount_amount');
+      if (!discountElement) {
+        // Create discount row if it doesn't exist
+        const subtotalRow = document.querySelector('#subtotal').closest('div');
+        const discountRow = document.createElement('div');
+        discountRow.className = 'flex justify-between text-sm text-green-600';
+        discountRow.innerHTML = `
+          <span class="flex items-center">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+            </svg>
+            Discount
+          </span>
+          <span id="discount_amount">-{{ currency_symbol }}${data.discount_amount}</span>
+        `;
+        subtotalRow.parentNode.insertBefore(discountRow, subtotalRow.nextSibling);
+      } else {
+        discountElement.textContent = `-{{ currency_symbol }}${data.discount_amount}`;
+      }
+      
       updateTotal();
+      
+      // Add remove coupon button
+      const couponInput = document.getElementById('coupon_code');
+      couponInput.value = data.coupon_code;
+      couponInput.disabled = true;
+      
+      applyButton.innerHTML = `
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        Remove
+      `;
+      applyButton.onclick = removeCoupon;
+      
     } else {
-      messageDiv.innerHTML = `<span class="text-red-600">${data.message}</span>`;
+      showCouponMessage(data.message, 'error');
     }
   })
   .catch(error => {
-    messageDiv.innerHTML = '<span class="text-red-600">Error applying coupon</span>';
+    console.error('Error applying coupon:', error);
+    showCouponMessage('Error applying coupon. Please try again.', 'error');
+  })
+  .finally(() => {
+    if (!document.getElementById('coupon_code').disabled) {
+      applyButton.disabled = false;
+      applyButton.innerHTML = `
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Apply
+      `;
+    }
   });
 }
 
-// Calculate shipping function
+// Remove coupon function
+function removeCoupon() {
+  fetch('{% url "ecommerce:remove_coupon" %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      showCouponMessage(data.message, 'success');
+      
+      // Remove discount row
+      const discountRow = document.getElementById('discount_amount')?.closest('div');
+      if (discountRow) {
+        discountRow.remove();
+      }
+      
+      // Reset coupon input
+      const couponInput = document.getElementById('coupon_code');
+      couponInput.value = '';
+      couponInput.disabled = false;
+      
+      const applyButton = event.target;
+      applyButton.innerHTML = `
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Apply
+      `;
+      applyButton.onclick = applyCoupon;
+      
+      updateTotal();
+    }
+  })
+  .catch(error => {
+    console.error('Error removing coupon:', error);
+    showCouponMessage('Error removing coupon. Please try again.', 'error');
+  });
+}
+
+// Enhanced coupon message display
+function showCouponMessage(message, type) {
+  const messageDiv = document.getElementById('coupon_message');
+  const iconSvg = type === 'success' ? 
+    '<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' :
+    '<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+  
+  messageDiv.innerHTML = `
+    <div class="flex items-center p-2 rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}">
+      ${iconSvg}
+      <span class="text-sm">${message}</span>
+    </div>
+  `;
+  
+  // Auto-hide success messages after 5 seconds
+  if (type === 'success') {
+    setTimeout(() => {
+      messageDiv.innerHTML = '';
+    }, 5000);
+  }
+}
+
+// Calculate shipping function with enhanced error handling
 function calculateShipping() {
   const selectedMethod = document.querySelector('input[name="shipping_method_id"]:checked');
   if (!selectedMethod) return;
@@ -521,9 +814,11 @@ function calculateShipping() {
   .then(response => response.json())
   .then(data => {
     if (data.success) {
-      document.getElementById('shipping_cost').textContent = 
-        data.shipping_cost === '0.00' ? 'Free' : `{{ currency_symbol }}${data.shipping_cost}`;
-      document.getElementById('total_amount').textContent = `{{ currency_symbol }}${data.total}`;
+      const shippingCostElement = document.getElementById('shipping_cost');
+      shippingCostElement.textContent = data.shipping_cost === '0.00' ? 'Free' : `{{ currency_symbol }}${data.shipping_cost}`;
+      
+      const totalElement = document.getElementById('total_amount');
+      totalElement.textContent = `{{ currency_symbol }}${data.total}`;
     }
   })
   .catch(error => {
@@ -533,61 +828,84 @@ function calculateShipping() {
 
 // Update total function
 function updateTotal() {
-  const subtotal = parseFloat(document.getElementById('subtotal').textContent.replace('{{ currency_symbol }}', ''));
+  const subtotalText = document.getElementById('subtotal').textContent.replace('{{ currency_symbol }}', '');
+  const subtotal = parseFloat(subtotalText) || 0;
+  
   const discountElement = document.getElementById('discount_amount');
   const discount = discountElement ? parseFloat(discountElement.textContent.replace('-{{ currency_symbol }}', '')) : 0;
+  
   const shippingElement = document.getElementById('shipping_cost');
-  const shipping = shippingElement.textContent === 'Free' || shippingElement.textContent === 'Calculated at next step' ? 0 : 
-                   parseFloat(shippingElement.textContent.replace('{{ currency_symbol }}', ''));
+  const shippingText = shippingElement.textContent;
+  const shipping = (shippingText === 'Free' || shippingText === 'Calculated at next step') ? 0 : 
+                   parseFloat(shippingText.replace('{{ currency_symbol }}', '')) || 0;
   
   const total = subtotal - discount + shipping;
   document.getElementById('total_amount').textContent = `{{ currency_symbol }}${total.toFixed(2)}`;
 }
 
-// Initialize shipping calculation on page load
-document.addEventListener('DOMContentLoaded', function() {
-  calculateShipping();
-});
-
-function addToCart(product) {
-  fetch('{% url "ecommerce:add_to_cart" %}', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-      'X-Requested-With': 'XMLHttpRequest'
-    },
-    body: `product_id=${product.id}&quantity=1`
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      // Update cart count in header
-      document.getElementById('cartCount').textContent = data.cart_count;
-      document.getElementById('fixedCartCount').textContent = `${data.cart_count} Items`;
-      document.getElementById('fixedCartTotal').textContent = `{{ currency_symbol }}${data.cart_total}`;
-      
-      // Show success message
-      showNotification(data.message, 'success');
-    } else {
-      showNotification(data.message, 'error');
+// Form validation function
+function validateForm() {
+  const requiredFields = [
+    'billing_first_name', 'billing_last_name', 'billing_email', 
+    'billing_phone', 'billing_address_line_1', 'billing_city', 'billing_country'
+  ];
+  
+  let isValid = true;
+  
+  requiredFields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field && !field.value.trim()) {
+      field.classList.add('border-red-500', 'focus:ring-red-500');
+      isValid = false;
+    } else if (field) {
+      field.classList.remove('border-red-500', 'focus:ring-red-500');
     }
-  })
-  .catch(error => {
-    showNotification('Error adding to cart', 'error');
   });
+  
+  // Email validation
+  const emailField = document.getElementById('billing_email');
+  if (emailField && emailField.value) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailField.value)) {
+      emailField.classList.add('border-red-500', 'focus:ring-red-500');
+      isValid = false;
+    }
+  }
+  
+  return isValid;
 }
 
-// Show notification function
+// Enhanced notification system
 function showNotification(message, type) {
   const notification = document.createElement('div');
-  notification.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg text-white ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
-  notification.textContent = message;
+  notification.className = `fixed top-5 right-5 z-50 px-6 py-4 rounded-lg text-white shadow-lg transform transition-all duration-300 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+  
+  const icon = type === 'success' ? 
+    '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' :
+    '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+  
+  notification.innerHTML = `
+    <div class="flex items-center">
+      ${icon}
+      <span>${message}</span>
+    </div>
+  `;
+  
   document.body.appendChild(notification);
   
+  // Animate in
   setTimeout(() => {
-    notification.remove();
-  }, 3000);
+    notification.style.transform = 'translateX(0)';
+  }, 100);
+  
+  // Remove after 5 seconds
+  setTimeout(() => {
+    notification.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }, 5000);
 }
+
 </script>
 {% endblock %}

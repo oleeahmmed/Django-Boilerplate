@@ -1,305 +1,390 @@
-<div class="bg-gradient-to-br from-gray-50 to-white max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-5">
-  <div class="flex flex-col md:flex-row w-full gap-8">
-    <!-- Enhanced Slider Section -->
-    <div class="w-full md:w-3/5 relative overflow-hidden rounded-2xl shadow-2xl bg-gradient-to-r from-slate-900 to-slate-700">
-      <div id="sliderTrack" class="flex transition-all duration-1000 ease-in-out will-change-transform">
-        {% for banner in banners %}
-          <!-- Enhanced Slide -->
-          <div class="relative w-full flex-shrink-0 group">
-            <img
-              src="{{ banner.image.url }}"
-              alt="{{ banner.title|default:'Banner' }}"
-              loading="lazy"
-              class="h-[250px] sm:h-[350px] md:h-[450px] w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-            />
-            <!-- Enhanced Gradient Overlay -->
-            <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-black/60 flex items-center justify-center">
-              <div class="text-center px-6 sm:px-8 md:px-12 py-8 sm:py-10 rounded-2xl backdrop-blur-md bg-white/10 border border-white/20 shadow-2xl max-w-[90%] sm:max-w-[75%] md:max-w-[60%] transform transition-all duration-500 hover:scale-105">
-                <h2 class="text-white font-bold text-2xl sm:text-3xl md:text-5xl leading-tight mb-4 animate-pulse">
-                  {{ banner.title }}
-                </h2>
-                {% if banner.subtitle %}
-                  <p class="mt-3 text-sm sm:text-lg text-gray-100 opacity-90 leading-relaxed">
-                    {{ banner.subtitle }}
-                  </p>
-                {% endif %}
-                {% if banner.link_url %}
-                  
-                    href="{{ banner.link_url }}"
-                    class="mt-6 inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-full hover:from-green-600 hover:to-emerald-700 transform hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-green-300"
-                  >
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                    </svg>
-                    {{ banner.link_text|default:"Shop Now" }}
-                  </a>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        {% empty %}
-          <div class="relative w-full flex-shrink-0 group">
-            <img
-              src="{% static 'images/default-banner.jpg' %}"
-              alt="Grocery Store"
-              class="h-[250px] sm:h-[350px] md:h-[450px] w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-            />
-            <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-black/60 flex items-center justify-center">
-              <div class="text-center px-6 sm:px-8 md:px-12 py-8 sm:py-10 rounded-2xl backdrop-blur-md bg-white/10 border border-white/20 shadow-2xl max-w-[90%] sm:max-w-[75%] md:max-w-[60%]">
-                <h2 class="text-white font-bold text-2xl sm:text-3xl md:text-5xl leading-tight mb-4">
-                  Best Different Type of Grocery Store
-                </h2>
-                <p class="mt-3 text-sm sm:text-lg text-gray-100 opacity-90">
-                  Quickly aggregate empowered networks after emerging products...
-                </p>
-                
-                  href="/search?category=fish-meat"
-                  class="mt-6 inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-full hover:from-green-600 hover:to-emerald-700 transform hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-green-300"
-                >
-                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                  </svg>
-                  Shop Now
-                </a>
-              </div>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
+{% load static %}
 
-      <!-- Enhanced Navigation Controls -->
-      <button id="prevBtn" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white hover:bg-white/30 hover:scale-110 focus:ring-4 focus:ring-white/50 transition-all duration-300 shadow-lg" type="button">
-        <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-        </svg>
-      </button>
-      <button id="nextBtn" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white hover:bg-white/30 hover:scale-110 focus:ring-4 focus:ring-white/50 transition-all duration-300 shadow-lg" type="button">
-        <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
-      </button>
-
-      <!-- Enhanced Image Dots -->
-      <div id="sliderDots" class="absolute inset-x-0 bottom-6 flex items-center justify-center gap-3">
-        {% for banner in banners %}
-          <button
-            class="h-12 w-12 rounded-full border-2 border-white/50 shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-white/50 overflow-hidden"
-            data-index="{{ forloop.counter0 }}"
-            type="button"
-            style="background-image: url('{{ banner.image.url }}'); background-size: cover; background-position: center;"
-            aria-label="Go to slide {{ forloop.counter }}"
-          ></button>
-        {% empty %}
-          <button class="h-12 w-12 rounded-full bg-white/80 border-2 border-white shadow-lg hover:scale-110 focus:outline-none focus:ring-4 focus:ring-white/50 transition-all duration-300" data-index="0" type="button"></button>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- Enhanced Coupon Section -->
-    <div class="w-full md:w-2/5 mt-6 md:mt-0">
-      <div class="w-full bg-gradient-to-br from-amber-50 to-yellow-100 rounded-2xl border-2 border-yellow-400 shadow-xl overflow-hidden">
-        <div class="bg-gradient-to-r from-yellow-400 to-amber-400 px-6 py-4 border-b border-yellow-300">
-          <h3 class="font-bold text-gray-900 text-lg text-center flex items-center justify-center gap-2">
-            <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 6L12 10.5 8.5 8 12 5.5 15.5 8zM8.5 16L12 13.5 15.5 16 12 18.5 8.5 16z"/>
-            </svg>
-            Latest Super Discount Active Coupon Code
-          </h3>
-        </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Main Container -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         
-        <div class="p-4 space-y-4">
-          <!-- Enhanced Coupon 1 -->
-          <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transform hover:scale-105 transition-all duration-300">
-            <div class="flex flex-col sm:flex-row">
-              <div class="flex items-center p-4 flex-1">
-                <div class="relative">
-                  <img src="https://c.animaapp.com/mf9yy6srig4Ymu/assets/49.jpg" alt="Summer Gift Voucher" class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shadow-md" />
-                  <div class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">10%</div>
+        <!-- Modern Slider Section -->
+        <div class="xl:col-span-2">
+            <div class="relative bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+                <!-- Slider Container -->
+                <div id="sliderTrack" class="flex transition-all duration-700 ease-out">
+                    {% for banner in banners %}
+                    <!-- Slide {{ forloop.counter }} -->
+                    <div class="relative w-full flex-shrink-0 group">
+                        <div class="h-[400px] md:h-[500px] bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 flex items-center justify-center overflow-hidden">
+                            {% if banner.image %}
+                                <img src="{{ banner.image.url }}" 
+                                     alt="{{ banner.title }}" 
+                                     class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" />
+                            {% else %}
+                                <img src="/placeholder.svg?height=500&width=800" 
+                                     alt="{{ banner.title }}" 
+                                     class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" />
+                            {% endif %}
+                            
+                            <!-- Content Overlay -->
+                            <div class="relative z-10 text-center px-8 py-12 max-w-2xl animate-slide-up">
+                                <div class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium mb-6">
+                                    <span class="w-2 h-2 bg-emerald-400 rounded-full mr-2 animate-pulse"></span>
+                                    Premium Quality
+                                </div>
+                                <h2 class="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight text-balance">
+                                    {{ banner.title }}
+                                </h2>
+                                {% if banner.subtitle %}
+                                <p class="text-xl text-emerald-100 mb-8 leading-relaxed text-pretty">
+                                    {{ banner.subtitle }}
+                                </p>
+                                {% endif %}
+                                {% if banner.link_url and banner.link_text %}
+                                <a href="{{ banner.link_url }}" 
+                                   {% if banner.open_in_new_tab %}target="_blank"{% endif %}
+                                   class="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl hover:from-emerald-600 hover:to-teal-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
+                                    <span>{{ banner.link_text }}</span>
+                                    <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                    </svg>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <!-- Default slide when no banners -->
+                    <div class="relative w-full flex-shrink-0 group">
+                        <div class="h-[400px] md:h-[500px] bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 flex items-center justify-center overflow-hidden">
+                            <img src="/placeholder.svg?height=500&width=800" 
+                                 alt="Welcome to our store" 
+                                 class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" />
+                            
+                            <div class="relative z-10 text-center px-8 py-12 max-w-2xl animate-slide-up">
+                                <div class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium mb-6">
+                                    <span class="w-2 h-2 bg-emerald-400 rounded-full mr-2 animate-pulse"></span>
+                                    Premium Quality
+                                </div>
+                                <h2 class="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight text-balance">
+                                    Welcome to Our <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-300">Store</span>
+                                </h2>
+                                <p class="text-xl text-emerald-100 mb-8 leading-relaxed text-pretty">
+                                    Discover amazing products at unbeatable prices with premium quality guaranteed
+                                </p>
+                                <a href="{% url 'ecommerce:product_list' %}" 
+                                   class="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl hover:from-emerald-600 hover:to-teal-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
+                                    <span>Shop Now</span>
+                                    <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
-                <div class="ml-4 flex-1">
-                  <div class="flex items-center mb-2">
-                    <span class="text-2xl font-bold text-orange-600">10%</span>
-                    <span class="ml-2 text-sm font-medium">Off</span>
-                    <span class="ml-3 text-xs font-medium text-orange-600 bg-orange-100 px-3 py-1 rounded-full">Inactive</span>
-                  </div>
-                  <h3 class="text-gray-800 font-bold text-base mb-3">Summer Gift Voucher</h3>
-                  <div class="flex items-center space-x-1">
-                    <span class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm px-3 py-1 rounded-lg font-bold">00</span>
-                    <span class="text-gray-600">:</span>
-                    <span class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm px-3 py-1 rounded-lg font-bold">00</span>
-                    <span class="text-gray-600">:</span>
-                    <span class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm px-3 py-1 rounded-lg font-bold">00</span>
-                    <span class="text-gray-600">:</span>
-                    <span class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm px-3 py-1 rounded-lg font-bold">00</span>
-                  </div>
-                </div>
-              </div>
-              <div class="p-4 bg-gray-50 sm:w-40 flex flex-col justify-center border-l border-dashed border-gray-300">
-                <div class="bg-gradient-to-r from-green-100 to-emerald-100 text-center border-2 border-dashed border-green-400 py-3 rounded-xl mb-3">
-                  <button id="copyCoupon1" class="w-full text-green-700 text-sm font-bold uppercase tracking-wider hover:text-green-800 transition-colors">
-                    SUMMER24
-                  </button>
-                </div>
-                <p class="text-gray-500 text-xs text-center leading-relaxed">* Applies on shopping over <span class="font-bold text-green-600">$1000</span></p>
-                <span id="copiedMessage1" class="text-green-600 text-sm font-semibold text-center mt-2 hidden">Copied!</span>
-              </div>
-            </div>
-          </div>
 
-          <!-- Enhanced Coupon 2 -->
-          <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transform hover:scale-105 transition-all duration-300">
-            <div class="flex flex-col sm:flex-row">
-              <div class="flex items-center p-4 flex-1">
-                <div class="relative">
-                  <img src="https://c.animaapp.com/mf9yy6srig4Ymu/assets/65.jpg" alt="Winter Gift Voucher" class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shadow-md" />
-                  <div class="absolute -top-2 -right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">$100</div>
+                <!-- Modern Dot Indicators -->
+                {% if banners %}
+                <div id="sliderDots" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
+                    {% for banner in banners %}
+                    <button class="w-3 h-3 rounded-full bg-white/60 hover:bg-white transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-emerald-400" 
+                            data-index="{{ forloop.counter0 }}" 
+                            aria-label="Go to slide {{ forloop.counter }}"></button>
+                    {% endfor %}
                 </div>
-                <div class="ml-4 flex-1">
-                  <div class="flex items-center mb-2">
-                    <span class="text-2xl font-bold text-orange-600">$100</span>
-                    <span class="ml-2 text-sm font-medium">Off</span>
-                    <span class="ml-3 text-xs font-medium text-orange-600 bg-orange-100 px-3 py-1 rounded-full">Inactive</span>
-                  </div>
-                  <h3 class="text-gray-800 font-bold text-base mb-3">Winter Gift Voucher</h3>
-                  <div class="flex items-center space-x-1">
-                    <span class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm px-3 py-1 rounded-lg font-bold">00</span>
-                    <span class="text-gray-600">:</span>
-                    <span class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm px-3 py-1 rounded-lg font-bold">00</span>
-                    <span class="text-gray-600">:</span>
-                    <span class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm px-3 py-1 rounded-lg font-bold">00</span>
-                    <span class="text-gray-600">:</span>
-                    <span class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm px-3 py-1 rounded-lg font-bold">00</span>
-                  </div>
-                </div>
-              </div>
-              <div class="p-4 bg-gray-50 sm:w-40 flex flex-col justify-center border-l border-dashed border-gray-300">
-                <div class="bg-gradient-to-r from-green-100 to-emerald-100 text-center border-2 border-dashed border-green-400 py-3 rounded-xl mb-3">
-                  <button id="copyCoupon2" class="w-full text-green-700 text-sm font-bold uppercase tracking-wider hover:text-green-800 transition-colors">
-                    WINTER25
-                  </button>
-                </div>
-                <p class="text-gray-500 text-xs text-center leading-relaxed">* Applies on shopping over <span class="font-bold text-green-600">$1500</span></p>
-                <span id="copiedMessage2" class="text-green-600 text-sm font-semibold text-center mt-2 hidden">Copied!</span>
-              </div>
+                {% endif %}
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Enhanced Bottom Banner -->
-  <div class="bg-gradient-to-r from-yellow-200 via-yellow-100 to-green-100 mt-8 px-6 md:px-10 py-8 rounded-2xl shadow-lg border border-yellow-300">
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
-      <div class="text-center sm:text-left">
-        <h1 class="text-xl sm:text-2xl md:text-3xl mb-2">
-          <span class="font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">100% Natural Quality Organic Product</span>
-        </h1>
-        <p class="text-gray-600 text-sm md:text-base leading-relaxed">See our latest discounted products from here and get a special discount product</p>
-      </div>
-      <a href="/search?category=breakfast" class="inline-flex items-center px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-full hover:from-green-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl focus:ring-4 focus:ring-green-300">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M8 11v6h8v-6M8 11H6a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2v-6a2 2 0 00-2-2h-2"/>
-        </svg>
-        Shop Now
-      </a>
+        <!-- Modern Coupon Section -->
+        <div class="xl:col-span-1">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 h-fit">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-6">
+                    <div class="flex items-center justify-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center animate-float">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-white font-bold text-lg">Exclusive Offers</h3>
+                            <p class="text-emerald-100 text-sm">Limited time deals</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 space-y-6">
+                    {% for coupon in active_coupons %}
+                    <!-- Coupon {{ forloop.counter }} -->
+                    <div class="relative bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border-2 border-dashed border-emerald-300 p-6 hover:shadow-lg transition-all duration-300 group">
+                        <div class="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg animate-glow">
+                            {% if coupon.discount_type == 'percentage' %}
+                                {{ coupon.discount_value|floatformat:0 }}%
+                            {% elif coupon.discount_type == 'fixed' %}
+                                ${{ coupon.discount_value|floatformat:0 }}
+                            {% else %}
+                                FREE
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                                {% if coupon.discount_type == 'free_shipping' %}🚚{% else %}🎁{% endif %}
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-lg">{{ coupon.name }}</h4>
+                                <p class="text-emerald-600 font-semibold">
+                                    {% if coupon.discount_type == 'percentage' %}
+                                        {{ coupon.discount_value|floatformat:0 }}% OFF
+                                    {% elif coupon.discount_type == 'fixed' %}
+                                        ${{ coupon.discount_value|floatformat:0 }} OFF
+                                    {% else %}
+                                        Free Shipping
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-4 border border-emerald-200 mb-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600 text-sm">Coupon Code:</span>
+                                <button onclick="copyToClipboard('{{ coupon.code }}', 'copiedMessage{{ forloop.counter }}', 'copyCoupon{{ forloop.counter }}')" 
+                                        id="copyCoupon{{ forloop.counter }}"
+                                        class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-400">
+                                    {{ coupon.code }}
+                                </button>
+                            </div>
+                            {% if coupon.minimum_amount > 0 %}
+                            <p class="text-xs text-gray-500 mt-2">Valid on orders above ${{ coupon.minimum_amount }}</p>
+                            {% endif %}
+                            {% if coupon.description %}
+                            <p class="text-xs text-gray-500 mt-1">{{ coupon.description }}</p>
+                            {% endif %}
+                            <span id="copiedMessage{{ forloop.counter }}" class="text-emerald-600 text-sm font-semibold hidden">✓ Copied to clipboard!</span>
+                        </div>
+
+                        <!-- Timer -->
+                        <div class="flex items-center justify-center gap-2 text-sm">
+                            <span class="text-gray-600">Valid until:</span>
+                            <span class="text-emerald-600 font-semibold">{{ coupon.valid_to|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <!-- No coupons available -->
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <p class="text-gray-500">No active coupons available</p>
+                        <p class="text-sm text-gray-400 mt-1">Check back soon for new deals!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+
+    <!-- Modern Bottom CTA -->
+    <div class="mt-12 bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+        <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-8 py-12">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium mb-6">
+                    <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse"></span>
+                    Premium Quality Products
+                </div>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight text-balance">
+                    Experience the <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">Finest Quality</span>
+                </h2>
+                <p class="text-xl text-emerald-100 mb-8 max-w-2xl mx-auto leading-relaxed text-pretty">
+                    Discover our premium collection of products, carefully selected for quality and value
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="{% url 'ecommerce:product_list' %}" 
+                       class="group inline-flex items-center px-8 py-4 bg-white text-emerald-600 font-semibold rounded-2xl hover:bg-gray-50 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
+                        <span>Browse Products</span>
+                        <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </a>
+                    <a href="{% url 'ecommerce:product_list' %}" 
+                       class="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-2xl hover:from-yellow-600 hover:to-orange-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"/>
+                        </svg>
+                        <span>Start Shopping</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Enhanced Slider JS -->
+<!-- Enhanced JavaScript -->
 <script>
-  (function () {
-    const track = document.getElementById('sliderTrack');
-    const slides = Array.from(track.children);
-    const dots = Array.from(document.querySelectorAll('#sliderDots button'));
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    let index = 0, width = 0, timer = null;
-    const AUTO_MS = 4000;
+    // Modern Slider Implementation
+    (function() {
+        const track = document.getElementById('sliderTrack');
+        const slides = Array.from(track.children);
+        const dots = Array.from(document.querySelectorAll('#sliderDots button'));
+        
+        let currentIndex = 0;
+        let slideWidth = 0;
+        let autoSlideTimer = null;
+        const AUTO_SLIDE_INTERVAL = 5000;
 
-    function compute() {
-      width = track.parentElement.clientWidth;
-      slides.forEach(s => (s.style.width = width + 'px'));
-      moveTo(index, false);
-    }
-    
-    function setActiveDot(i) {
-      dots.forEach((d, di) => {
-        if (di === i) {
-          d.classList.add('ring-4', 'ring-white/70', 'scale-110');
-          d.classList.remove('opacity-60');
-        } else {
-          d.classList.remove('ring-4', 'ring-white/70', 'scale-110');
-          d.classList.add('opacity-60');
+        // Only initialize if we have slides
+        if (slides.length === 0) return;
+
+        function calculateDimensions() {
+            slideWidth = track.parentElement.clientWidth;
+            slides.forEach(slide => {
+                slide.style.width = slideWidth + 'px';
+            });
+            updateSliderPosition(false);
         }
-      });
+
+        function updateSliderPosition(animate = true) {
+            if (!animate) {
+                track.style.transitionDuration = '0ms';
+            }
+            track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+            
+            if (!animate) {
+                requestAnimationFrame(() => {
+                    track.style.transitionDuration = '';
+                });
+            }
+            updateDotIndicators();
+        }
+
+        function updateDotIndicators() {
+            dots.forEach((dot, index) => {
+                if (index === currentIndex) {
+                    dot.classList.add('bg-white', 'scale-150');
+                    dot.classList.remove('bg-white/60');
+                } else {
+                    dot.classList.remove('bg-white', 'scale-150');
+                    dot.classList.add('bg-white/60');
+                }
+            });
+        }
+
+        function goToSlide(index) {
+            currentIndex = (index + slides.length) % slides.length;
+            updateSliderPosition();
+        }
+
+        function nextSlide() {
+            goToSlide(currentIndex + 1);
+        }
+
+        function startAutoSlide() {
+            stopAutoSlide();
+            if (slides.length > 1) {
+                autoSlideTimer = setInterval(nextSlide, AUTO_SLIDE_INTERVAL);
+            }
+        }
+
+        function stopAutoSlide() {
+            if (autoSlideTimer) {
+                clearInterval(autoSlideTimer);
+                autoSlideTimer = null;
+            }
+        }
+
+        // Event Listeners
+        window.addEventListener('resize', calculateDimensions);
+
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                stopAutoSlide();
+                goToSlide(index);
+                startAutoSlide();
+            });
+        });
+
+        track.addEventListener('mouseenter', stopAutoSlide);
+        track.addEventListener('mouseleave', startAutoSlide);
+
+        // Initialize
+        calculateDimensions();
+        updateDotIndicators();
+        startAutoSlide();
+    })();
+
+    // Enhanced Coupon Copy Functionality
+    function copyToClipboard(text, messageId, buttonId) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showCopySuccess(messageId, buttonId);
+            }).catch(() => {
+                fallbackCopyTextToClipboard(text, messageId, buttonId);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text, messageId, buttonId);
+        }
     }
-    
-    function moveTo(i, animate = true) {
-      index = (i + slides.length) % slides.length;
-      if (!animate) track.style.transitionDuration = '0ms';
-      track.style.transform = `translateX(-${index * width}px)`;
-      requestAnimationFrame(() => { 
-        if (!animate) track.style.transitionDuration = ''; 
-      });
-      setActiveDot(index);
+
+    function fallbackCopyTextToClipboard(text, messageId, buttonId) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            showCopySuccess(messageId, buttonId);
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+        }
+        
+        document.body.removeChild(textArea);
     }
-    
-    function next() { moveTo(index + 1); }
-    function prev() { moveTo(index - 1); }
-    function start() { stop(); timer = setInterval(next, AUTO_MS); }
-    function stop() { if (timer) clearInterval(timer); timer = null; }
 
-    // Event listeners
-    window.addEventListener('resize', compute, { passive: true });
-    prevBtn?.addEventListener('click', () => { stop(); prev(); start(); });
-    nextBtn?.addEventListener('click', () => { stop(); next(); start(); });
-    dots.forEach(d => d.addEventListener('click', () => { stop(); moveTo(+d.dataset.index); start(); }));
-    track.addEventListener('mouseenter', stop);
-    track.addEventListener('mouseleave', start);
+    function showCopySuccess(messageId, buttonId) {
+        const message = document.getElementById(messageId);
+        const button = document.getElementById(buttonId);
+        
+        if (message) {
+            message.classList.remove('hidden');
+            setTimeout(() => {
+                message.classList.add('hidden');
+            }, 3000);
+        }
+        
+        if (button) {
+            button.classList.add('animate-pulse');
+            setTimeout(() => {
+                button.classList.remove('animate-pulse');
+            }, 3000);
+        }
+    }
 
-    // Initialize
-    compute(); 
-    setActiveDot(0); 
-    start();
-  })();
-</script>
-
-<!-- Enhanced Copy Coupon JS -->
-<script>
-  function copyCoupon(buttonId, messageId, couponCode) {
-    navigator.clipboard.writeText(couponCode).then(() => {
-      const message = document.getElementById(messageId);
-      const button = document.getElementById(buttonId);
-      
-      message.classList.remove('hidden');
-      button.classList.add('animate-pulse');
-      
-      setTimeout(() => {
-        message.classList.add('hidden');
-        button.classList.remove('animate-pulse');
-      }, 2000);
-    }).catch(() => {
-      // Fallback for older browsers
-      const el = document.createElement('textarea');
-      el.value = couponCode;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-      
-      const message = document.getElementById(messageId);
-      message.classList.remove('hidden');
-      setTimeout(() => message.classList.add('hidden'), 2000);
-    });
-  }
-
-  document.getElementById('copyCoupon1')?.addEventListener('click', function() {
-    copyCoupon('copyCoupon1', 'copiedMessage1', 'SUMMER24');
-  });
-  
-  document.getElementById('copyCoupon2')?.addEventListener('click', function() {
-    copyCoupon('copyCoupon2', 'copiedMessage2', 'WINTER25');
-  });
+    // Add floating animation keyframes
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.8); }
+        }
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-glow { animation: glow 2s ease-in-out infinite; }
+        .animate-slide-up { animation: slide-up 0.6s ease-out; }
+    `;
+    document.head.appendChild(style);
 </script>

@@ -31,4 +31,12 @@ urlpatterns = [
     
     # Address management
     path('save-address/', views.save_address, name='save_address'),
+
+    path('about-us/', views.about_us, name='about_us'),
+    path('contact-us/', views.contact_us, name='contact_us'),
+    path('faq/', views.faq, name='faq'),  
+
+
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path('terms-and-conditions', views.terms_conditions, name='terms_conditions'),      
 ]

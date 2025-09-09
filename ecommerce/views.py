@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Count, Avg
+from django.db.models import Q, Count, Avg, F
 from django.utils import timezone
 from decimal import Decimal
 import json
@@ -209,6 +209,14 @@ def home(request):
         Q(end_date__gte=timezone.now()) | Q(end_date__isnull=True)
     ).order_by('sort_order')[:5]
     
+    active_coupons = Coupon.objects.filter(
+        is_active=True,
+        valid_from__lte=timezone.now(),
+        valid_to__gte=timezone.now()
+    ).filter(
+        Q(usage_limit__isnull=True) | Q(used_count__lt=F('usage_limit'))
+    ).order_by('-discount_value', '-created_at')[:4]  # Show top 4 coupons
+    
     # Get featured categories for display
     featured_categories = Category.objects.filter(
         is_active=True,
@@ -269,6 +277,7 @@ def home(request):
     
     context = {
         'banners': banners,
+        'active_coupons': active_coupons,  # Added coupons to context
         'featured_categories': featured_categories,
         'featured_products': featured_products,
         'latest_products': latest_products,
@@ -278,6 +287,7 @@ def home(request):
     }
     
     return render(request, 'ecommerce/home.html', context)
+
 def product_list(request):
     """Enhanced product list view with search and filtering"""
     products = Product.objects.filter(is_active=True).select_related(
@@ -491,7 +501,7 @@ def remove_from_cart(request):
         return JsonResponse({'success': False, 'message': str(e)})
 
 def checkout(request):
-    """Checkout page view"""
+    """Enhanced checkout page view with better error handling"""
     cart, customer = get_or_create_cart(request)
     
     if not cart or not cart.items.exists():
@@ -511,7 +521,7 @@ def checkout(request):
     
     context = {
         'cart': cart,
-        'cart_items': cart.items.select_related('product', 'variant').all(),
+        'cart_items': cart.items.select_related('product', 'variant').prefetch_related('product__images').all(),
         'addresses': addresses,
         'customer': customer,
         'shipping_methods': shipping_methods,
@@ -525,7 +535,7 @@ def checkout(request):
 
 @require_POST
 def apply_coupon(request):
-    """Apply coupon code to cart"""
+    """Enhanced apply coupon with better validation and error messages"""
     if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
         return redirect('ecommerce:checkout')
     
@@ -533,86 +543,179 @@ def apply_coupon(request):
     cart, customer = get_or_create_cart(request)
     
     if not cart:
-        return JsonResponse({'success': False, 'message': 'Cart not found'})
+        return JsonResponse({
+            'success': False, 
+            'message': 'Cart not found. Please refresh the page and try again.'
+        })
     
     if not coupon_code:
-        return JsonResponse({'success': False, 'message': 'Please enter a coupon code'})
-    
-    success, message = cart.apply_coupon(coupon_code)
-    
-    if success:
-        discount_amount = cart.get_discount_amount()
-        subtotal = cart.subtotal
-        
         return JsonResponse({
-            'success': True,
-            'message': message,
-            'discount_amount': str(discount_amount),
-            'subtotal': str(subtotal),
-            'coupon_code': coupon_code
+            'success': False, 
+            'message': 'Please enter a coupon code.'
         })
-    else:
-        return JsonResponse({'success': False, 'message': message})
+    
+    try:
+        coupon = Coupon.objects.get(code=coupon_code, is_active=True)
+        
+        # Check if coupon is valid for current time
+        now = timezone.now()
+        if coupon.valid_from and coupon.valid_from > now:
+            return JsonResponse({
+                'success': False,
+                'message': f'This coupon is not yet valid. Valid from {coupon.valid_from.strftime("%Y-%m-%d")}.'
+            })
+        
+        if coupon.valid_to and coupon.valid_to < now:
+            return JsonResponse({
+                'success': False,
+                'message': 'This coupon has expired.'
+            })
+        
+        # Check usage limits
+        if coupon.usage_limit and coupon.used_count >= coupon.usage_limit:
+            return JsonResponse({
+                'success': False,
+                'message': 'This coupon has reached its usage limit.'
+            })
+        
+        # Check minimum amount requirement
+        if coupon.minimum_amount and cart.subtotal < coupon.minimum_amount:
+            return JsonResponse({
+                'success': False,
+                'message': f'Minimum order amount of {cart.subtotal.currency_symbol}{coupon.minimum_amount} required for this coupon.'
+            })
+        
+        # Check if coupon is for first-time customers only
+        if coupon.first_time_customers_only and customer:
+            if customer.orders.filter(status__in=['completed', 'processing']).exists():
+                return JsonResponse({
+                    'success': False,
+                    'message': 'This coupon is only valid for first-time customers.'
+                })
+        
+        # Apply coupon to cart
+        success, message = cart.apply_coupon(coupon_code)
+        
+        if success:
+            discount_amount = cart.get_discount_amount()
+            subtotal = cart.subtotal
+            
+            return JsonResponse({
+                'success': True,
+                'message': message,
+                'discount_amount': str(discount_amount),
+                'subtotal': str(subtotal),
+                'coupon_code': coupon_code,
+                'coupon_name': coupon.name
+            })
+        else:
+            return JsonResponse({'success': False, 'message': message})
+            
+    except Coupon.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid coupon code. Please check and try again.'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while applying the coupon. Please try again.'
+        })
 
 @require_POST
 def remove_coupon(request):
-    """Remove coupon from cart"""
+    """Enhanced remove coupon with better feedback"""
     if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
         return redirect('ecommerce:checkout')
     
     cart, customer = get_or_create_cart(request)
     
     if not cart:
-        return JsonResponse({'success': False, 'message': 'Cart not found'})
+        return JsonResponse({
+            'success': False, 
+            'message': 'Cart not found. Please refresh the page and try again.'
+        })
     
-    cart.remove_coupon()
-    
-    return JsonResponse({
-        'success': True,
-        'message': 'Coupon removed',
-        'discount_amount': '0.00',
-        'subtotal': str(cart.subtotal)
-    })
+    try:
+        if cart.coupon:
+            coupon_name = cart.coupon.name
+            cart.remove_coupon()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Coupon "{coupon_name}" removed successfully.',
+                'discount_amount': '0.00',
+                'subtotal': str(cart.subtotal)
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'No coupon applied to remove.'
+            })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while removing the coupon. Please try again.'
+        })
 
 @require_POST
 def calculate_shipping(request):
-    """Calculate shipping cost for selected method"""
+    """Enhanced calculate shipping with better error handling"""
     if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
         return redirect('ecommerce:checkout')
     
     shipping_method_id = request.POST.get('shipping_method_id')
     
     if not shipping_method_id:
-        return JsonResponse({'success': False, 'message': 'No shipping method selected'})
+        return JsonResponse({
+            'success': False, 
+            'message': 'No shipping method selected.'
+        })
     
     try:
         shipping_method = ShippingMethod.objects.get(id=shipping_method_id, is_active=True)
     except ShippingMethod.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Invalid shipping method'})
+        return JsonResponse({
+            'success': False, 
+            'message': 'Invalid shipping method selected.'
+        })
     
     cart, customer = get_or_create_cart(request)
     
     if not cart:
-        return JsonResponse({'success': False, 'message': 'Cart not found'})
+        return JsonResponse({
+            'success': False, 
+            'message': 'Cart not found. Please refresh the page and try again.'
+        })
     
-    subtotal = cart.subtotal
-    total_weight = cart.total_weight
-    
-    shipping_cost = shipping_method.calculate_cost(total_weight, subtotal)
-    
-    if cart.coupon and cart.coupon.discount_type == 'free_shipping' and cart.coupon.is_valid():
-        shipping_cost = Decimal('0.00')
-    
-    discount_amount = cart.get_discount_amount()
-    total = subtotal + shipping_cost - discount_amount
-    
-    return JsonResponse({
-        'success': True,
-        'shipping_cost': str(shipping_cost),
-        'total': str(total),
-        'method_name': shipping_method.name,
-        'delivery_days': f"{shipping_method.min_delivery_days}-{shipping_method.max_delivery_days}"
-    })
+    try:
+        subtotal = cart.subtotal
+        total_weight = cart.total_weight
+        
+        shipping_cost = shipping_method.calculate_cost(total_weight, subtotal)
+        
+        # Check for free shipping coupon
+        if cart.coupon and cart.coupon.discount_type == 'free_shipping' and cart.coupon.is_valid():
+            shipping_cost = Decimal('0.00')
+        
+        discount_amount = cart.get_discount_amount()
+        total = subtotal + shipping_cost - discount_amount
+        
+        return JsonResponse({
+            'success': True,
+            'shipping_cost': str(shipping_cost),
+            'total': str(total),
+            'method_name': shipping_method.name,
+            'delivery_days': f"{shipping_method.min_delivery_days}-{shipping_method.max_delivery_days}",
+            'subtotal': str(subtotal),
+            'discount_amount': str(discount_amount)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while calculating shipping. Please try again.'
+        })
 
 @require_POST
 def place_order(request):
@@ -926,3 +1029,26 @@ def product_detail_api(request, product_id):
             'success': False,
             'message': f'An error occurred: {str(e)}'
         }, status=500)
+    
+
+def about_us(request):
+    """About Us page view"""
+    return render(request, 'ecommerce/about_us.html')
+
+def contact_us(request):
+    """Contact Us page view"""
+    return render(request, 'ecommerce/contact_us.html')
+
+def faq(request):
+    """FAQ page view"""
+    return render(request, 'ecommerce/faq.html')
+
+
+
+def privacy_policy(request):
+    """Privacy Policy page view"""
+    return render(request, 'ecommerce/privacy_policy.html')
+
+def terms_conditions(request):
+    """Terms and Conditions page view"""
+    return render(request, 'ecommerce/terms_conditions.html')
