@@ -197,8 +197,9 @@ def cart_api(request):
 
 
 def home(request):
-    """Home page view with products and categories"""
+    """Home page view with product grids and categories"""
     
+    # Get banners for hero section
     banners = Banner.objects.filter(
         is_active=True,
         show_on_homepage=True
@@ -208,13 +209,15 @@ def home(request):
         Q(end_date__gte=timezone.now()) | Q(end_date__isnull=True)
     ).order_by('sort_order')[:5]
     
+    # Get featured categories for display
     featured_categories = Category.objects.filter(
         is_active=True,
         parent__isnull=True
     ).annotate(
         product_count=Count('products', filter=Q(products__is_active=True))
-    ).prefetch_related('children').order_by('sort_order', 'name')[:12]
+    ).prefetch_related('children').order_by('sort_order', 'name')[:8]
     
+    # Featured Products Section
     featured_products = Product.objects.filter(
         is_active=True,
         is_featured=True
@@ -223,8 +226,9 @@ def home(request):
     ).annotate(
         avg_rating=Avg('reviews__rating'),
         review_count=Count('reviews')
-    )[:8]
+    ).order_by('-created_at')[:12]  # Show 12 products
     
+    # Latest Products Section
     latest_products = Product.objects.filter(
         is_active=True
     ).select_related('brand', 'category').prefetch_related(
@@ -232,8 +236,9 @@ def home(request):
     ).annotate(
         avg_rating=Avg('reviews__rating'),
         review_count=Count('reviews')
-    ).order_by('-created_at')[:8]
+    ).order_by('-created_at')[:12]  # Show 12 latest products
     
+    # Discounted Products Section
     discounted_products = Product.objects.filter(
         is_active=True,
         discount_price__isnull=False
@@ -242,8 +247,9 @@ def home(request):
     ).annotate(
         avg_rating=Avg('reviews__rating'),
         review_count=Count('reviews')
-    ).order_by('-created_at')[:8]
+    ).order_by('-created_at')[:12]  # Show 12 discounted products
     
+    # Popular Products (based on reviews)
     popular_products = Product.objects.filter(
         is_active=True
     ).select_related('brand', 'category').prefetch_related(
@@ -253,8 +259,9 @@ def home(request):
         review_count=Count('reviews')
     ).filter(
         review_count__gte=1
-    ).order_by('-review_count', '-avg_rating')[:8]
+    ).order_by('-review_count', '-avg_rating')[:12]
     
+    # Recent customer reviews for testimonials
     recent_reviews = Review.objects.filter(
         is_approved=True,
         product__is_active=True
@@ -271,7 +278,6 @@ def home(request):
     }
     
     return render(request, 'ecommerce/home.html', context)
-
 def product_list(request):
     """Enhanced product list view with search and filtering"""
     products = Product.objects.filter(is_active=True).select_related(

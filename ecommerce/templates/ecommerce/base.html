@@ -89,11 +89,11 @@
             <button 
               id="cartButton" 
               type="button" 
-              aria-label="Cart with {{ cart_items_count }} items" 
+              aria-label="Cart with items" 
               class="relative text-white bg-transparent mx-2 p-2 rounded-full hover:bg-white hover:bg-opacity-10 transition-all duration-200"
             >
               <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-4.svg" alt="Cart" class="h-6 w-6" />
-              <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold{% if cart_items_count == 0 %} animate-pulse{% endif %}">{{ cart_items_count }}</span>
+              <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{{ cart_items_count }}</span>
             </button>
 
             <!-- Notification -->
@@ -250,7 +250,7 @@
       <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-9.svg" alt="Home" class="h-6 w-6" />
     </a>
     <button id="mobileCartButton" class="relative text-white flex items-center bg-transparent h-9 justify-center w-9 p-0 hover:bg-white hover:bg-opacity-10 rounded-full transition-all duration-200">
-      <span id="mobileCartCount" class="absolute text-orange-100 text-xs font-bold flex items-center bg-orange-600 h-5 justify-center w-5 z-10 rounded-full right-0 top-0{% if cart_items_count == 0 %} animate-pulse{% endif %}">{{ cart_items_count }}</span>
+      <span id="mobileCartCount" class="absolute text-orange-100 text-xs font-bold flex items-center bg-orange-600 h-5 justify-center w-5 z-10 rounded-full right-0 top-0">{{ cart_items_count }}</span>
       <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-10.svg" alt="Cart" class="h-6 w-6" />
     </button>
     <button class="text-white bg-transparent p-0">
@@ -338,77 +338,101 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    // Global Cart Manager
+    class CartManager {
+      constructor() {
+        this.csrfToken = '{{ csrf_token }}';
+        this.init();
+      }
 
-      // CSRF Token for AJAX
-      const csrfToken = '{{ csrf_token }}';
+      init() {
+        this.bindEvents();
+        this.fetchCart();
+      }
 
-      // DOM Elements
-      const cartButton = document.getElementById('cartButton');
-      const mobileCartButton = document.getElementById('mobileCartButton');
-      const fixedCartWidget = document.getElementById('fixedCartWidget');
-      const cartSidebar = document.getElementById('cartSidebar');
-      const cartPanel = document.getElementById('cartPanel');
-      const cartOverlay = document.getElementById('cartOverlay');
-      const closeCartButton = document.getElementById('closeCart');
-      
-      // Open/Close Cart Sidebar
-      function openCart() {
+      bindEvents() {
+        // Cart sidebar events
+        const cartButton = document.getElementById('cartButton');
+        const mobileCartButton = document.getElementById('mobileCartButton');
+        const fixedCartWidget = document.getElementById('fixedCartWidget');
+        const closeCartButton = document.getElementById('closeCart');
+        const cartOverlay = document.getElementById('cartOverlay');
+
+        if (cartButton) cartButton.addEventListener('click', () => this.openCart());
+        if (mobileCartButton) mobileCartButton.addEventListener('click', () => this.openCart());
+        if (fixedCartWidget) fixedCartWidget.addEventListener('click', () => this.openCart());
+        if (closeCartButton) closeCartButton.addEventListener('click', () => this.closeCart());
+        if (cartOverlay) cartOverlay.addEventListener('click', () => this.closeCart());
+
+        // ESC key to close cart
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && !document.getElementById('cartSidebar').classList.contains('hidden')) {
+            this.closeCart();
+          }
+        });
+      }
+
+      openCart() {
+        const cartSidebar = document.getElementById('cartSidebar');
+        const cartPanel = document.getElementById('cartPanel');
+        
         cartSidebar.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        
         setTimeout(() => {
           cartPanel.classList.remove('translate-x-full');
-          cartOverlay.classList.remove('opacity-0');
         }, 10);
       }
 
-      function closeCart() {
+      closeCart() {
+        const cartSidebar = document.getElementById('cartSidebar');
+        const cartPanel = document.getElementById('cartPanel');
+        
         cartPanel.classList.add('translate-x-full');
-        cartOverlay.classList.add('opacity-0');
         document.body.style.overflow = '';
+        
         setTimeout(() => {
           cartSidebar.classList.add('hidden');
         }, 300);
       }
 
-      cartButton.addEventListener('click', openCart);
-      if (mobileCartButton) mobileCartButton.addEventListener('click', openCart);
-      if (fixedCartWidget) fixedCartWidget.addEventListener('click', openCart);
-      closeCartButton.addEventListener('click', closeCart);
-      cartOverlay.addEventListener('click', closeCart);
-      document.addEventListener('keydown', (e) => e.key === 'Escape' && !cartSidebar.classList.contains('hidden') && closeCart());
+      updateCartCounts(totalItems) {
+        const elements = ['cartCount', 'mobileCartCount'];
+        elements.forEach(id => {
+          const element = document.getElementById(id);
+          if (element) element.textContent = totalItems;
+        });
 
-      // --- Cart Logic ---
-      function renderCart(data) {
-        const cart = data.cart;
+        const fixedCartCount = document.getElementById('fixedCartCount');
+        if (fixedCartCount) fixedCartCount.textContent = `${totalItems} Items`;
+      }
+
+      updateCartTotals(subtotal) {
+        const cartTotal = document.getElementById('cartTotal');
+        if (cartTotal) cartTotal.textContent = `{{ currency_symbol }}${subtotal}`;
+
+        const fixedCartTotal = document.getElementById('fixedCartTotal');
+        if (fixedCartTotal) fixedCartTotal.textContent = `{{ currency_symbol }}${subtotal}`;
+      }
+
+      renderCartItems(items) {
+        const container = document.getElementById('cartItemsContainer');
+        const checkoutBtn = document.getElementById('checkoutBtn');
         
-        // Update counts
-        document.getElementById('cartCount').textContent = cart.total_items;
-        if(document.getElementById('mobileCartCount')) {
-          document.getElementById('mobileCartCount').textContent = cart.total_items;
-        }
-        if(document.getElementById('fixedCartCount')) {
-            document.getElementById('fixedCartCount').textContent = `${cart.total_items} Items`;
-        }
+        if (!container) return;
 
-        // Update totals
-        document.getElementById('cartTotal').textContent = `{{ currency_symbol }}${cart.subtotal}`;
-        if(document.getElementById('fixedCartTotal')) {
-            document.getElementById('fixedCartTotal').textContent = `{{ currency_symbol }}${cart.subtotal}`;
-        }
-
-        // Update item list
-        const cartItemsContainer = document.getElementById('cartItemsContainer');
-        if (cart.items.length === 0) {
-          cartItemsContainer.innerHTML = `
+        if (items.length === 0) {
+          container.innerHTML = `
             <div class="text-center text-gray-500 py-8">
               <p>Your cart is empty.</p>
             </div>
           `;
-          document.getElementById('checkoutBtn').classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
-          document.getElementById('checkoutBtn').setAttribute('disabled', 'true');
+          if (checkoutBtn) {
+            checkoutBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            checkoutBtn.setAttribute('disabled', 'true');
+          }
         } else {
-          cartItemsContainer.innerHTML = cart.items.map(item => `
+          container.innerHTML = items.map(item => `
             <div class="flex items-center space-x-3 p-3 border-b border-gray-200">
               <img src="${item.image_url || '/static/placeholder.png'}" alt="${item.product_name}" class="w-12 h-12 object-cover rounded-lg" />
               <div class="flex-1">
@@ -417,189 +441,191 @@
                 <p class="text-green-600 text-sm font-medium">{{ currency_symbol }}${item.total_price}</p>
               </div>
               <div class="flex items-center space-x-1">
-                <button onclick="updateCartItem(${item.id}, ${item.quantity - 1})" class="text-gray-600 hover:text-gray-700 p-1 rounded hover:bg-gray-50">-</button>
+                <button onclick="cartManager.updateCartItem(${item.id}, ${item.quantity - 1})" class="text-gray-600 hover:text-gray-700 p-1 rounded hover:bg-gray-50">-</button>
                 <span>${item.quantity}</span>
-                <button onclick="updateCartItem(${item.id}, ${item.quantity + 1})" class="text-gray-600 hover:text-gray-700 p-1 rounded hover:bg-gray-50">+</button>
+                <button onclick="cartManager.updateCartItem(${item.id}, ${item.quantity + 1})" class="text-gray-600 hover:text-gray-700 p-1 rounded hover:bg-gray-50">+</button>
               </div>
-              <button onclick="removeCartItem(${item.id})" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50">
+              <button onclick="cartManager.removeCartItem(${item.id})" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
           `).join('');
-          document.getElementById('checkoutBtn').classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed');
-          document.getElementById('checkoutBtn').removeAttribute('disabled');
+          
+          if (checkoutBtn) {
+            checkoutBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            checkoutBtn.removeAttribute('disabled');
+          }
         }
       }
 
-      async function fetchCart() {
+      async fetchCart() {
         try {
           const response = await fetch('{% url "ecommerce:cart_api" %}');
           const data = await response.json();
+          
           if (data.success) {
-            renderCart(data);
-          } else {
-            console.error('Failed to fetch cart');
+            this.updateCartCounts(data.cart.total_items);
+            this.updateCartTotals(data.cart.subtotal);
+            this.renderCartItems(data.cart.items);
           }
         } catch (error) {
           console.error('Error fetching cart:', error);
         }
       }
 
-      async function handleCartAction(action, payload) {
+      async handleCartAction(action, payload) {
         try {
           const response = await fetch('{% url "ecommerce:cart_api" %}', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'X-CSRFToken': csrfToken
+              'X-CSRFToken': this.csrfToken
             },
             body: JSON.stringify({ action, ...payload })
           });
+
           const data = await response.json();
+          
           if (data.success) {
-            renderCart(data);
-            if(data.message) showNotification(data.message, 'success');
+            // Immediately update all cart displays
+            this.updateCartCounts(data.cart.total_items);
+            this.updateCartTotals(data.cart.subtotal);
+            this.renderCartItems(data.cart.items);
+            
+            if (data.message) {
+              this.showNotification(data.message, 'success');
+            }
           } else {
-            showNotification(data.message || 'An error occurred', 'error');
+            this.showNotification(data.message || 'An error occurred', 'error');
           }
         } catch (error) {
           console.error(`Error with cart action ${action}:`, error);
-          showNotification('An error occurred', 'error');
+          this.showNotification('An error occurred', 'error');
         }
       }
 
-      window.addToCart = function(productId, variantId = null) {
-        handleCartAction('add', { product_id: productId, variant_id: variantId, quantity: 1 });
+      addToCart(productId, quantity = 1, variantId = null) {
+        const payload = { product_id: productId, quantity: parseInt(quantity) };
+        if (variantId) payload.variant_id = variantId;
+        this.handleCartAction('add', payload);
       }
 
-      window.updateCartItem = function(itemId, quantity) {
-        handleCartAction('update', { item_id: itemId, quantity: quantity });
+      updateCartItem(itemId, quantity) {
+        this.handleCartAction('update', { item_id: itemId, quantity: parseInt(quantity) });
       }
 
-      window.removeCartItem = function(itemId) {
-        handleCartAction('remove', { item_id: itemId });
+      removeCartItem(itemId) {
+        this.handleCartAction('remove', { item_id: itemId });
       }
 
-      // Initial fetch
-      fetchCart();
+      showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-5 right-5 z-[100] px-4 py-2 rounded-lg text-white ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+      }
+    }
+
+    // Initialize cart manager when DOM is loaded
+    let cartManager;
+    document.addEventListener('DOMContentLoaded', function() {
+      cartManager = new CartManager();
     });
+
+    // Global functions for backward compatibility
+    function addToCart(productId, quantity = 1, variantId = null) {
+      if (cartManager) {
+        cartManager.addToCart(productId, quantity, variantId);
+      }
+    }
+
+    function addToCartWithQuantity(productId) {
+      const quantityInput = document.getElementById(`qty-${productId}`);
+      const quantity = parseInt(quantityInput.value) || 1;
+      if (cartManager) {
+        cartManager.addToCart(productId, quantity);
+      }
+    }
+
+    function handleCartAction(productId, quantity = 1, action = 'add', variantId = null) {
+      if (cartManager) {
+        if (action === 'add') {
+          cartManager.addToCart(productId, quantity, variantId);
+        }
+      }
+    }
+
+    function handleCartActionWithVariant(productId, quantity = 1, action = 'add', variantId = null) {
+      if (cartManager) {
+        if (action === 'add') {
+          cartManager.addToCart(productId, quantity, variantId);
+        }
+      }
+    }
+
+    function updateQuantity(inputId, change) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      
+      let value = parseInt(input.value) || 1;
+      const max = parseInt(input.getAttribute('max')) || 10;
+      const min = parseInt(input.getAttribute('min')) || 1;
+      value = Math.max(min, Math.min(max, value + change));
+      input.value = value;
+    }
+
+    function validateQuantity(input) {
+      if (!input) return;
+      
+      const min = parseInt(input.getAttribute('min')) || 1;
+      const max = parseInt(input.getAttribute('max')) || 10;
+      let value = parseInt(input.value) || min;
+      
+      if (value < min) value = min;
+      if (value > max) value = max;
+      
+      input.value = value;
+    }
 
     function showNotification(message, type) {
-      const notification = document.createElement('div');
-      notification.className = `fixed top-5 right-5 z-[100] px-4 py-2 rounded-lg text-white ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-      setTimeout(() => notification.remove(), 3000);
-    }
-
-// Enhanced Cart function for product list with quantity
-async function handleCartAction(productId, quantity = 1, action = 'add') {
-  try {
-    const response = await fetch('{% url "ecommerce:cart_api" %}', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}',
-      },
-      body: JSON.stringify({
-        action: action,
-        product_id: productId,
-        quantity: parseInt(quantity)
-      })
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const data = await response.json();
-    if (data.success) {
-      // Update cart counts in header
-      document.getElementById('cartCount').textContent = data.cart.total_items;
-      if(document.getElementById('mobileCartCount')) {
-        document.getElementById('mobileCartCount').textContent = data.cart.total_items;
-      }
-      if(document.getElementById('fixedCartCount')) {
-        document.getElementById('fixedCartCount').textContent = `${data.cart.total_items} Items`;
-      }
-      if(document.getElementById('fixedCartTotal')) {
-        document.getElementById('fixedCartTotal').textContent = `{{ currency_symbol }}${data.cart.subtotal}`;
-      }
-      showNotification(data.message || 'Item added to cart!', 'success');
-    } else {
-      showNotification(data.message || 'Error adding item to cart.', 'error');
-    }
-  } catch (error) {
-    console.error('Error with cart action:', error);
-    showNotification('Error adding item to cart.', 'error');
-  }
-}
-
-// Wrapper for addToCart with quantity support
-window.addToCartWithQuantity = function(productId) {
-  const quantityInput = document.getElementById(`qty-${productId}`);
-  const quantity = parseInt(quantityInput.value) || 1;
-  handleCartAction(productId, quantity, 'add');
-};
-
-// Legacy function for simple add to cart (quantity 1)
-window.addToCart = function(productId, quantity = 1) {
-  handleCartAction(productId, quantity, 'add');
-};
-
-// Get CSRF token
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
+      if (cartManager) {
+        cartManager.showNotification(message, type);
       }
     }
-  }
-  return cookieValue;
-}
 
-// Handle quantity updates for product cards
-function updateQuantity(inputId, change) {
-  const input = document.getElementById(inputId);
-  let value = parseInt(input.value) || 1;
-  const max = parseInt(input.getAttribute('max')) || 10;
-  const min = parseInt(input.getAttribute('min')) || 1;
-  value = Math.max(min, Math.min(max, value + change));
-  input.value = value;
-}
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
 
-// Validate quantity input
-function validateQuantity(input) {
-  const min = parseInt(input.getAttribute('min')) || 1;
-  const max = parseInt(input.getAttribute('max')) || 10;
-  let value = parseInt(input.value) || min;
-  
-  if (value < min) value = min;
-  if (value > max) value = max;
-  
-  input.value = value;
-}
+    // Legacy modal functions (keeping for compatibility)
+    function openModal(productId) {
+      const modal = document.getElementById(`product-modal-${productId}`);
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.setAttribute('data-open', '');
+      }
+    }
 
+    function closeModal(productId) {
+      const modal = document.getElementById(`product-modal-${productId}`);
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.removeAttribute('data-open');
+      }
+    }
   </script>
-  <script>
-function openModal(productId) {
-  const modal = document.getElementById(`product-modal-${productId}`);
-  if (modal) {
-    modal.classList.remove('hidden');
-    modal.setAttribute('data-open', '');
-  }
-}
-function closeModal(productId) {
-  const modal = document.getElementById(`product-modal-${productId}`);
-  if (modal) {
-    modal.classList.add('hidden');
-    modal.removeAttribute('data-open');
-  }
-}
-</script>
 
   {% block extra_js %}{% endblock %}
 </body>
