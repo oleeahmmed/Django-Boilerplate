@@ -36,7 +36,7 @@ class OrderItemInline(admin.TabularInline):
 class OrderStatusHistoryInline(admin.TabularInline):
     model = OrderStatusHistory
     extra = 0
-    fields = ['previous_status', 'new_status', 'created_at']
+    fields = ['previous_status', 'new_status', ]
 
 class ReturnItemInline(admin.TabularInline):
     model = ReturnItem

@@ -1,0 +1,57 @@
+  <!-- Featured Categories Section -->
+  {% if featured_categories %}
+  <section class="bg-gray-50 py-10 md:py-16">
+    <div class="max-w-screen-2xl mx-auto px-3 md:px-10">
+      <div class="flex justify-center mb-10">
+        <div class="text-center w-full md:w-2/5">
+          <h2 class="text-xl font-semibold leading-7 mb-2 md:text-2xl md:leading-8">Featured Categories</h2>
+          <p class="text-gray-600">Choose your necessary products from this feature categories.</p>
+        </div>
+      </div>
+      
+      <ul class="grid grid-cols-2 md:grid-cols-6 gap-4 list-none pl-0">
+        {% for category in featured_categories %}
+          <li class="text-left">
+            <div class="bg-white shadow-sm border border-gray-200 h-full w-full p-4 hover:shadow-md transition-shadow duration-200">
+              <div class="flex items-center">
+                <div>
+                  {% if category.image %}
+                    <img alt="{{ category.name }}" src="{{ category.image.url }}" class="w-9 h-9 object-cover rounded">
+                  {% else %}
+                    <div class="w-9 h-9 bg-green-100 rounded flex items-center justify-center">
+                      <span class="text-green-600 font-bold text-sm">{{ category.name|first|upper }}</span>
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="pl-4">
+                  <h3 class="text-gray-700 text-sm font-medium leading-5 overflow-hidden">
+                    <a href="/search?category={{ category.slug }}" class="hover:text-green-600">{{ category.name }}</a>
+                  </h3>
+                  
+                  {% if category.children.all %}
+                    <ul class="mt-1 pt-1 pl-0">
+                      {% for child in category.children.all %}
+                        {% if forloop.counter <= 3 %}
+                          <li class="pt-1">
+                            <a href="/search?category={{ child.slug }}" class="text-gray-500 text-xs flex items-center leading-4 hover:text-green-600">
+                              <span class="block">
+                                <img src="https://c.animaapp.com/mf9yy6srig4Ymu/assets/icon-13.svg" alt="Icon" class="h-3 w-3">
+                              </span>
+                              {{ child.name }}
+                            </a>
+                          </li>
+                        {% endif %}
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <p class="text-gray-500 text-xs mt-1">{{ category.product_count }} Products</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+  {% endif %}

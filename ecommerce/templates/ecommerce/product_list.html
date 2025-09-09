@@ -1,0 +1,162 @@
+{% extends 'ecommerce/base.html' %}
+
+{% block title %}All Products - {{ store_name }}{% endblock %}
+
+{% block content %}
+<main class="bg-gray-50 min-h-screen">
+  <div class="max-w-screen-2xl mx-auto px-3 md:px-10 py-10">
+    <div class="mb-8 text-center">
+      <h1 class="text-3xl font-bold text-gray-800">All Products</h1>
+      <p class="text-gray-600">Browse our collection of high-quality products.</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      {% for product in page_obj %}
+        <div class="group relative flex flex-col overflow-hidden rounded-xl border bg-white border-gray-100 transition-all duration-100 ease-in-out hover:border-emerald-500">
+          <div class="relative w-full min-h-48 lg:h-48 xl:h-52">
+            <a class="relative block w-full h-full overflow-hidden bg-gray-100" href="#">
+              {% if product.images.all %}
+                <img alt="{{ product.name }}" loading="lazy" decoding="async" 
+                     class="object-contain transition duration-150 ease-linear transform group-hover:scale-105 p-2 absolute h-full w-full inset-0" 
+                     src="{{ product.images.first.image.url }}">
+              {% else %}
+                <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <span class="text-gray-400">No Image</span>
+                </div>
+              {% endif %}
+            </a>
+            {% if product.discount_percentage %}
+              <span class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                -{{ product.discount_percentage }}%
+              </span>
+            {% endif %}
+            {% if not product.is_in_stock %}
+              <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">Out of Stock</span>
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="flex flex-1 flex-col space-y-2 px-4 pt-2 pb-4">
+            <a class="text-sm font-medium text-gray-800 line-clamp-2 hover:text-emerald-500" href="#">{{ product.name }}</a>
+            
+            <div class="product-price font-bold">
+              <span class="inline-block text-base text-gray-900">{{ currency_symbol }}{{ product.current_price }}</span>
+              {% if product.discount_price %}
+                <span class="text-gray-400 text-sm line-through ml-2">{{ currency_symbol }}{{ product.price }}</span>
+              {% endif %}
+            </div>
+
+            <!-- Quantity Controls and Add to Cart -->
+            <div class="mt-3 space-y-2">
+              {% if product.is_in_stock %}
+                <!-- Quantity Controls -->
+                <div class="flex items-center justify-center space-x-2">
+                  <button 
+                    type="button" 
+                    onclick="updateQuantity('qty-{{ product.id }}', -1)" 
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 transition-colors duration-200"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                    </svg>
+                  </button>
+                  
+                  <input 
+                    type="number" 
+                    id="qty-{{ product.id }}" 
+                    value="1" 
+                    min="1" 
+                    max="{{ product.stock_quantity|default:10 }}" 
+                    class="w-16 text-center border border-gray-300 rounded-md py-1 text-sm focus:outline-none focus:border-emerald-500"
+                    onchange="validateQuantity(this)"
+                  >
+                  
+                  <button 
+                    type="button" 
+                    onclick="updateQuantity('qty-{{ product.id }}', 1)" 
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 transition-colors duration-200"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Add to Cart Button -->
+                <button 
+                  onclick="addToCartWithQuantity({{ product.id }})" 
+                  class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 512 512">
+                    <path d="M454.66 169.4A31.86 31.86 0 0 0 432 160h-64v-16a112 112 0 0 0-224 0v16H80a32 32 0 0 0-32 32v216c0 39 33 72 72 72h272a72.22 72.22 0 0 0 50.48-20.55 69.48 69.48 0 0 0 21.52-50.2V192a31.78 31.78 0 0 0-9.34-22.6zM320 336h-48v48a16 16 0 0 1-32 0v-48h-48a16 16 0 0 1 0-32h48v-48a16 16 0 0 1 32 0v48h48a16 16 0 0 1 0 32zm16-176H176v-16a80 80 0 0 1 160 0z"></path>
+                  </svg>
+                  <span>Add to Cart</span>
+                </button>
+              {% else %}
+                <button disabled class="w-full bg-gray-400 text-white text-sm font-medium py-2 px-4 rounded-lg cursor-not-allowed">
+                  Out of Stock
+                </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-center mt-10">
+      <nav aria-label="Page navigation">
+        <ul class="inline-flex items-center -space-x-px">
+          {% if page_obj.has_previous %}
+            <li>
+              <a href="?page={{ page_obj.previous_page_number }}" class="py-2 px-3 ml-0 leading-tight text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700">Previous</a>
+            </li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li>
+                <a href="#" aria-current="page" class="py-2 px-3 text-blue-600 bg-blue-50 border border-gray-300 hover:bg-blue-100 hover:text-blue-700">{{ num }}</a>
+              </li>
+            {% else %}
+              <li>
+                <a href="?page={{ num }}" class="py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li>
+              <a href="?page={{ page_obj.next_page_number }}" class="py-2 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700">Next</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// Product-specific quantity controls
+function addToCartWithQuantity(productId) {
+  const quantityInput = document.getElementById(`qty-${productId}`);
+  const quantity = parseInt(quantityInput.value) || 1;
+  
+  // Use the existing addToCart function but with custom quantity
+  handleCartAction(productId, quantity, 'add');
+}
+
+function validateQuantity(input) {
+  const min = parseInt(input.getAttribute('min')) || 1;
+  const max = parseInt(input.getAttribute('max')) || 10;
+  let value = parseInt(input.value) || min;
+  
+  if (value < min) value = min;
+  if (value > max) value = max;
+  
+  input.value = value;
+}
+</script>
+{% endblock %}

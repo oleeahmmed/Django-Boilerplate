@@ -1850,3 +1850,5 @@ class Banner(TimeStampedModel):
         if self.end_date and now > self.end_date:
             return False
         return True
+
+
