@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{{ store_name }}{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    
+  </style>
   <script>
     tailwind.config = {
       content: [],
@@ -44,9 +47,9 @@
             <span class="mx-2">|</span>
             <a href="/contact-us">Contact Us</a>
             <span class="mx-2">|</span>
-            <a href="/auth/login">My Account</a>
+            <a href="/accounts/login/">My Account</a>
             <span class="mx-2">|</span>
-            <a href="/auth/login" class="flex items-center">
+            <a href="/accounts/login/" class="flex items-center">
               <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-2.svg" alt="Icon" class="h-3 w-3 mr-1" />
               Login
             </a>
@@ -106,7 +109,7 @@
 
             <!-- User Profile -->
             <div class="relative">
-              <a href="/auth/login" class="flex items-center -m-1.5 p-1.5">
+              <a href="/accounts/login/" class="flex items-center -m-1.5 p-1.5">
                 <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-6.svg" alt="Profile" class="h-6 w-6" />
               </a>
             </div>
@@ -229,6 +232,49 @@
     </button>
   </div>
 
+  <!-- Product Modal -->
+  <div id="productModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" id="modalContent">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 class="text-2xl font-bold text-gray-800" id="modalProductName">Product Details</h2>
+          <button onclick="closeProductModal()" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="space-y-4">
+              <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                <img id="modalMainImage" src="/placeholder.svg" alt="" class="w-full h-full object-contain">
+              </div>
+              <div id="modalImageThumbnails" class="flex space-x-2 overflow-x-auto"></div>
+            </div>
+            <div class="space-y-6">
+              <div id="modalPricing" class="text-3xl font-bold text-green-600"></div>
+              <div id="modalStockStatus" class="flex items-center space-x-2"></div>
+              <div id="modalShortDescription" class="text-gray-600"></div>
+              <div id="modalQuantitySection" class="space-y-3">
+                <label class="block text-sm font-medium text-gray-700">Quantity:</label>
+                <div class="flex items-center space-x-3">
+                  <button onclick="updateModalQuantity(-1)" class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors duration-200">-</button>
+                  <input type="number" id="modalQuantityInput" value="1" min="1" class="w-20 text-center border border-gray-300 rounded-md py-2">
+                  <button onclick="updateModalQuantity(1)" class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors duration-200">+</button>
+                </div>
+              </div>
+              <button id="modalAddToCartBtn" onclick="addToCartFromModal()" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-medium transition-colors duration-200">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Main Content Area - This is where your page content goes -->
   {% block content %}
   <main class="bg-gray-50 min-h-screen">
@@ -254,7 +300,7 @@
       <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-10.svg" alt="Cart" class="h-6 w-6" />
     </button>
     <button class="text-white bg-transparent p-0">
-      <a href="/auth/login">
+      <a href="/accounts/login/">
         <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-11.svg" alt="User" class="h-6 w-6" />
       </a>
     </button>
@@ -397,14 +443,17 @@
       }
 
       updateCartCounts(totalItems) {
-        const elements = ['cartCount', 'mobileCartCount'];
+        const elements = ['cartCount', 'mobileCartCount', 'fixedCartCount'];
         elements.forEach(id => {
           const element = document.getElementById(id);
-          if (element) element.textContent = totalItems;
+          if (element) {
+            if (id === 'fixedCartCount') {
+              element.textContent = `${totalItems} Items`;
+            } else {
+              element.textContent = totalItems;
+            }
+          }
         });
-
-        const fixedCartCount = document.getElementById('fixedCartCount');
-        if (fixedCartCount) fixedCartCount.textContent = `${totalItems} Items`;
       }
 
       updateCartTotals(subtotal) {
@@ -441,11 +490,11 @@
                 <p class="text-green-600 text-sm font-medium">{{ currency_symbol }}${item.total_price}</p>
               </div>
               <div class="flex items-center space-x-1">
-                <button onclick="cartManager.updateCartItem(${item.id}, ${item.quantity - 1})" class="text-gray-600 hover:text-gray-700 p-1 rounded hover:bg-gray-50">-</button>
-                <span>${item.quantity}</span>
-                <button onclick="cartManager.updateCartItem(${item.id}, ${item.quantity + 1})" class="text-gray-600 hover:text-gray-700 p-1 rounded hover:bg-gray-50">+</button>
+                <button onclick="cartManager.updateCartItem(${item.id}, ${item.quantity - 1})" class="text-gray-600 hover:text-gray-700 p-1 rounded hover:bg-gray-50 transition-colors duration-200">-</button>
+                <span class="text-sm font-medium">${item.quantity}</span>
+                <button onclick="cartManager.updateCartItem(${item.id}, ${item.quantity + 1})" class="text-gray-600 hover:text-gray-700 p-1 rounded hover:bg-gray-50 transition-colors duration-200">+</button>
               </div>
-              <button onclick="cartManager.removeCartItem(${item.id})" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50">
+              <button onclick="cartManager.removeCartItem(${item.id})" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
@@ -520,49 +569,60 @@
 
       showNotification(message, type) {
         const notification = document.createElement('div');
-        notification.className = `fixed top-5 right-5 z-[100] px-4 py-2 rounded-lg text-white ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+        notification.className = `fixed top-5 right-5 z-[100] px-4 py-2 rounded-lg text-white shadow-lg ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
         notification.textContent = message;
         document.body.appendChild(notification);
         setTimeout(() => notification.remove(), 3000);
       }
     }
 
-    // Initialize cart manager when DOM is loaded
+    function createProductCard(product) {
+      return `
+        <div class="group bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
+          <div class="relative aspect-square bg-gray-100 overflow-hidden">
+            <img src="${product.image_url || '/static/placeholder.png'}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            ${product.discount_percentage ? `<span class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">-${product.discount_percentage}%</span>` : ''}
+            ${!product.is_in_stock ? '<div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"><span class="bg-red-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-sm">Out of Stock</span></div>' : ''}
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black bg-opacity-30">
+              <button onclick="openProductModal(${product.id})" class="bg-white text-gray-700 hover:text-green-600 p-3 rounded-full shadow-lg transition-all duration-200 transform hover:scale-110">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="p-4 space-y-3">
+            <h3 class="font-medium text-gray-900 line-clamp-2 hover:text-green-600 transition-colors duration-200 cursor-pointer" onclick="openProductModal(${product.id})">${product.name}</h3>
+            <div class="flex items-center space-x-2">
+              <span class="text-lg font-bold text-green-600">{{ currency_symbol }}${product.current_price}</span>
+              ${product.original_price && product.original_price !== product.current_price ? `<span class="text-sm text-gray-500 line-through">{{ currency_symbol }}${product.original_price}</span>` : ''}
+            </div>
+            ${product.is_in_stock ? `
+              <div class="space-y-3">
+                <div class="flex items-center justify-center space-x-3">
+                  <button onclick="updateQuantity('qty-${product.id}', -1)" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 transition-colors duration-200">-</button>
+                  <input type="number" id="qty-${product.id}" value="1" min="1" max="${product.stock_quantity || 10}" class="w-16 text-center border border-gray-300 rounded-md py-1 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none" onchange="validateQuantity(this)">
+                  <button onclick="updateQuantity('qty-${product.id}', 1)" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 transition-colors duration-200">+</button>
+                </div>
+                <button onclick="addToCartWithQuantity(${product.id})" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200 shadow-sm">
+                  Add to Cart
+                </button>
+              </div>
+            ` : `
+              <button disabled class="w-full bg-gray-400 text-white py-2 px-4 rounded-lg cursor-not-allowed">Out of Stock</button>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
     let cartManager;
+    let currentModalProduct = null;
+
     document.addEventListener('DOMContentLoaded', function() {
       cartManager = new CartManager();
     });
-
-    // Global functions for backward compatibility
-    function addToCart(productId, quantity = 1, variantId = null) {
-      if (cartManager) {
-        cartManager.addToCart(productId, quantity, variantId);
-      }
-    }
-
-    function addToCartWithQuantity(productId) {
-      const quantityInput = document.getElementById(`qty-${productId}`);
-      const quantity = parseInt(quantityInput.value) || 1;
-      if (cartManager) {
-        cartManager.addToCart(productId, quantity);
-      }
-    }
-
-    function handleCartAction(productId, quantity = 1, action = 'add', variantId = null) {
-      if (cartManager) {
-        if (action === 'add') {
-          cartManager.addToCart(productId, quantity, variantId);
-        }
-      }
-    }
-
-    function handleCartActionWithVariant(productId, quantity = 1, action = 'add', variantId = null) {
-      if (cartManager) {
-        if (action === 'add') {
-          cartManager.addToCart(productId, quantity, variantId);
-        }
-      }
-    }
 
     function updateQuantity(inputId, change) {
       const input = document.getElementById(inputId);
@@ -588,6 +648,123 @@
       input.value = value;
     }
 
+    function addToCartWithQuantity(productId) {
+      const quantityInput = document.getElementById(`qty-${productId}`);
+      const quantity = parseInt(quantityInput.value) || 1;
+      if (cartManager) {
+        cartManager.addToCart(productId, quantity);
+      }
+    }
+
+    async function openProductModal(productId) {
+      try {
+        const modal = document.getElementById('productModal');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        const response = await fetch(`{% url 'ecommerce:product_detail_api' 0 %}`.replace('0', productId));
+        const data = await response.json();
+        
+        if (data.success) {
+          currentModalProduct = data.product;
+          populateModal(data.product);
+        }
+      } catch (error) {
+        console.error('Error loading product:', error);
+        closeProductModal();
+      }
+    }
+
+    function closeProductModal() {
+      const modal = document.getElementById('productModal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+      currentModalProduct = null;
+    }
+
+    function populateModal(product) {
+      document.getElementById('modalProductName').textContent = product.name;
+      
+      const mainImage = document.getElementById('modalMainImage');
+      if (product.images?.length) {
+        mainImage.src = product.images[0].url;
+        mainImage.alt = product.images[0].alt;
+      } else {
+        mainImage.src = product.image_url || '/static/placeholder.png';
+        mainImage.alt = product.name;
+      }
+      
+      const pricing = document.getElementById('modalPricing');
+      if (product.original_price && product.original_price !== product.current_price) {
+        pricing.innerHTML = `{{ currency_symbol }}${product.current_price} <span class="text-lg text-gray-500 line-through ml-2">{{ currency_symbol }}${product.original_price}</span>`;
+      } else {
+        pricing.textContent = `{{ currency_symbol }}${product.current_price}`;
+      }
+      
+      const stockStatus = document.getElementById('modalStockStatus');
+      stockStatus.innerHTML = product.is_in_stock ? 
+        '<span class="text-green-600 font-medium flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>In Stock</span>' : 
+        '<span class="text-red-600 font-medium flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>Out of Stock</span>';
+      
+      document.getElementById('modalShortDescription').textContent = product.short_description || product.description || '';
+      
+      const quantityInput = document.getElementById('modalQuantityInput');
+      quantityInput.value = 1;
+      quantityInput.max = product.stock_quantity || 10;
+      
+      const addToCartBtn = document.getElementById('modalAddToCartBtn');
+      if (!product.is_in_stock) {
+        addToCartBtn.disabled = true;
+        addToCartBtn.className = 'w-full bg-gray-400 cursor-not-allowed text-white py-3 px-6 rounded-lg';
+        addToCartBtn.textContent = 'Out of Stock';
+      } else {
+        addToCartBtn.disabled = false;
+        addToCartBtn.className = 'w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-medium transition-colors duration-200';
+        addToCartBtn.textContent = 'Add to Cart';
+      }
+    }
+
+    function updateModalQuantity(change) {
+      const input = document.getElementById('modalQuantityInput');
+      let value = parseInt(input.value) || 1;
+      const max = parseInt(input.getAttribute('max')) || 10;
+      const min = parseInt(input.getAttribute('min')) || 1;
+      value = Math.max(min, Math.min(max, value + change));
+      input.value = value;
+    }
+
+    function addToCartFromModal() {
+      if (!currentModalProduct?.is_in_stock) return;
+      
+      const quantity = parseInt(document.getElementById('modalQuantityInput').value) || 1;
+      if (cartManager) {
+        cartManager.addToCart(currentModalProduct.id, quantity);
+        closeProductModal();
+      }
+    }
+
+    function addToCart(productId, quantity = 1, variantId = null) {
+      if (cartManager) {
+        cartManager.addToCart(productId, quantity, variantId);
+      }
+    }
+
+    function handleCartAction(productId, quantity = 1, action = 'add', variantId = null) {
+      if (cartManager) {
+        if (action === 'add') {
+          cartManager.addToCart(productId, quantity, variantId);
+        }
+      }
+    }
+
+    function handleCartActionWithVariant(productId, quantity = 1, action = 'add', variantId = null) {
+      if (cartManager) {
+        if (action === 'add') {
+          cartManager.addToCart(productId, quantity, variantId);
+        }
+      }
+    }
+
     function showNotification(message, type) {
       if (cartManager) {
         cartManager.showNotification(message, type);
@@ -609,22 +786,19 @@
       return cookieValue;
     }
 
-    // Legacy modal functions (keeping for compatibility)
-    function openModal(productId) {
-      const modal = document.getElementById(`product-modal-${productId}`);
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.setAttribute('data-open', '');
-      }
-    }
+    document.addEventListener('click', function(event) {
+      const modal = document.getElementById('productModal');
+      if (event.target === modal) closeProductModal();
+    });
 
-    function closeModal(productId) {
-      const modal = document.getElementById(`product-modal-${productId}`);
-      if (modal) {
-        modal.classList.add('hidden');
-        modal.removeAttribute('data-open');
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        const modal = document.getElementById('productModal');
+        if (!modal.classList.contains('hidden')) {
+          closeProductModal();
+        }
       }
-    }
+    });
   </script>
 
   {% block extra_js %}{% endblock %}
