@@ -3,7 +3,7 @@ from django.urls import path, re_path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
-from .views import GoogleLogin
+from .views import GoogleLogin, ProfileView
 
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -21,6 +21,7 @@ schema_view = get_schema_view(
    public=True,
    permission_classes=(permissions.AllowAny,),
 )
+
 urlpatterns = [
     
     # path('', views.home, name='home'),
@@ -38,11 +39,11 @@ urlpatterns = [
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 
-# Debug Toolbar শুধু development mode এ লোড হবে
+# Debug Toolbar only in development mode
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns += [
-        path("__debug__/", include(debug_toolbar.urls)),
+        path('__debug__/', include(debug_toolbar.urls)),
     ]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
