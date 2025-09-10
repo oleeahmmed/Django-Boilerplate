@@ -35,8 +35,12 @@ urlpatterns = [
     path('about-us/', views.about_us, name='about_us'),
     path('contact-us/', views.contact_us, name='contact_us'),
     path('faq/', views.faq, name='faq'),  
-
-
+    
+    # SEO-friendly dedicated pages
+    path('cart/', views.cart_page, name='cart_page'),
+    path('search/', views.search_page, name='search_page'),
+    path('category/<slug:category_slug>/', views.category_page, name='category_page'),
+    
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('terms-and-conditions', views.terms_conditions, name='terms_conditions'),      
 ]

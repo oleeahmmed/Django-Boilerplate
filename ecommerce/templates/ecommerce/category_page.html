@@ -1,0 +1,155 @@
+{% extends 'ecommerce/base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - {{ store_name|default:"Grocery Store" }}{% endblock %}
+
+{% block content %}
+<main class="bg-gray-50 min-h-screen py-8">
+  <div class="max-w-screen-2xl mx-auto px-3 md:px-10">
+    
+    <!-- Breadcrumb -->
+    <nav class="mb-8">
+      <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="{% url 'ecommerce:home' %}" class="hover:text-green-600">Home</a></li>
+        <li><span class="mx-2">/</span></li>
+        {% if category.parent %}
+          <li><a href="{% url 'ecommerce:category_page' category.parent.slug %}" class="hover:text-green-600">{{ category.parent.name }}</a></li>
+          <li><span class="mx-2">/</span></li>
+        {% endif %}
+        <li class="text-gray-900 font-medium">{{ category.name }}</li>
+      </ol>
+    </nav>
+
+    <!-- Category Header -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ category.name }}</h1>
+          {% if category.description %}
+            <p class="text-gray-600 mb-4">{{ category.description }}</p>
+          {% endif %}
+          <p class="text-gray-500">{{ total_products }} product{{ total_products|pluralize }} available</p>
+        </div>
+        
+        {% if category.image %}
+          <div class="hidden md:block">
+            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-32 h-32 object-cover rounded-lg">
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Subcategories -->
+    {% if subcategories %}
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Subcategories</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {% for subcategory in subcategories %}
+            <a href="{% url 'ecommerce:category_page' subcategory.slug %}" class="text-center p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:shadow-md transition-all">
+              {% if subcategory.image %}
+                <img src="{{ subcategory.image.url }}" alt="{{ subcategory.name }}" class="w-16 h-16 object-cover rounded-lg mx-auto mb-2">
+              {% else %}
+                <div class="w-16 h-16 bg-gray-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                  </svg>
+                </div>
+              {% endif %}
+              <h3 class="font-medium text-sm text-gray-900">{{ subcategory.name }}</h3>
+              <p class="text-xs text-gray-500 mt-1">{{ subcategory.product_count }} items</p>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Products -->
+    {% if page_obj.object_list %}
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-gray-900">Products</h2>
+          <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-500">Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ total_products }}</span>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          {% for product in page_obj %}
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+              <div class="aspect-square bg-gray-100 relative">
+                {% if product.images.all %}
+                  <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="text-gray-400">No Image</span>
+                  </div>
+                {% endif %}
+                
+                {% if product.discount_percentage %}
+                  <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                    -{{ product.discount_percentage }}%
+                  </span>
+                {% endif %}
+              </div>
+              
+              <div class="p-4">
+                <h3 class="font-medium text-gray-900 mb-2 line-clamp-2">{{ product.name }}</h3>
+                
+                <div class="flex items-center justify-between">
+                  <div class="flex flex-col">
+                    <span class="text-green-600 font-semibold">${{ product.current_price }}</span>
+                    {% if product.price != product.current_price %}
+                      <span class="text-gray-400 text-sm line-through">${{ product.price }}</span>
+                    {% endif %}
+                  </div>
+                  
+                  <button class="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0L4 5H2"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+          <div class="flex justify-center mt-8">
+            <nav class="flex items-center space-x-2">
+              {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 text-gray-500 hover:text-gray-700">Previous</a>
+              {% endif %}
+              
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                  <span class="px-3 py-2 bg-green-600 text-white rounded">{{ num }}</span>
+                {% else %}
+                  <a href="?page={{ num }}" class="px-3 py-2 text-gray-500 hover:text-gray-700">{{ num }}</a>
+                {% endif %}
+              {% endfor %}
+              
+              {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 text-gray-500 hover:text-gray-700">Next</a>
+              {% endif %}
+            </nav>
+          </div>
+        {% endif %}
+      </div>
+    {% else %}
+      <!-- No Products -->
+      <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No products in this category</h3>
+        <p class="text-gray-500 mb-6">Check back later or browse other categories</p>
+        <a href="{% url 'ecommerce:product_list' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+          Browse All Products
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}

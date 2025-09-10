@@ -1,0 +1,134 @@
+{% extends 'ecommerce/base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if search_query %}Search Results for "{{ search_query }}" - {{ store_name|default:"Grocery Store" }}{% else %}Search - {{ store_name|default:"Grocery Store" }}{% endif %}
+{% endblock %}
+
+{% block content %}
+<main class="bg-gray-50 min-h-screen py-8">
+  <div class="max-w-screen-2xl mx-auto px-3 md:px-10">
+    
+    <!-- Breadcrumb -->
+    <nav class="mb-8">
+      <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="{% url 'ecommerce:home' %}" class="hover:text-green-600">Home</a></li>
+        <li><span class="mx-2">/</span></li>
+        <li class="text-gray-900 font-medium">Search Results</li>
+      </ol>
+    </nav>
+
+    <!-- Search Header -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          {% if search_query %}
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">Search Results for "{{ search_query }}"</h1>
+            <p class="text-gray-600">{{ total_results }} product{{ total_results|pluralize }} found</p>
+          {% else %}
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">Search Products</h1>
+            <p class="text-gray-600">Enter a search term to find products</p>
+          {% endif %}
+        </div>
+        
+        <!-- Search Form -->
+        <div class="mt-4 md:mt-0 md:ml-6">
+          <form method="GET" class="flex">
+            <input 
+              type="text" 
+              name="q" 
+              value="{{ search_query }}" 
+              placeholder="Search for products..." 
+              class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-r-lg hover:bg-green-700 transition-colors">
+              Search
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    {% if search_query and page_obj.object_list %}
+      <!-- Products Grid -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="searchResults">
+          {% for product in page_obj %}
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+              <div class="aspect-square bg-gray-100 relative">
+                {% if product.images.all %}
+                  <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="text-gray-400">No Image</span>
+                  </div>
+                {% endif %}
+                
+                {% if product.discount_percentage %}
+                  <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                    -{{ product.discount_percentage }}%
+                  </span>
+                {% endif %}
+              </div>
+              
+              <div class="p-4">
+                <h3 class="font-medium text-gray-900 mb-2 line-clamp-2">{{ product.name }}</h3>
+                
+                <div class="flex items-center justify-between">
+                  <div class="flex flex-col">
+                    <span class="text-green-600 font-semibold">${{ product.current_price }}</span>
+                    {% if product.price != product.current_price %}
+                      <span class="text-gray-400 text-sm line-through">${{ product.price }}</span>
+                    {% endif %}
+                  </div>
+                  
+                  <button class="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0L4 5H2"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+          <div class="flex justify-center mt-8">
+            <nav class="flex items-center space-x-2">
+              {% if page_obj.has_previous %}
+                <a href="?q={{ search_query }}&page={{ page_obj.previous_page_number }}" class="px-3 py-2 text-gray-500 hover:text-gray-700">Previous</a>
+              {% endif %}
+              
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                  <span class="px-3 py-2 bg-green-600 text-white rounded">{{ num }}</span>
+                {% else %}
+                  <a href="?q={{ search_query }}&page={{ num }}" class="px-3 py-2 text-gray-500 hover:text-gray-700">{{ num }}</a>
+                {% endif %}
+              {% endfor %}
+              
+              {% if page_obj.has_next %}
+                <a href="?q={{ search_query }}&page={{ page_obj.next_page_number }}" class="px-3 py-2 text-gray-500 hover:text-gray-700">Next</a>
+              {% endif %}
+            </nav>
+          </div>
+        {% endif %}
+      </div>
+    {% elif search_query %}
+      <!-- No Results -->
+      <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+        <p class="text-gray-500 mb-6">Try adjusting your search terms or browse our categories</p>
+        <a href="{% url 'ecommerce:product_list' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+          Browse All Products
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}

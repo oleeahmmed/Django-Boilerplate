@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -171,7 +173,7 @@
       <div class="border-t border-gray-200 p-4">
         <div class="flex items-center space-x-3">
           <div class="flex-shrink-0">
-            <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/logo-color_el4zmy.svg" alt="{{ store_name }}" class="h-8" />
+            <img src="{% static 'images/logo.png' %}" alt="{{ store_name }}" class="h-8" />
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-xs text-gray-500">{{ contact_email }}</p>
@@ -192,7 +194,7 @@
       <div class="max-w-screen-2xl mx-auto px-3 md:px-10">
         <div class="text-gray-600 text-xs font-medium flex items-center justify-between py-2">
           <span class="flex items-center">
-            <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-1.svg" alt="Icon" class="h-3 w-3 mr-2" />
+            <img src="{% static 'assets/icon-1.svg' %}" alt="Icon" class="h-3 w-3 mr-2" />
             We are available 24/7, Need help?
             <a href="tel://{{ contact_phone }}" class="text-green-600 font-bold ml-1">{{ contact_phone }}</a>
           </span>
@@ -204,7 +206,7 @@
             <a href="/accounts/login/">My Account</a>
             <span class="mx-2">|</span>
             <a href="/accounts/login/" class="flex items-center">
-              <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-2.svg" alt="Icon" class="h-3 w-3 mr-1" />
+              <img src="{% static 'assets/icon-2.svg' %}" alt="Icon" class="h-3 w-3 mr-1" />
               Login
             </a>
           </div>
@@ -227,7 +229,7 @@
             <!-- Logo -->
             <div class="relative hidden md:flex items-center">
               <a href="/" class="flex items-center">
-                <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/logo-light.svg" alt="{{ store_name }}" class="h-8" />
+                <img src="{% static 'images/logo.png' %}" alt="{{ store_name }}" class="h-20" />
               </a>
             </div>
           </div>
@@ -243,7 +245,7 @@
                   />
                 </label>
                 <button type="submit" class="absolute flex items-center justify-center h-full w-12 md:w-14 right-0 top-0 bg-transparent">
-                  <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-3.svg" alt="Search" class="h-5 w-5" />
+                  <img src="{% static 'assets/icon-3.svg' %}" alt="Search" class="h-5 w-5" />
                 </button>
               </form>
             </div>
@@ -258,13 +260,13 @@
               aria-label="Cart with items" 
               class="relative text-white bg-transparent mx-2 p-2 rounded-full hover:bg-white hover:bg-opacity-10 transition-all duration-200"
             >
-              <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-4.svg" alt="Cart" class="h-6 w-6" />
+              <img src="{% static 'assets/icon-4.svg' %}" alt="Cart" class="h-6 w-6" />
               <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">{{ cart_items_count }}</span>
             </button>
 
             <!-- Notification -->
             <button type="button" class="relative text-white bg-transparent mx-2 p-2 rounded-full hover:bg-white hover:bg-opacity-10 transition-all duration-200">
-              <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-5.svg" alt="Notification" class="h-6 w-6" />
+              <img src="{% static 'assets/icon-5.svg' %}" alt="Notification" class="h-6 w-6" />
               <span class="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">3</span>
             </button>
 
@@ -273,7 +275,7 @@
             <!-- User Profile -->
             <div class="relative">
               <a href="/accounts/login/" class="flex items-center -m-1.5 p-1.5">
-                <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-6.svg" alt="Profile" class="h-6 w-6" />
+                <img src="{% static 'assets/icon-6.svg' %}" alt="Profile" class="h-6 w-6" />
               </a>
             </div>
           </div>
@@ -289,7 +291,7 @@
             <div class="relative mr-10 group">
               <button type="button" class="flex items-center bg-transparent px-0 py-2 hover:text-green-600 transition-colors duration-200">
                 <span class="text-sm font-medium">Categories</span>
-                <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-7.svg" alt="Arrow" class="h-3 w-3 ml-1 transform group-hover:rotate-180 transition-transform duration-200" />
+                <img src="{% static 'assets/icon-7.svg' %}" alt="Arrow" class="h-3 w-3 ml-1 transform group-hover:rotate-180 transition-transform duration-200" />
               </button>
               <!-- Categories Dropdown -->
               <div class="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
@@ -306,7 +308,7 @@
             <div class="relative mr-10 group">
               <button type="button" class="text-sm font-medium flex items-center bg-transparent px-0 py-2 hover:text-green-600 transition-colors duration-200">
                 <span>Pages</span>
-                <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-7.svg" alt="Arrow" class="h-3 w-3 ml-1 transform group-hover:rotate-180 transition-transform duration-200" />
+                <img src="{% static 'assets/icon-7.svg' %}" alt="Arrow" class="h-3 w-3 ml-1 transform group-hover:rotate-180 transition-transform duration-200" />
               </button>
               <!-- Pages Dropdown -->
               <div class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
@@ -385,7 +387,7 @@
     <button id="fixedCartWidget" class="shadow-lg">
       <div class="text-[oklch(0.373_0.034_259.733)] items-center bg-[oklch(0.962_0.018_272.314)] box-border caret-transparent flex flex-col justify-center outline-[oklab(0.704_-0.00914218_-0.0389412_/_0.5)] p-2 rounded-tl-[10px]">
         <span class="text-[oklch(0.596_0.145_163.225)] text-2xl box-border caret-transparent block leading-8 min-h-0 min-w-0 outline-[oklab(0.704_-0.00914218_-0.0389412_/_0.5)] mb-1 md:min-h-[auto] md:min-w-[auto]">
-          <img src="https://c.animaapp.com/mf9yy6srig4Ymu/assets/icon-12.svg" alt="Icon" class="box-border caret-transparent h-6 outline-[oklab(0.704_-0.00914218_-0.0389412_/_0.5)] w-6">
+          <img src="{% static 'assets/icon-12.svg' %}"" alt="Icon" class="box-border caret-transparent h-6 outline-[oklab(0.704_-0.00914218_-0.0389412_/_0.5)] w-6">
         </span>
         <span id="fixedCartCount" class="text-sm font-medium box-border caret-transparent block leading-5 min-h-0 min-w-0 outline-[oklab(0.704_-0.00914218_-0.0389412_/_0.5)] px-2 md:min-h-[auto] md:min-w-[auto]">{{ cart_items_count }} Items</span>
       </div>
@@ -412,7 +414,7 @@
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="space-y-4">
               <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                <img id="modalMainImage" src="/placeholder.svg" alt="" class="w-full h-full object-contain">
+                <img id="modalMainImage" src="/placeholder.svg' %}" alt="" class="w-full h-full object-contain">
               </div>
               <div id="modalImageThumbnails" class="flex space-x-2 overflow-x-auto"></div>
             </div>
@@ -453,18 +455,18 @@
   <!-- Mobile Footer -->
   <footer class="fixed flex items-center bg-green-600 h-16 justify-between w-full z-30 px-3 bottom-0 md:hidden">
     <button id="mobileSidebarToggle" class="relative flex items-center bg-transparent shrink-0 justify-center p-0">
-      <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-8.svg" alt="Menu" class="h-6 w-6" />
+      <img src="{% static 'assets/icon-8.svg' %}" alt="Menu" class="h-6 w-6" />
     </button>
     <a href="/" class="text-white">
-      <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-9.svg" alt="Home" class="h-6 w-6" />
+      <img src="{% static 'assets/icon-9.svg' %}" alt="Home" class="h-6 w-6" />
     </a>
     <button id="mobileCartButton" class="relative text-white flex items-center bg-transparent h-9 justify-center w-9 p-0 hover:bg-white hover:bg-opacity-10 rounded-full transition-all duration-200">
       <span id="mobileCartCount" class="absolute text-orange-100 text-xs font-bold flex items-center bg-orange-600 h-5 justify-center w-5 z-10 rounded-full right-0 top-0">{{ cart_items_count }}</span>
-      <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-10.svg" alt="Cart" class="h-6 w-6" />
+      <img src="{% static 'assets/icon-10.svg' %}" alt="Cart" class="h-6 w-6" />
     </button>
     <button class="text-white bg-transparent p-0">
       <a href="/accounts/login/">
-        <img src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/icon-11.svg" alt="User" class="h-6 w-6" />
+        <img src="{% static 'assets/icon-11.svg' %}" alt="User" class="h-6 w-6" />
       </a>
     </button>
   </footer>
@@ -525,7 +527,7 @@
           <div class="col-span-1 md:col-span-3 pb-3.5 md:pb-0">
             <a href="/" class="mr-3 md:mr-12">
               <div class="relative h-10 w-32">
-                <img alt="logo" src="https://c.animaapp.com/mfaj60kbS2rNNW/assets/logo-color_el4zmy.svg" class="w-full" />
+                <img alt="logo" src="{% static 'images/logo.png' %}" class="w-full" />
               </div>
             </a>
             <p class="text-gray-600 text-sm mt-3">

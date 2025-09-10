@@ -1,0 +1,275 @@
+{% extends 'ecommerce/base.html' %}
+{% load static %}
+
+{% block title %}
+  Shopping Cart - {{ store_name|default:"Grocery Store" }}
+{% endblock %}
+
+{% block content %}
+<main class="bg-gray-50 min-h-screen">
+  <div class="max-w-screen-2xl mx-auto px-3 md:px-10 py-10">
+    
+    <!-- Breadcrumb -->
+    <nav class="flex mb-8" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <a href="/" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-green-600">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+            </svg>
+            Home
+          </a>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Shopping Cart</span>
+          </div>
+        </li>
+      </ol>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Cart Items -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow-sm">
+          <div class="p-6 border-b border-gray-200">
+            <h1 class="text-2xl font-bold text-gray-900">Shopping Cart</h1>
+            <p class="text-gray-600 mt-1">Review your items before checkout</p>
+          </div>
+          
+          <div id="cartItems" class="divide-y divide-gray-200">
+            <!-- Cart items will be populated by JavaScript -->
+          </div>
+          
+          <!-- Empty cart message -->
+          <div id="emptyCart" class="p-8 text-center">
+            <div class="text-gray-400 text-6xl mb-4">🛒</div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Your cart is empty</h3>
+            <p class="text-gray-600 mb-6">Add some products to get started</p>
+            <a href="{% url 'ecommerce:product_list' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+              Continue Shopping
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-sm p-6 sticky top-24">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+          
+          <div class="space-y-3 mb-6">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Subtotal</span>
+              <span id="subtotal" class="font-medium">$0.00</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Shipping</span>
+              <span id="shipping" class="font-medium">$5.99</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Tax</span>
+              <span id="tax" class="font-medium">$0.00</span>
+            </div>
+            <div class="border-t border-gray-200 pt-3">
+              <div class="flex justify-between">
+                <span class="text-base font-semibold text-gray-900">Total</span>
+                <span id="total" class="text-base font-semibold text-gray-900">$0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <button 
+            id="checkoutBtn"
+            class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled
+          >
+            Proceed to Checkout
+          </button>
+          
+          <div class="mt-4 text-center">
+            <a href="{% url 'ecommerce:product_list' %}" class="text-green-600 hover:text-green-700 text-sm font-medium">
+              ← Continue Shopping
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+function updateQuantity(productId, change) {
+  const item = cart.find(item => item.id === productId);
+  if (item) {
+    const newQuantity = item.quantity + change;
+    if (newQuantity > 0) {
+      item.quantity = newQuantity;
+    } else {
+      removeFromCart(productId);
+      return;
+    }
+    saveCart();
+    renderCart();
+    updateOrderSummary();
+    updateCartCount();
+  }
+}
+
+function removeFromCart(productId) {
+  cart = cart.filter(item => item.id !== productId);
+  saveCart();
+  renderCart();
+  updateOrderSummary();
+  updateCartCount();
+}
+
+function addToCart(productId, productName, price, imageUrl = null) {
+  const existingItem = cart.find(item => item.id === productId);
+  
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({
+      id: productId,
+      name: productName,
+      price: parseFloat(price),
+      quantity: 1,
+      image: imageUrl
+    });
+  }
+  
+  saveCart();
+  updateCartCount();
+  
+  // Show success message
+  const toast = document.createElement('div');
+  toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300';
+  toast.textContent = `${productName} added to cart!`;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.classList.remove('translate-x-full');
+  }, 100);
+  
+  setTimeout(() => {
+    toast.classList.add('translate-x-full');
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 300);
+  }, 2000);
+}
+
+function saveCart() {
+  localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function updateCartCount() {
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = document.getElementById('cartCount');
+  const mobileCartCount = document.getElementById('mobileCartCount');
+  
+  if (cartCount) cartCount.textContent = totalItems;
+  if (mobileCartCount) mobileCartCount.textContent = totalItems;
+}
+
+function renderCart() {
+  const cartItemsContainer = document.getElementById('cartItems');
+  const emptyCartContainer = document.getElementById('emptyCart');
+  
+  if (cart.length === 0) {
+    cartItemsContainer.style.display = 'none';
+    emptyCartContainer.style.display = 'block';
+    return;
+  }
+  
+  cartItemsContainer.style.display = 'block';
+  emptyCartContainer.style.display = 'none';
+  
+  cartItemsContainer.innerHTML = cart.map(item => `
+    <div class="p-6 flex items-center space-x-4">
+      <div class="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+        ${item.image ? 
+          `<img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover rounded-lg">` :
+          `<div class="text-gray-400 text-2xl">📦</div>`
+        }
+      </div>
+      
+      <div class="flex-1 min-w-0">
+        <h3 class="text-lg font-medium text-gray-900 truncate">${item.name}</h3>
+        <p class="text-sm text-gray-500">$${item.price.toFixed(2)} each</p>
+      </div>
+      
+      <div class="flex items-center space-x-3">
+        <button 
+          onclick="updateQuantity(${item.id}, -1)"
+          class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+          </svg>
+        </button>
+        
+        <span class="w-12 text-center font-medium">${item.quantity}</span>
+        
+        <button 
+          onclick="updateQuantity(${item.id}, 1)"
+          class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="text-lg font-semibold text-gray-900 w-20 text-right">
+        $${(item.price * item.quantity).toFixed(2)}
+      </div>
+      
+      <button 
+        onclick="removeFromCart(${item.id})"
+        class="text-red-500 hover:text-red-700 p-2"
+        title="Remove item"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+function updateOrderSummary() {
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const shipping = subtotal > 0 ? 5.99 : 0;
+  const tax = subtotal * 0.08; // 8% tax
+  const total = subtotal + shipping + tax;
+  
+  document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+  document.getElementById('shipping').textContent = subtotal > 0 ? `$${shipping.toFixed(2)}` : '$0.00';
+  document.getElementById('tax').textContent = `$${tax.toFixed(2)}`;
+  document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+  
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  checkoutBtn.disabled = cart.length === 0;
+}
+
+// Initialize cart on page load
+document.addEventListener('DOMContentLoaded', function() {
+  renderCart();
+  updateOrderSummary();
+  updateCartCount();
+});
+
+// Make functions globally available
+window.addToCart = addToCart;
+window.updateQuantity = updateQuantity;
+window.removeFromCart = removeFromCart;
+</script>
+{% endblock %}

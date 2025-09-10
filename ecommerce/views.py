@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
@@ -195,6 +195,17 @@ def cart_api(request):
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
+def cart_page(request):
+    """Dedicated cart page for SEO and better UX"""
+    cart, customer = get_or_create_cart(request)
+    
+    context = {
+        'cart': cart,
+        'cart_items': cart.items.select_related('product', 'variant').prefetch_related('product__images').all() if cart else [],
+        'customer': customer,
+    }
+    
+    return render(request, 'ecommerce/cart_page.html', context)
 
 def home(request):
     """Home page view with product grids and categories"""
@@ -968,15 +979,6 @@ def product_detail_api(request, product_id):
         if product.length and product.width and product.height:
             specifications['Dimensions'] = f"{product.length} x {product.width} x {product.height} cm"
         
-        # Calculate average rating
-        avg_rating = 0
-        review_count = product.reviews.filter(is_approved=True).count()
-        if review_count > 0:
-            from django.db.models import Avg
-            avg_rating = product.reviews.filter(is_approved=True).aggregate(
-                avg_rating=Avg('rating')
-            )['avg_rating'] or 0
-        
         product_data = {
             'id': product.id,
             'name': product.name,
@@ -1005,8 +1007,8 @@ def product_detail_api(request, product_id):
             'tags': tags,
             'specifications': specifications,
             'reviews': reviews,
-            'review_count': review_count,
-            'avg_rating': round(avg_rating, 1) if avg_rating else 0,
+            'review_count': len(reviews),
+            'avg_rating': round(sum(review['rating'] for review in reviews) / len(reviews), 1) if reviews else 0,
             'meta_title': product.meta_title,
             'meta_description': product.meta_description,
             'is_featured': product.is_featured,
@@ -1043,8 +1045,6 @@ def faq(request):
     """FAQ page view"""
     return render(request, 'ecommerce/faq.html')
 
-
-
 def privacy_policy(request):
     """Privacy Policy page view"""
     return render(request, 'ecommerce/privacy_policy.html')
@@ -1052,3 +1052,75 @@ def privacy_policy(request):
 def terms_conditions(request):
     """Terms and Conditions page view"""
     return render(request, 'ecommerce/terms_conditions.html')
+
+def search_page(request):
+    """Dedicated search results page for SEO"""
+    search_query = request.GET.get('q', '').strip()
+    products = Product.objects.none()
+    
+    if search_query:
+        products = Product.objects.filter(
+            is_active=True
+        ).filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(short_description__icontains=search_query) |
+            Q(brand__name__icontains=search_query) |
+            Q(category__name__icontains=search_query) |
+            Q(tags__name__icontains=search_query)
+        ).select_related('brand', 'category').prefetch_related(
+            'images', 'reviews'
+        ).annotate(
+            avg_rating=Avg('reviews__rating'),
+            review_count=Count('reviews')
+        ).distinct().order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'search_query': search_query,
+        'page_obj': page_obj,
+        'total_results': paginator.count,
+    }
+    
+    return render(request, 'ecommerce/search_page.html', context)
+
+def category_page(request, category_slug):
+    """Dedicated category page for SEO"""
+    try:
+        category = Category.objects.get(slug=category_slug, is_active=True)
+    except Category.DoesNotExist:
+        raise Http404("Category not found")
+    
+    products = Product.objects.filter(
+        is_active=True
+    ).filter(
+        Q(category=category) | Q(category__parent=category)
+    ).select_related('brand', 'category').prefetch_related(
+        'images', 'reviews'
+    ).annotate(
+        avg_rating=Avg('reviews__rating'),
+        review_count=Count('reviews')
+    ).order_by('-created_at')
+    
+    # Get subcategories
+    subcategories = category.children.filter(is_active=True).annotate(
+        product_count=Count('products', filter=Q(products__is_active=True))
+    )
+    
+    # Pagination
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'category': category,
+        'subcategories': subcategories,
+        'page_obj': page_obj,
+        'total_products': paginator.count,
+    }
+    
+    return render(request, 'ecommerce/category_page.html', context)
