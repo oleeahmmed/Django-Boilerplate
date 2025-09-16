@@ -180,7 +180,115 @@ UNFOLD = {
                     },
                 ],
             },
-
+{
+                "title": _("Ecommerce"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Categories"),
+                        "icon": "category",
+                        "link": "/admin/ecommerce/category/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Brands"),
+                        "icon": "store",
+                        "link": "/admin/ecommerce/brand/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Tags"),
+                        "icon": "label",
+                        "link": "/admin/ecommerce/tag/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Products"),
+                        "icon": "inventory_2",
+                        "link": "/admin/ecommerce/product/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Product Variants"),
+                        "icon": "tune",
+                        "link": "/admin/ecommerce/productvariant/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Customers"),
+                        "icon": "person",
+                        "link": "/admin/ecommerce/customer/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Orders"),
+                        "icon": "shopping_cart",
+                        "link": "/admin/ecommerce/order/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Carts"),
+                        "icon": "shopping_bag",
+                        "link": "/admin/ecommerce/cart/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Reviews"),
+                        "icon": "rate_review",
+                        "link": "/admin/ecommerce/review/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Wishlist"),
+                        "icon": "favorite",
+                        "link": "/admin/ecommerce/wishlist/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Addresses"),
+                        "icon": "location_on",
+                        "link": "/admin/ecommerce/address/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Coupons"),
+                        "icon": "local_offer",
+                        "link": "/admin/ecommerce/coupon/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Shipping Methods"),
+                        "icon": "local_shipping",
+                        "link": "/admin/ecommerce/shippingmethod/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Payment Methods"),
+                        "icon": "payment",
+                        "link": "/admin/ecommerce/paymentmethod/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Store Settings"),
+                        "icon": "settings",
+                        "link": "/admin/ecommerce/storesettings/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("Banners"),
+                        "icon": "photo",
+                        "link": "/admin/ecommerce/banner/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                    {
+                        "title": _("FAQs"),
+                        "icon": "help",
+                        "link": "/admin/ecommerce/faq/",
+                        "permission": lambda request: request.user.is_superuser,
+                    },
+                ],
+            },
 
 
 
