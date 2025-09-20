@@ -179,9 +179,9 @@ UNFOLD = {
                         "permission": lambda request: request.user.is_superuser,
                     },
                 ],
-            },  
+            },     
             
-               {
+            {
                 "title": _("HR & Payroll"),
                 "separator": True,
                 "collapsible": True,
@@ -277,7 +277,7 @@ UNFOLD = {
                         "permission": lambda request: request.user.is_superuser,
                     },
                 ],
-            },    
+            },       
         ],
     },
 }
