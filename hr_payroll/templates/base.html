@@ -1,0 +1,752 @@
+
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>{% block title %}ZKTeco Device Management{% endblock %}</title>
+ <script src="https://cdn.tailwindcss.com"></script>
+ <script>
+   tailwind.config = {
+     darkMode: "class",
+     theme: {
+       container: {
+         center: true,
+         padding: "2rem",
+         screens: {
+           "2xl": "1400px",
+         },
+       },
+       extend: {
+         colors: {
+           border: "hsl(var(--border))",
+           input: "hsl(var(--input))",
+           ring: "hsl(var(--ring))",
+           background: "hsl(var(--background))",
+           foreground: "hsl(var(--foreground))",
+           primary: {
+             DEFAULT: "hsl(var(--primary))",
+             foreground: "hsl(var(--primary-foreground))",
+           },
+           secondary: {
+             DEFAULT: "hsl(var(--secondary))",
+             foreground: "hsl(var(--secondary-foreground))",
+           },
+           destructive: {
+             DEFAULT: "hsl(var(--destructive))",
+             foreground: "hsl(var(--destructive-foreground))",
+           },
+           muted: {
+             DEFAULT: "hsl(var(--muted))",
+             foreground: "hsl(var(--muted-foreground))",
+           },
+           accent: {
+             DEFAULT: "hsl(var(--accent))",
+             foreground: "hsl(var(--accent-foreground))",
+           },
+           popover: {
+             DEFAULT: "hsl(var(--popover))",
+             foreground: "hsl(var(--popover-foreground))",
+           },
+           card: {
+             DEFAULT: "hsl(var(--card))",
+             foreground: "hsl(var(--card-foreground))",
+           },
+         },
+         borderRadius: {
+           lg: "var(--radius)",
+           md: "calc(var(--radius) - 2px)",
+           sm: "calc(var(--radius) - 4px)",
+         },
+         keyframes: {
+           "slide-in": {
+             from: { opacity: 0, transform: "translateX(-10px)" },
+             to: { opacity: 1, transform: "translateX(0)" },
+           },
+           "fade-in": {
+             from: { opacity: 0, transform: "translateY(10px)" },
+             to: { opacity: 1, transform: "translateY(0)" },
+           },
+           "pulse-glow": {
+             "0%, 100%": { boxShadow: "0 0 5px rgba(59, 130, 246, 0.5)" },
+             "50%": { boxShadow: "0 0 20px rgba(59, 130, 246, 0.8)" },
+           },
+           "gradient-shift": {
+             "0%, 100%": { backgroundPosition: "0% 50%" },
+             "50%": { backgroundPosition: "100% 50%" },
+           },
+         },
+         animation: {
+           "slide-in": "slide-in 0.3s ease-out",
+           "fade-in": "fade-in 0.2s ease-in-out",
+           "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+           "gradient-shift": "gradient-shift 3s ease infinite",
+         },
+         backgroundImage: {
+           'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+           'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+         },
+       },
+     },
+   }
+ </script>
+ <style>
+   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+   
+   :root {
+     --background: 220 20% 97%;
+     --foreground: 220 15% 9%;
+     --card: 0 0% 100%;
+     --card-foreground: 220 15% 9%;
+     --popover: 0 0% 100%;
+     --popover-foreground: 220 15% 9%;
+     --primary: 217 91% 60%;
+     --primary-foreground: 0 0% 100%;
+     --secondary: 220 14% 96%;
+     --secondary-foreground: 220 9% 46%;
+     --muted: 220 14% 96%;
+     --muted-foreground: 220 9% 46%;
+     --accent: 220 14% 96%;
+     --accent-foreground: 220 9% 46%;
+     --destructive: 0 84% 60%;
+     --destructive-foreground: 0 0% 98%;
+     --border: 220 13% 91%;
+     --input: 220 13% 91%;
+     --ring: 217 91% 60%;
+     --radius: 0.75rem;
+   }
+
+   .dark {
+     --background: 220 27% 4%;
+     --foreground: 0 0% 98%;
+     --card: 220 27% 6%;
+     --card-foreground: 0 0% 98%;
+     --popover: 220 27% 6%;
+     --popover-foreground: 0 0% 98%;
+     --primary: 217 91% 60%;
+     --primary-foreground: 220 27% 4%;
+     --secondary: 220 23% 11%;
+     --secondary-foreground: 0 0% 98%;
+     --muted: 220 23% 11%;
+     --muted-foreground: 220 9% 65%;
+     --accent: 220 23% 11%;
+     --accent-foreground: 0 0% 98%;
+     --destructive: 0 62% 30%;
+     --destructive-foreground: 0 0% 98%;
+     --border: 220 23% 11%;
+     --input: 220 23% 11%;
+     --ring: 217 91% 60%;
+   }
+
+   * {
+     border-color: hsl(var(--border));
+   }
+
+   body {
+     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+     background: linear-gradient(135deg, 
+       hsl(var(--background)) 0%, 
+       hsl(220 25% 95%) 25%,
+       hsl(215 30% 93%) 50%,
+       hsl(210 35% 91%) 75%,
+       hsl(205 40% 89%) 100%
+     );
+     background-size: 400% 400%;
+     animation: gradient-shift 15s ease infinite;
+     color: hsl(var(--foreground));
+     min-height: 100vh;
+   }
+
+   .dark body {
+     background: linear-gradient(135deg,
+       hsl(220 27% 4%) 0%,
+       hsl(220 30% 6%) 25%,
+       hsl(215 35% 8%) 50%,
+       hsl(210 40% 10%) 75%,
+       hsl(205 45% 12%) 100%
+     );
+   }
+
+   .glass-effect {
+     background: rgba(255, 255, 255, 0.15);
+     backdrop-filter: blur(20px);
+     border: 1px solid rgba(255, 255, 255, 0.2);
+   }
+
+   .dark .glass-effect {
+     background: rgba(0, 0, 0, 0.2);
+     backdrop-filter: blur(20px);
+     border: 1px solid rgba(255, 255, 255, 0.1);
+   }
+
+   .sidebar {
+     background: linear-gradient(180deg,
+       rgba(59, 130, 246, 0.95) 0%,
+       rgba(37, 99, 235, 0.95) 50%,
+       rgba(29, 78, 216, 0.95) 100%
+     );
+     backdrop-filter: blur(20px);
+     border-right: 1px solid rgba(255, 255, 255, 0.2);
+     box-shadow: 
+       0 25px 50px -12px rgba(0, 0, 0, 0.25),
+       0 0 0 1px rgba(255, 255, 255, 0.05);
+   }
+
+   .dark .sidebar {
+     background: linear-gradient(180deg,
+       rgba(30, 58, 138, 0.95) 0%,
+       rgba(29, 78, 216, 0.85) 50%,
+       rgba(37, 99, 235, 0.8) 100%
+     );
+   }
+
+   .topbar {
+     background: rgba(255, 255, 255, 0.8);
+     backdrop-filter: blur(20px);
+     border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+   }
+
+   .dark .topbar {
+     background: rgba(17, 24, 39, 0.8);
+     border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+   }
+
+   .sidebar-nav-item {
+     color: rgba(255, 255, 255, 0.8);
+     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+     position: relative;
+     overflow: hidden;
+   }
+
+   .sidebar-nav-item::before {
+     content: '';
+     position: absolute;
+     top: 0;
+     left: -100%;
+     width: 100%;
+     height: 100%;
+     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+     transition: left 0.5s ease;
+   }
+
+   .sidebar-nav-item:hover::before {
+     left: 100%;
+   }
+
+   .sidebar-nav-item:hover {
+     background: rgba(255, 255, 255, 0.2);
+     color: white;
+     transform: translateX(8px) scale(1.02);
+     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+   }
+
+   .sidebar-nav-item.active {
+     background: linear-gradient(135deg, 
+       rgba(255, 255, 255, 0.3) 0%, 
+       rgba(255, 255, 255, 0.1) 100%
+     );
+     color: white;
+     font-weight: 600;
+     box-shadow: 
+       0 4px 12px rgba(0, 0, 0, 0.2),
+       inset 0 1px 0 rgba(255, 255, 255, 0.3);
+     border-left: 3px solid rgba(255, 255, 255, 0.8);
+   }
+
+   .sidebar-nav-item svg {
+     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+   }
+
+   .logo-container {
+     background: linear-gradient(135deg, 
+       rgba(255, 255, 255, 0.25) 0%, 
+       rgba(255, 255, 255, 0.1) 100%
+     );
+     backdrop-filter: blur(10px);
+     border: 1px solid rgba(255, 255, 255, 0.2);
+   }
+
+   .user-avatar {
+     background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+   }
+
+   .floating-button {
+     background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+     box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+   }
+
+   .floating-button:hover {
+     transform: translateY(-2px) scale(1.05);
+     box-shadow: 0 12px 30px rgba(59, 130, 246, 0.6);
+   }
+
+   .sidebar-collapsed .sidebar-text,
+   .sidebar-collapsed .sidebar-text-container {
+     display: none;
+   }
+
+   .sidebar-collapsed .sidebar-nav-item {
+     justify-content: center;
+     padding-left: 0;
+     padding-right: 0;
+   }
+
+   .sidebar-collapsed .sidebar-nav-item svg {
+     margin-right: 0 !important;
+   }
+
+   .sidebar-expanded {
+     width: 18rem;
+     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+   }
+
+   .sidebar-collapsed {
+     width: 5rem;
+     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+   }
+
+   .main-expanded {
+     margin-left: 18rem;
+     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+   }
+
+   .main-collapsed {
+     margin-left: 5rem;
+     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+   }
+
+   @media (max-width: 1024px) {
+     .main-expanded, .main-collapsed {
+       margin-left: 0;
+     }
+     .sidebar {
+       transform: translateX(-100%);
+       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+     }
+     .sidebar.show {
+       transform: translateX(0);
+     }
+   }
+
+   .dropdown-menu {
+     background: rgba(255, 255, 255, 0.95);
+     backdrop-filter: blur(20px);
+     border: 1px solid rgba(59, 130, 246, 0.2);
+     box-shadow: 
+       0 20px 25px -5px rgba(0, 0, 0, 0.1),
+       0 10px 10px -5px rgba(0, 0, 0, 0.04);
+   }
+
+   .dark .dropdown-menu {
+     background: rgba(17, 24, 39, 0.95);
+     border: 1px solid rgba(59, 130, 246, 0.3);
+   }
+
+   .menu-open {
+     visibility: visible;
+     opacity: 1;
+     transform: translateY(0) scale(1);
+     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+   }
+
+   .menu-closed {
+     visibility: hidden;
+     opacity: 0;
+     transform: translateY(-10px) scale(0.95);
+     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+   }
+
+   .notification-dot {
+     background: linear-gradient(135deg, #EF4444, #DC2626);
+     animation: pulse-glow 2s ease-in-out infinite;
+   }
+
+   ::-webkit-scrollbar {
+     width: 6px;
+     height: 6px;
+   }
+
+   ::-webkit-scrollbar-track {
+     background: transparent;
+   }
+
+   ::-webkit-scrollbar-thumb {
+     background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+     border-radius: 10px;
+   }
+
+   ::-webkit-scrollbar-thumb:hover {
+     background: linear-gradient(135deg, #2563EB, #1E40AF);
+   }
+
+   .btn-primary {
+     background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+     border: none;
+     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+   }
+
+   .btn-primary:hover {
+     transform: translateY(-1px);
+     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.6);
+     background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+   }
+
+   .mobile-menu-backdrop {
+     background: rgba(0, 0, 0, 0.5);
+     backdrop-filter: blur(4px);
+   }
+
+ </style>
+
+ {% block extra_css %}{% endblock %}
+</head>
+<body class="min-h-screen antialiased">
+ <!-- Mobile Menu Backdrop -->
+ <div id="mobileBackdrop" class="fixed inset-0 z-40 mobile-menu-backdrop hidden lg:hidden"></div>
+
+ <div class="relative flex min-h-screen">
+   <!-- Mobile Menu Toggle -->
+   <button id="mobile-nav-toggle" aria-label="Menu" class="fixed right-4 top-4 z-50 rounded-xl p-3 floating-button text-white lg:hidden">
+     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+       <line x1="4" x2="20" y1="12" y2="12"></line>
+       <line x1="4" x2="20" y1="6" y2="6"></line>
+       <line x1="4" x2="20" y1="18" y2="18"></line>
+     </svg>
+   </button>
+
+   <!-- Sidebar -->
+   <nav id="sidebar" class="fixed inset-y-0 left-0 z-50 sidebar sidebar-expanded flex flex-col">
+     <!-- Logo Section -->
+     <div class="flex h-16 items-center px-6 logo-container">
+       <a href="{% url 'zkteco:device_list' %}" class="flex items-center gap-3 font-bold text-white">
+         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+             <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+             <path d="M2 17l10 5 10-5"></path>
+             <path d="M2 12l10 5 10-5"></path>
+           </svg>
+         </div>
+         <div class="sidebar-text">
+           <span class="text-lg font-bold tracking-tight">ZKTeco</span>
+           <div class="text-xs opacity-75">Management</div>
+         </div>
+       </a>
+       
+       <!-- Collapse Button -->
+       <button id="sidebar-collapse-toggle" class="ml-auto hidden rounded-lg p-2 text-white/80 hover:bg-white/10 hover:text-white lg:flex">
+         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="collapse-icon">
+           <path d="m15 18-6-6 6-6"></path>
+         </svg>
+       </button>
+     </div>
+
+     <!-- Navigation -->
+     <div class="flex-1 overflow-y-auto px-4 py-6">
+       <nav class="space-y-2">
+         <div class="px-2 py-1 sidebar-text">
+           <h3 class="text-xs font-semibold uppercase tracking-wider text-white/60">Main Menu</h3>
+         </div>
+         
+         <a href="{% url 'zkteco:device_list' %}" class="sidebar-nav-item group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium {% if request.resolver_match.url_name == 'device_list' %}active{% endif %}">
+           <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
+             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+               <circle cx="12" cy="12" r="2"></circle>
+               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+             </svg>
+           </div>
+           <span class="sidebar-text">Device Management</span>
+           <div class="sidebar-text ml-auto rounded-full bg-white/20 px-2 py-0.5 text-xs">
+             {{ total_devices|default:"0" }}
+           </div>
+         </a>
+         
+         <a href="{% url 'zkteco:attendance_logs' %}" class="sidebar-nav-item group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium {% if request.resolver_match.url_name == 'attendance_logs' %}active{% endif %}">
+           <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
+             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+               <polyline points="14,2 14,8 20,8"></polyline>
+               <line x1="16" x2="8" y1="13" y2="13"></line>
+               <line x1="16" x2="8" y1="17" y2="17"></line>
+               <polyline points="10,9 9,9 8,9"></polyline>
+             </svg>
+           </div>
+           <span class="sidebar-text">Attendance Logs</span>
+           <div class="sidebar-text ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-200">
+             New
+           </div>
+         </a>
+       </nav>
+     </div>
+
+     <!-- User Profile Section -->
+     <div class="border-t border-white/10 p-4">
+       <div class="flex items-center gap-3 rounded-xl bg-white/10 p-3 backdrop-blur-sm sidebar-text-container">
+         <div class="user-avatar flex h-10 w-10 items-center justify-center rounded-full text-white font-bold text-sm">
+           AD
+         </div>
+         <div class="flex-1 sidebar-text">
+           <div class="font-medium text-white">Admin User</div>
+           <div class="text-xs text-white/70">System Administrator</div>
+         </div>
+         <div class="rounded-lg bg-emerald-500 p-1">
+           <div class="h-2 w-2 rounded-full bg-white"></div>
+         </div>
+       </div>
+     </div>
+   </nav>
+
+   <!-- Main Content Area -->
+   <div id="main-content" class="flex min-h-screen flex-1 flex-col main-expanded">
+     <!-- Top Bar -->
+     <header class="sticky top-0 z-30 topbar">
+       <div class="flex h-16 items-center justify-between px-6">
+         <!-- Left Section -->
+         <div class="flex items-center gap-4">
+           <button id="mobile-sidebar-toggle" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200 lg:hidden">
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <line x1="4" x2="20" y1="12" y2="12"></line>
+               <line x1="4" x2="20" y1="6" y2="6"></line>
+               <line x1="4" x2="20" y1="18" y2="18"></line>
+             </svg>
+           </button>
+           
+           <!-- Breadcrumb -->
+           <nav class="hidden md:flex" aria-label="Breadcrumb">
+             <ol class="flex items-center space-x-2 text-sm">
+               <li><a href="{% url 'zkteco:device_list' %}" class="text-gray-500 hover:text-primary">Home</a></li>
+               <li class="text-gray-400">/</li>
+               <li class="font-medium text-gray-900 dark:text-gray-100">{% block page_title %}Dashboard{% endblock %}</li>
+             </ol>
+           </nav>
+         </div>
+
+         <!-- Right Section -->
+         <div class="flex items-center gap-3">
+           <!-- Search -->
+           <div class="relative hidden sm:block">
+             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                 <path d="m6 9 6 6 6-6"></path>
+               </svg>
+             </button>
+             
+             <!-- User Dropdown -->
+             <div id="user-menu-content" class="dropdown-menu menu-closed absolute right-0 z-50 mt-2 w-56 rounded-xl p-2 shadow-lg">
+               <div class="px-3 py-2 text-sm font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 mb-2">
+                 My Account
+               </div>
+               <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                   <circle cx="12" cy="10" r="4"></circle>
+                 </svg>
+                 Profile Settings
+               </a>
+               <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                   <circle cx="12" cy="12" r="3"></circle>
+                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                 </svg>
+                 Preferences
+               </a>
+               <div class="my-2 h-px bg-gray-200 dark:bg-gray-700"></div>
+               <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                   <polyline points="16 17 21 12 16 7"></polyline>
+                   <line x1="21" x2="9" y1="12" y2="12"></line>
+                 </svg>
+                 Sign Out
+               </a>
+             </div>
+           </div>
+         </div>
+       </div>
+     </header>
+     
+     <!-- Main Content -->
+     <main class="flex-1 p-6">
+       {% block content %}
+       <div class="mx-auto max-w-7xl">
+         <div class="rounded-2xl bg-white/60 backdrop-blur-sm p-8 shadow-xl border border-white/20 dark:bg-gray-800/60 dark:border-gray-700/50">
+           <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome to ZKTeco Management</h1>
+           <p class="mt-2 text-gray-600 dark:text-gray-400">Manage your biometric attendance devices with ease.</p>
+         </div>
+       </div>
+       {% endblock %}
+     </main>
+   </div>
+ </div>
+
+ <script>
+   // DOM Elements
+   const mobileNavToggle = document.getElementById('mobile-nav-toggle');
+   const mobileSidebarToggle = document.getElementById('mobile-sidebar-toggle');
+   const sidebar = document.getElementById('sidebar');
+   const mainContent = document.getElementById('main-content');
+   const themeToggle = document.getElementById('theme-toggle');
+   const userMenuToggle = document.getElementById('user-menu-toggle');
+   const userMenuContent = document.getElementById('user-menu-content');
+   const sidebarCollapseToggle = document.getElementById('sidebar-collapse-toggle');
+   const collapseIcon = document.getElementById('collapse-icon');
+   const mobileBackdrop = document.getElementById('mobileBackdrop');
+
+   // State
+   let sidebarCollapsed = false;
+   
+   // Theme Management
+   function initTheme() {
+     const savedTheme = localStorage.getItem('theme') || 'system';
+     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+     
+     if (savedTheme === 'dark' || (savedTheme === 'system' && systemDark)) {
+       document.documentElement.classList.add('dark');
+     } else {
+       document.documentElement.classList.remove('dark');
+     }
+   }
+
+   function toggleTheme() {
+     const isDark = document.documentElement.classList.toggle('dark');
+     localStorage.setItem('theme', isDark ? 'dark' : 'light');
+   }
+
+   // Sidebar Management
+   function toggleSidebar() {
+     if (window.innerWidth < 1024) {
+       // Mobile: slide sidebar in/out
+       sidebar.classList.toggle('show');
+       mobileBackdrop.classList.toggle('hidden');
+       document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
+     } else {
+       // Desktop: collapse/expand
+       toggleSidebarCollapse();
+     }
+   }
+
+   function toggleSidebarCollapse() {
+     sidebarCollapsed = !sidebarCollapsed;
+     
+     if (sidebarCollapsed) {
+       sidebar.classList.remove('sidebar-expanded');
+       sidebar.classList.add('sidebar-collapsed');
+       mainContent.classList.remove('main-expanded');
+       mainContent.classList.add('main-collapsed');
+       collapseIcon.style.transform = 'rotate(180deg)';
+     } else {
+       sidebar.classList.remove('sidebar-collapsed');
+       sidebar.classList.add('sidebar-expanded');
+       mainContent.classList.remove('main-collapsed');
+       mainContent.classList.add('main-expanded');
+       collapseIcon.style.transform = 'rotate(0deg)';
+     }
+   }
+
+   function closeMobileSidebar() {
+     sidebar.classList.remove('show');
+     mobileBackdrop.classList.add('hidden');
+     document.body.style.overflow = '';
+   }
+
+   // Dropdown Management
+   function toggleDropdown(trigger, dropdown) {
+     const isOpen = dropdown.classList.contains('menu-open');
+     
+     // Close all other dropdowns
+     document.querySelectorAll('.dropdown-menu').forEach(menu => {
+       if (menu !== dropdown) {
+         menu.classList.remove('menu-open');
+         menu.classList.add('menu-closed');
+       }
+     });
+     
+     // Toggle current dropdown
+     if (isOpen) {
+       dropdown.classList.remove('menu-open');
+       dropdown.classList.add('menu-closed');
+     } else {
+       dropdown.classList.remove('menu-closed');
+       dropdown.classList.add('menu-open');
+     }
+   }
+
+   // Event Listeners
+   if (themeToggle) {
+     themeToggle.addEventListener('click', toggleTheme);
+   }
+
+   if (mobileNavToggle) {
+     mobileNavToggle.addEventListener('click', toggleSidebar);
+   }
+
+   if (mobileSidebarToggle) {
+     mobileSidebarToggle.addEventListener('click', toggleSidebar);
+   }
+
+   if (sidebarCollapseToggle) {
+     sidebarCollapseToggle.addEventListener('click', toggleSidebarCollapse);
+   }
+
+   if (mobileBackdrop) {
+     mobileBackdrop.addEventListener('click', closeMobileSidebar);
+   }
+
+   if (userMenuToggle && userMenuContent) {
+     userMenuToggle.addEventListener('click', (e) => {
+       e.stopPropagation();
+       toggleDropdown(userMenuToggle, userMenuContent);
+     });
+   }
+
+   // Close dropdowns on outside click
+   document.addEventListener('click', (e) => {
+     if (!e.target.closest('.relative')) {
+       document.querySelectorAll('.dropdown-menu').forEach(menu => {
+         menu.classList.remove('menu-open');
+         menu.classList.add('menu-closed');
+       });
+     }
+   });
+
+   // Handle window resize
+   window.addEventListener('resize', () => {
+     if (window.innerWidth >= 1024) {
+       closeMobileSidebar();
+     }
+   });
+
+   // Smooth scrolling for anchor links
+   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+     anchor.addEventListener('click', function (e) {
+       e.preventDefault();
+       const target = document.querySelector(this.getAttribute('href'));
+       if (target) {
+         target.scrollIntoView({
+           behavior: 'smooth',
+           block: 'start'
+         });
+       }
+     });
+   });
+
+   // Initialize
+   initTheme();
+   
+   // Add page load animation
+   document.addEventListener('DOMContentLoaded', function() {
+     document.body.style.opacity = '0';
+     setTimeout(() => {
+       document.body.style.transition = 'opacity 0.5s ease-in-out';
+       document.body.style.opacity = '1';
+     }, 100);
+   });
+ </script>
+
+ {% block extra_js %}{% endblock %}
+</body>
+</html>

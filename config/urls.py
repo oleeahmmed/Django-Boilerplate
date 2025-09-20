@@ -26,6 +26,8 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('admin/', admin.site.urls),
     path('api/', include('Authentication.urls')),
+    path('hr/', include('hr_payroll.urls')),
+
     path('accounts/', include('allauth.urls')),  # Allauth
     path('dj-rest-auth/', include('dj_rest_auth.urls')),  # REST auth
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),  # Social registration

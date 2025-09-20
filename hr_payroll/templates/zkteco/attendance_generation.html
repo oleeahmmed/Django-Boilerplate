@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Generation - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .glass-card-inner {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  .dark .glass-card-inner {
+    background: rgba(17, 24, 39, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  .shadow-elevated {
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(59, 130, 246, 0.05);
+  }
+
+  .generation-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .generation-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 32px 64px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(59, 130, 246, 0.1);
+  }
+
+  .btn-gradient {
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient:hover {
+    background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+  }
+
+  .option-card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .option-card:hover {
+    background: rgba(59, 130, 246, 0.05);
+    transform: scale(1.02);
+  }
+
+  .option-card.selected {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.05) 100%);
+    border-color: rgb(59, 130, 246);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  }
+
+  .progress-bar {
+    background: linear-gradient(90deg, #3B82F6, #8B5CF6, #3B82F6);
+    background-size: 200% 100%;
+    animation: gradient-flow 2s ease-in-out infinite;
+  }
+
+  @keyframes gradient-flow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .modal-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+  }
+
+  .loading-spinner {
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .preview-table {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .summary-card {
+    background: linear-gradient(135deg, 
+      rgba(34, 197, 94, 0.1) 0%, 
+      rgba(59, 130, 246, 0.05) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+  }
+
+  .warning-card {
+    background: linear-gradient(135deg, 
+      rgba(245, 158, 11, 0.1) 0%, 
+      rgba(239, 68, 68, 0.05) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  .step-indicator {
+    transition: all 0.3s ease;
+  }
+
+  .step-indicator.active {
+    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  }
+
+  .step-indicator.completed {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+  }
+
+  .animated-checkmark {
+    animation: checkmark-draw 0.5s ease-in-out;
+  }
+
+  @keyframes checkmark-draw {
+    from {
+      stroke-dasharray: 0 50;
+      opacity: 0;
+    }
+    to {
+      stroke-dasharray: 50 0;
+      opacity: 1;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block page_title %}Attendance Generation{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-fade-in">
+  <!-- Header Section -->
+  <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+    <div class="space-y-2">
+      <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        Attendance Generation
+      </h1>
+      <p class="text-lg text-muted-foreground max-w-3xl">
+        Transform raw attendance logs into structured daily attendance records with advanced processing options
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="{% url 'zkteco:attendance_logs' %}" class="action-button inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-primary/20 bg-background hover:bg-primary/10 hover:text-primary px-6 py-3 text-sm font-medium shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14,2 14,8 20,8"></polyline>
+          <line x1="16" x2="8" y1="13" y2="13"></line>
+          <line x1="16" x2="8" y1="17" y2="17"></line>
+        </svg>
+        View Logs
+      </a>
+    </div>
+  </div>
+
+  <!-- Statistics Overview -->
+  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div class="generation-card rounded-2xl p-6 shadow-elevated glass-card-inner">
+      <div class="flex items-center justify-between mb-4">
+        <div class="p-3 bg-blue-500/10 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14,2 14,8 20,8"></polyline>
+          </svg>
+        </div>
+        <span class="text-sm font-medium text-muted-foreground">Available Logs</span>
+      </div>
+      <div class="space-y-1">
+        <div class="text-3xl font-bold text-foreground">{{ logs_stats.total_logs|floatformat:0 }}</div>
+        <p class="text-sm text-muted-foreground">Raw attendance logs</p>
+        {% if logs_stats.earliest and logs_stats.latest %}
+        <p class="text-xs text-muted-foreground">
+          From {{ logs_stats.earliest|date:"M d" }} to {{ logs_stats.latest|date:"M d, Y" }}
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="generation-card rounded-2xl p-6 shadow-elevated glass-card-inner">
+      <div class="flex items-center justify-between mb-4">
+        <div class="p-3 bg-emerald-500/10 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <span class="text-sm font-medium text-muted-foreground">Generated Records</span>
+      </div>
+      <div class="space-y-1">
+        <div class="text-3xl font-bold text-foreground">{{ attendance_stats.total_records|floatformat:0 }}</div>
+        <p class="text-sm text-muted-foreground">Daily attendance records</p>
+        {% if attendance_stats.earliest and attendance_stats.latest %}
+        <p class="text-xs text-muted-foreground">
+          From {{ attendance_stats.earliest|date:"M d" }} to {{ attendance_stats.latest|date:"M d, Y" }}
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="generation-card rounded-2xl p-6 shadow-elevated glass-card-inner">
+      <div class="flex items-center justify-between mb-4">
+        <div class="p-3 bg-purple-500/10 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <span class="text-sm font-medium text-muted-foreground">Employees</span>
+      </div>
+      <div class="space-y-1">
+        <div class="text-3xl font-bold text-foreground">{{ employees_with_logs.count }}</div>
+        <p class="text-sm text-muted-foreground">With attendance data</p>
+      </div>
+    </div>
+
+    <div class="generation-card rounded-2xl p-6 shadow-elevated glass-card-inner">
+      <div class="flex items-center justify-between mb-4">
+        <div class="p-3 bg-amber-500/10 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-600">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+        </div>
+        <span class="text-sm font-medium text-muted-foreground">Devices</span>
+      </div>
+      <div class="space-y-1">
+        <div class="text-3xl font-bold text-foreground">{{ devices.count }}</div>
+        <p class="text-sm text-muted-foreground">Available devices</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step Indicators -->
+  <div class="flex items-center justify-center space-x-8 py-6">
+    <div class="flex items-center space-x-2">
+      <div class="step-indicator active flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground text-sm font-bold">1</div>
+      <span class="text-sm font-medium">Configure</span>
+    </div>
+    <div class="flex-1 h-px bg-border"></div>
+    <div class="flex items-center space-x-2">
+      <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full border-2 border-border text-sm font-bold">2</div>
+      <span class="text-sm font-medium text-muted-foreground">Preview</span>
+    </div>
+    <div class="flex-1 h-px bg-border"></div>
+    <div class="flex items-center space-x-2">
+      <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full border-2 border-border text-sm font-bold">3</div>
+      <span class="text-sm font-medium text-muted-foreground">Generate</span>
+    </div>
+  </div>
+
+  <!-- Configuration Form -->
+  <div class="generation-card rounded-2xl border bg-card shadow-elevated glass-card-inner">
+    <div class="border-b border-border/50 p-6">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-primary/10 rounded-lg">
+       =
+        {% endblock %}
+   

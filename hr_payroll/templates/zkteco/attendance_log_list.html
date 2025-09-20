@@ -1,0 +1,809 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Logs - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .glass-card-inner {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  .dark .glass-card-inner {
+    background: rgba(17, 24, 39, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  .shadow-elevated {
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(59, 130, 246, 0.05);
+  }
+
+  .dark .shadow-elevated {
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(59, 130, 246, 0.1);
+  }
+
+  .log-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .log-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 32px 64px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(59, 130, 246, 0.1);
+  }
+
+  .stats-card {
+    background: linear-gradient(135deg, 
+      rgba(59, 130, 246, 0.1) 0%, 
+      rgba(147, 51, 234, 0.05) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .stats-card:hover {
+    background: linear-gradient(135deg, 
+      rgba(59, 130, 246, 0.15) 0%, 
+      rgba(147, 51, 234, 0.1) 100%);
+    transform: translateY(-1px);
+  }
+
+  .btn-gradient {
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient:hover {
+    background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+  }
+
+  .action-button {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .action-button:hover {
+    transform: scale(1.05);
+  }
+
+  .action-button:active {
+    transform: scale(0.98);
+  }
+
+  .filter-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+  }
+
+  .dark .filter-card {
+    background: rgba(17, 24, 39, 0.9);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+  }
+
+  .time-badge {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  .date-range-btn {
+    transition: all 0.2s ease;
+  }
+
+  .date-range-btn.active {
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+</style>
+{% endblock %}
+
+{% block page_title %}Attendance Logs{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-fade-in">
+  <!-- Header Section -->
+  <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+    <div class="space-y-2">
+      <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        Attendance Logs
+      </h1>
+      <p class="text-lg text-muted-foreground max-w-2xl">
+        View and analyze raw attendance data imported from biometric devices
+      </p>
+      {% if date_stats.earliest and date_stats.latest %}
+      <p class="text-sm text-muted-foreground">
+        Data available from {{ date_stats.earliest|date:"M d, Y" }} to {{ date_stats.latest|date:"M d, Y" }}
+      </p>
+      {% endif %}
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="{% url 'zkteco:attendance_generation' %}" class="btn-gradient inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-6 py-3 text-sm font-medium text-white shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5"></path>
+          <path d="M2 12l10 5 10-5"></path>
+        </svg>
+        Generate Attendance
+      </a>
+      <button id="refreshLogs" class="action-button inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-6 py-3 text-sm font-medium transition-colors border border-primary/20 bg-background hover:bg-primary/10 hover:text-primary shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+          <path d="M21 3v5h-5"></path>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+          <path d="M3 21v-5h5"></path>
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Card -->
+  <div class="stats-card log-card rounded-2xl p-6 shadow-elevated">
+    <div class="flex items-center justify-between">
+      <div class="space-y-2">
+        <h3 class="text-lg font-semibold">Total Attendance Logs</h3>
+        <div class="text-3xl font-bold text-primary">{{ total_logs|floatformat:0 }}</div>
+        <p class="text-sm text-muted-foreground">
+          {% if current_device or current_employee or current_start_date or current_end_date or current_search or current_source_type %}
+            Filtered results
+          {% else %}
+            All logs in system
+          {% endif %}
+        </p>
+      </div>
+      <div class="p-4 bg-primary/10 rounded-xl">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14,2 14,8 20,8"></polyline>
+          <line x1="16" x2="8" y1="13" y2="13"></line>
+          <line x1="16" x2="8" y1="17" y2="17"></line>
+          <polyline points="10,9 9,9 8,9"></polyline>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Filters Card -->
+  <div class="log-card rounded-2xl border bg-card shadow-elevated filter-card">
+    <div class="border-b border-border/50 p-6">
+      <h3 class="text-xl font-semibold">Advanced Filters & Search</h3>
+      <p class="text-sm text-muted-foreground mt-1">Filter attendance logs with multiple criteria and quick date ranges</p>
+    </div>
+    
+    <!-- Quick Date Range Buttons -->
+    <div class="border-b border-border/50 p-6">
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="date-range-btn px-4 py-2 text-sm rounded-lg border border-input hover:bg-accent transition-all {% if current_date_range == 'today' %}active{% endif %}" 
+                onclick="setDateRange('today')">Today</button>
+        <button type="button" class="date-range-btn px-4 py-2 text-sm rounded-lg border border-input hover:bg-accent transition-all {% if current_date_range == 'yesterday' %}active{% endif %}" 
+                onclick="setDateRange('yesterday')">Yesterday</button>
+        <button type="button" class="date-range-btn px-4 py-2 text-sm rounded-lg border border-input hover:bg-accent transition-all {% if current_date_range == 'this_week' %}active{% endif %}" 
+                onclick="setDateRange('this_week')">This Week</button>
+        <button type="button" class="date-range-btn px-4 py-2 text-sm rounded-lg border border-input hover:bg-accent transition-all {% if current_date_range == 'last_week' %}active{% endif %}" 
+                onclick="setDateRange('last_week')">Last Week</button>
+        <button type="button" class="date-range-btn px-4 py-2 text-sm rounded-lg border border-input hover:bg-accent transition-all {% if current_date_range == 'this_month' %}active{% endif %}" 
+                onclick="setDateRange('this_month')">This Month</button>
+        <button type="button" class="date-range-btn px-4 py-2 text-sm rounded-lg border border-input hover:bg-accent transition-all {% if current_date_range == 'last_month' %}active{% endif %}" 
+                onclick="setDateRange('last_month')">Last Month</button>
+      </div>
+    </div>
+
+    <form method="get" id="filterForm" class="p-6">
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <!-- Device Filter -->
+        <div class="space-y-2">
+          <label for="device" class="text-sm font-medium">Device</label>
+          <select id="device" name="device" class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+            <option value="">All Devices</option>
+            {% for device in devices %}
+              <option value="{{ device.id }}" {% if current_device == device.id|stringformat:"s" %}selected{% endif %}>
+                {{ device.name }} ({{ device.ip_address }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Employee Filter -->
+        <div class="space-y-2">
+          <label for="employee" class="text-sm font-medium">Employee</label>
+          <select id="employee" name="employee" class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+            <option value="">All Employees</option>
+            {% for emp in employees %}
+              <option value="{{ emp.id }}" {% if current_employee == emp.id|stringformat:"s" %}selected{% endif %}>
+                {{ emp.name }} ({{ emp.employee_id }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Source Type Filter -->
+        <div class="space-y-2">
+          <label for="source_type" class="text-sm font-medium">Source Type</label>
+          <select id="source_type" name="source_type" class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+            <option value="">All Sources</option>
+            <option value="ZK" {% if current_source_type == 'ZK' %}selected{% endif %}>Device (ZKTeco)</option>
+            <option value="MN" {% if current_source_type == 'MN' %}selected{% endif %}>Manual Entry</option>
+          </select>
+        </div>
+
+        <!-- Search Filter -->
+        <div class="space-y-2">
+          <label for="search" class="text-sm font-medium">Search Employee</label>
+          <input type="text" id="search" name="search" value="{{ current_search }}" 
+                 placeholder="Employee ID, Name, or ZK ID"
+                 class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+        </div>
+
+        <!-- Start Date Filter -->
+        <div class="space-y-2">
+          <label for="start_date" class="text-sm font-medium">Start Date</label>
+          <input type="date" id="start_date" name="start_date" value="{{ current_start_date }}"
+                 class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+        </div>
+
+        <!-- End Date Filter -->
+        <div class="space-y-2">
+          <label for="end_date" class="text-sm font-medium">End Date</label>
+          <input type="date" id="end_date" name="end_date" value="{{ current_end_date }}"
+                 class="flex h-11 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+        </div>
+      </div>
+
+      <!-- Hidden field for date range -->
+      <input type="hidden" id="date_range" name="date_range" value="{{ current_date_range }}">
+
+      <div class="flex justify-between items-center mt-6">
+        <div class="text-sm text-muted-foreground">
+          {% if logs.paginator.count %}
+            Showing {{ logs.start_index }} to {{ logs.end_index }} of {{ logs.paginator.count }} logs
+          {% endif %}
+        </div>
+        <div class="flex gap-3">
+          <a href="{% url 'zkteco:attendance_logs' %}" class="action-button inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-input bg-background hover:bg-accent px-6 py-3 text-sm font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+              <path d="M21 3v5h-5"></path>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+              <path d="M3 21v-5h5"></path>
+            </svg>
+            Clear Filters
+          </a>
+          <button type="submit" class="btn-gradient inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-6 py-3 text-sm font-medium text-white shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Apply Filters
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Attendance Logs Table -->
+  <div class="log-card rounded-2xl border bg-card shadow-elevated glass-card-inner">
+    <div class="border-b border-border/50 p-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <h3 class="text-xl font-semibold">Attendance Logs</h3>
+          <p class="text-sm text-muted-foreground">Raw attendance data from biometric devices</p>
+        </div>
+        {% if logs.has_other_pages %}
+        <div class="text-sm text-muted-foreground">
+          Page {{ logs.number }} of {{ logs.paginator.num_pages }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if logs %}
+    <div class="overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-muted/30 border-b border-border/50">
+            <tr>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wide">Employee</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wide">Device</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wide">Timestamp</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wide">Type</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wide">Source</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border/30">
+            {% for log in logs %}
+            <tr class="hover:bg-primary/5 transition-colors duration-200">
+              <!-- Employee Info -->
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-4">
+                  <div class="flex-shrink-0">
+                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-primary/20">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-sm font-semibold text-foreground truncate">
+                      {{ log.employee.name }}
+                    </div>
+                    <div class="text-sm text-muted-foreground">
+                      ID: {{ log.employee.employee_id }}
+                    </div>
+                    <div class="text-xs text-muted-foreground font-mono">
+                      ZK: {{ log.employee.zkteco_id }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Device Info -->
+              <td class="px-6 py-4">
+                <div class="space-y-1">
+                  <div class="text-sm font-medium text-foreground">{{ log.device.name }}</div>
+                  <div class="text-xs text-muted-foreground font-mono">{{ log.device.ip_address }}:{{ log.device.port }}</div>
+                </div>
+              </td>
+
+              <!-- Timestamp -->
+              <td class="px-6 py-4">
+                <div class="space-y-1">
+                  <div class="text-sm font-medium text-foreground">
+                    {{ log.timestamp|date:"M d, Y" }}
+                  </div>
+                  <div class="time-badge text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md text-gray-700 dark:text-gray-300">
+                    {{ log.timestamp|date:"H:i:s" }}
+                  </div>
+                </div>
+              </td>
+
+              <!-- Punch Type -->
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold 
+                  {% if log.punch_type == 'IN' or log.punch_type == 'CHECK_IN' %}
+                    bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800
+                  {% elif log.punch_type == 'OUT' or log.punch_type == 'CHECK_OUT' %}
+                    bg-orange-100 text-orange-700 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800
+                  {% else %}
+                    bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700
+                  {% endif %}">
+                  {% if log.punch_type == 'IN' or log.punch_type == 'CHECK_IN' %}
+                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                    Check In
+                  {% elif log.punch_type == 'OUT' or log.punch_type == 'CHECK_OUT' %}
+                    <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                    Check Out
+                  {% else %}
+                    <div class="w-2 h-2 rounded-full bg-gray-500"></div>
+                    {{ log.punch_type|default:"Unknown" }}
+                  {% endif %}
+                </span>
+              </td>
+
+              <!-- Source Type -->
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold 
+                  {% if log.source_type == 'ZK' %}
+                    bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800
+                  {% else %}
+                    bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800
+                  {% endif %}">
+                  {% if log.source_type == 'ZK' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                      <circle cx="12" cy="12" r="2"></circle>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    Device
+                  {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                      <path d="M2 17l10 5 10-5"></path>
+                      <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                    Manual
+                  {% endif %}
+                </span>
+              </td>
+
+              <!-- Status Code -->
+              <td class="px-6 py-4">
+                <div class="text-sm text-muted-foreground font-mono" title="Status Code: {{ log.status_code }}">
+                  {{ log.status_code }}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+
+    {% else %}
+    <div class="text-center py-16">
+      <div class="mx-auto h-24 w-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14,2 14,8 20,8"></polyline>
+          <line x1="16" x2="8" y1="13" y2="13"></line>
+          <line x1="16" x2="8" y1="17" y2="17"></line>
+          <polyline points="10,9 9,9 8,9"></polyline>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-foreground mb-2">No attendance logs found</h3>
+      <p class="text-muted-foreground mb-6 max-w-sm mx-auto">
+        {% if current_device or current_employee or current_start_date or current_end_date or current_search or current_source_type %}
+          Try adjusting your filters or clearing them to see all logs.
+        {% else %}
+          Import attendance data from your devices to see logs here.
+        {% endif %}
+      </p>
+      {% if not current_device and not current_employee and not current_start_date and not current_end_date and not current_search and not current_source_type %}
+      <a href="{% url 'zkteco:device_list' %}" class="btn-gradient inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium text-white shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" x2="12" y1="3" y2="15"></line>
+        </svg>
+        Import Data
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Current filter values
+const currentFilters = {
+  device: '{{ current_device|default:"" }}',
+  employee: '{{ current_employee|default:"" }}',
+  start_date: '{{ current_start_date|default:"" }}',
+  end_date: '{{ current_end_date|default:"" }}',
+  search: '{{ current_search|default:"" }}',
+  source_type: '{{ current_source_type|default:"" }}',
+  date_range: '{{ current_date_range|default:"" }}'
+};
+
+// Quick date range functions
+function setDateRange(range) {
+  const today = new Date();
+  let startDate, endDate;
+  
+  // Clear active states
+  document.querySelectorAll('.date-range-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  // Set active state
+  event.target.classList.add('active');
+  
+  switch(range) {
+    case 'today':
+      startDate = endDate = formatDate(today);
+      break;
+    case 'yesterday':
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      startDate = endDate = formatDate(yesterday);
+      break;
+    case 'this_week':
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      startDate = formatDate(startOfWeek);
+      endDate = formatDate(today);
+      break;
+    case 'last_week':
+      const startOfLastWeek = new Date(today);
+      startOfLastWeek.setDate(today.getDate() - today.getDay() - 7);
+      const endOfLastWeek = new Date(startOfLastWeek);
+      endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
+      startDate = formatDate(startOfLastWeek);
+      endDate = formatDate(endOfLastWeek);
+      break;
+    case 'this_month':
+      startDate = formatDate(new Date(today.getFullYear(), today.getMonth(), 1));
+      endDate = formatDate(today);
+      break;
+    case 'last_month':
+      const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+      startDate = formatDate(firstDayLastMonth);
+      endDate = formatDate(lastDayLastMonth);
+      break;
+  }
+  
+  // Set form values
+  document.getElementById('start_date').value = startDate;
+  document.getElementById('end_date').value = endDate;
+  document.getElementById('date_range').value = range;
+  
+  // Auto-submit form
+  document.getElementById('filterForm').submit();
+}
+
+function formatDate(date) {
+  return date.toISOString().split('T')[0];
+}
+
+// Auto-submit on filter changes
+function setupAutoSubmit() {
+  const autoSubmitElements = ['device', 'employee', 'source_type'];
+  
+  autoSubmitElements.forEach(elementId => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.addEventListener('change', function() {
+        // Clear date range when other filters change
+        document.getElementById('date_range').value = '';
+        document.querySelectorAll('.date-range-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        
+        // Submit form
+        document.getElementById('filterForm').submit();
+      });
+    }
+  });
+  
+  // Search field with debounce
+  const searchInput = document.getElementById('search');
+  if (searchInput) {
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        document.getElementById('date_range').value = '';
+        document.querySelectorAll('.date-range-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        document.getElementById('filterForm').submit();
+      }, 500); // 500ms debounce
+    });
+  }
+}
+
+// Date validation
+function setupDateValidation() {
+  const startDateInput = document.getElementById('start_date');
+  const endDateInput = document.getElementById('end_date');
+  const today = formatDate(new Date());
+  
+  // Set max date to today
+  if (startDateInput) {
+    startDateInput.max = today;
+  }
+  if (endDateInput) {
+    endDateInput.max = today;
+  }
+  
+  function validateDateRange() {
+    if (startDateInput && endDateInput) {
+      const startDate = new Date(startDateInput.value);
+      const endDate = new Date(endDateInput.value);
+      
+      if (startDate && endDate && startDate > endDate) {
+        endDateInput.setCustomValidity('End date must be after start date');
+      } else {
+        endDateInput.setCustomValidity('');
+      }
+    }
+  }
+  
+  if (startDateInput && endDateInput) {
+    startDateInput.addEventListener('change', validateDateRange);
+    endDateInput.addEventListener('change', validateDateRange);
+  }
+}
+
+// Refresh functionality
+function setupRefresh() {
+  const refreshBtn = document.getElementById('refreshLogs');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function() {
+      // Show loading state
+      refreshBtn.innerHTML = '<div class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div> Refreshing...';
+      refreshBtn.disabled = true;
+      
+      // Reload page
+      setTimeout(() => {
+        location.reload();
+      }, 500);
+    });
+  }
+}
+
+// Keyboard shortcuts
+function setupKeyboardShortcuts() {
+  document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + F: Focus search
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      e.preventDefault();
+      const searchInput = document.getElementById('search');
+      if (searchInput) {
+        searchInput.focus();
+      }
+    }
+    
+    // Ctrl/Cmd + R: Refresh
+    if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+      e.preventDefault();
+      const refreshBtn = document.getElementById('refreshLogs');
+      if (refreshBtn) {
+        refreshBtn.click();
+      }
+    }
+    
+    // Escape: Clear search if focused
+    if (e.key === 'Escape') {
+      const searchInput = document.getElementById('search');
+      if (searchInput && searchInput === document.activeElement) {
+        searchInput.value = '';
+        document.getElementById('date_range').value = '';
+        document.getElementById('filterForm').submit();
+      }
+    }
+    
+    // Number keys for quick date ranges (1-6)
+    if (e.key >= '1' && e.key <= '6' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const activeElement = document.activeElement;
+      // Only trigger if not typing in input
+      if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'SELECT' && activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        const ranges = ['today', 'yesterday', 'this_week', 'last_week', 'this_month', 'last_month'];
+        const rangeIndex = parseInt(e.key) - 1;
+        if (ranges[rangeIndex]) {
+          // Find and click the corresponding button
+          const buttons = document.querySelectorAll('.date-range-btn');
+          if (buttons[rangeIndex]) {
+            buttons[rangeIndex].click();
+          }
+        }
+      }
+    }
+  });
+}
+
+// Tooltip for status codes
+function setupTooltips() {
+  const statusCodes = {
+    '0': 'Normal attendance',
+    '1': 'Check-in',
+    '2': 'Check-out',
+    '3': 'Break-out',
+    '4': 'Break-in',
+    '5': 'Overtime-in',
+    '6': 'Overtime-out'
+  };
+  
+  document.querySelectorAll('td:last-child').forEach(cell => {
+    const statusCode = cell.textContent.trim();
+    if (statusCodes[statusCode]) {
+      cell.title = statusCodes[statusCode];
+    }
+  });
+}
+
+// Highlight current day's logs
+function highlightCurrentDay() {
+  const today = new Date().toDateString();
+  document.querySelectorAll('tbody tr').forEach(row => {
+    const timestampCell = row.querySelector('td:nth-child(3)');
+    if (timestampCell) {
+      const dateText = timestampCell.querySelector('.text-sm.font-medium').textContent;
+      try {
+        if (new Date(dateText).toDateString() === today) {
+          row.classList.add('bg-blue-50', 'dark:bg-blue-950/20', 'border-l-4', 'border-blue-500');
+        }
+      } catch (e) {
+        // Ignore date parsing errors
+      }
+    }
+  });
+}
+
+// Filter state management
+function saveFilterState() {
+  const filterState = {
+    device: document.getElementById('device')?.value || '',
+    employee: document.getElementById('employee')?.value || '',
+    source_type: document.getElementById('source_type')?.value || '',
+    search: document.getElementById('search')?.value || '',
+    start_date: document.getElementById('start_date')?.value || '',
+    end_date: document.getElementById('end_date')?.value || '',
+    date_range: document.getElementById('date_range')?.value || ''
+  };
+  
+  localStorage.setItem('attendanceLogFilters', JSON.stringify(filterState));
+}
+
+function loadFilterState() {
+  try {
+    const savedState = localStorage.getItem('attendanceLogFilters');
+    if (savedState) {
+      const filterState = JSON.parse(savedState);
+      
+      // Only restore if no current filters are applied
+      const hasCurrentFilters = Object.values(currentFilters).some(value => value !== '');
+      
+      if (!hasCurrentFilters) {
+        Object.keys(filterState).forEach(key => {
+          const element = document.getElementById(key);
+          if (element && filterState[key]) {
+            element.value = filterState[key];
+          }
+        });
+        
+        // Update active date range button
+        if (filterState.date_range) {
+          document.querySelectorAll('.date-range-btn').forEach(btn => {
+            if (btn.onclick && btn.onclick.toString().includes(filterState.date_range)) {
+              btn.classList.add('active');
+            }
+          });
+        }
+      }
+    }
+  } catch (e) {
+    // Ignore errors in loading filter state
+  }
+}
+
+// Initialize everything
+document.addEventListener('DOMContentLoaded', function() {
+  setupAutoSubmit();
+  setupDateValidation();
+  setupRefresh();
+  setupKeyboardShortcuts();
+  setupTooltips();
+  highlightCurrentDay();
+  loadFilterState();
+  
+  // Save filter state on form submission
+  const filterForm = document.getElementById('filterForm');
+  if (filterForm) {
+    filterForm.addEventListener('submit', function() {
+      saveFilterState();
+    });
+  }
+  
+  // Set active date range button based on current filter
+  if (currentFilters.date_range) {
+    document.querySelectorAll('.date-range-btn').forEach(btn => {
+      if (btn.textContent.toLowerCase().replace(' ', '_') === currentFilters.date_range) {
+        btn.classList.add('active');
+      }
+    });
+  }
+  
+  // Performance optimization: Virtual scrolling for large tables
+  if (document.querySelectorAll('tbody tr').length > 100) {
+    console.log('Large table detected, consider implementing virtual scrolling for better performance');
+  }
+});
+
+// Export functionality (bonus feature)
+function exportLogs() {
+  const params = new URLSearchParams(window.location.search);
+  params.set('export', 'csv');
+  window.location.href = window.location.pathname + '?' + params.toString();
+}
+
+// Add export button if needed (you can add this to the template)
+// <button onclick="exportLogs()" class="action-button ...">Export CSV</button>
+</script>
+{% endblock %}
