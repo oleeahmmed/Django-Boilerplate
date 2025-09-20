@@ -1,0 +1,71 @@
+<!-- Reusable Product Card Component -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 relative product-card" data-product-id="{{ product.id }}">
+  <!-- Discount Badge -->
+  {% if product.discount_percentage %}
+  <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold z-10">
+    -{{ product.discount_percentage }}%
+  </div>
+  {% endif %}
+  
+  <!-- Product Image -->
+  <div class="aspect-square bg-gray-100 flex items-center justify-center">
+    {% if product.images.all %}
+      <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+    {% else %}
+      <div class="text-gray-400 text-4xl">📦</div>
+    {% endif %}
+  </div>
+  
+  <!-- Product Info -->
+  <div class="p-4">
+    <h3 class="font-semibold text-gray-800 mb-2 line-clamp-2">{{ product.name }}</h3>
+    
+    <!-- Price Section -->
+    <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center space-x-2">
+        <span class="text-lg font-bold text-green-600">${{ product.current_price }}</span>
+        {% if product.price != product.current_price %}
+          <span class="text-gray-400 line-through text-sm">${{ product.price }}</span>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Stock Status -->
+    <div class="mb-3">
+      {% if product.is_in_stock %}
+        <span class="text-green-600 text-xs">In Stock ({{ product.stock_quantity|default:10 }})</span>
+      {% else %}
+        <span class="text-red-600 text-xs">Out of Stock</span>
+      {% endif %}
+    </div>
+    
+    <!-- Cart Controls -->
+    <div class="cart-controls-{{ product.id }}">
+      <!-- Add to Cart Button (shown when not in cart) -->
+      <button 
+        onclick="addToCart({{ product.id }}, '{{ product.name|escapejs }}', {{ product.current_price }})"
+        class="add-to-cart-btn w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors duration-200 {% if not product.is_in_stock %}opacity-50 cursor-not-allowed{% endif %}"
+        {% if not product.is_in_stock %}disabled{% endif %}
+      >
+        {% if product.is_in_stock %}Add to Cart{% else %}Out of Stock{% endif %}
+      </button>
+      
+      <!-- Quantity Controls (shown when in cart) -->
+      <div class="quantity-controls hidden flex items-center justify-between bg-gray-50 rounded-lg p-2">
+        <button 
+          onclick="updateQuantity({{ product.id }}, 'decrease')"
+          class="decrease-btn bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+        >
+          -
+        </button>
+        <span class="quantity-display font-semibold text-gray-800 px-3">0</span>
+        <button 
+          onclick="updateQuantity({{ product.id }}, 'increase')"
+          class="increase-btn bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

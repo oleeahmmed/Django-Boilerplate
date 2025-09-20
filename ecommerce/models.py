@@ -1852,3 +1852,17 @@ class Banner(TimeStampedModel):
         return True
 
 
+
+class Wishlist(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='wishlist')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='wishlisted_by')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('customer', 'product')  # Prevent duplicate wishlist entries
+        verbose_name = 'Wishlist'
+        verbose_name_plural = 'Wishlists'
+
+    def __str__(self):
+        return f"{self.customer.full_name}'s wishlist: {self.product.name}"
