@@ -470,7 +470,7 @@ def get_dealer_navigation():
 UNFOLD = {
     "SITE_TITLE": "Kreatech Car Detailing",
     "SITE_HEADER": "Kreatech Car Detailing",
-    "SITE_LOGO": static_lazy("images/logo/logo.svg"),
+    "SITE_LOGO": static_lazy("images/logo.jpg"),
     "SITE_URL": "/",
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
