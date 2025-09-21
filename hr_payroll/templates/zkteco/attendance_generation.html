@@ -43,45 +43,67 @@
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
   }
 
-  .option-card {
+  .btn-success {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    transition: all 0.3s ease;
+  }
+
+  .btn-success:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+  }
+
+  .btn-warning {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    transition: all 0.3s ease;
+  }
+
+  .btn-warning:hover {
+    background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .form-section {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  }
+
+  .form-section:focus-within {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .dark .form-section {
+    background: rgba(17, 24, 39, 0.8);
+  }
+
+  .dark .form-section:focus-within {
+    background: rgba(17, 24, 39, 0.95);
+  }
+
+  .strategy-option {
     transition: all 0.2s ease;
     cursor: pointer;
   }
 
-  .option-card:hover {
-    background: rgba(59, 130, 246, 0.05);
+  .strategy-option:hover {
+    background: rgba(59, 130, 246, 0.1);
     transform: scale(1.02);
   }
 
-  .option-card.selected {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.05) 100%);
-    border-color: rgb(59, 130, 246);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-  }
-
-  .progress-bar {
-    background: linear-gradient(90deg, #3B82F6, #8B5CF6, #3B82F6);
-    background-size: 200% 100%;
-    animation: gradient-flow 2s ease-in-out infinite;
-  }
-
-  @keyframes gradient-flow {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-  }
-
-  .modal-backdrop {
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-  }
-
-  .loading-spinner {
-    border-top-color: transparent;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
+  .strategy-option.selected {
+    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    color: white;
+    border-color: transparent;
   }
 
   .preview-table {
@@ -89,48 +111,65 @@
     overflow-y: auto;
   }
 
-  .summary-card {
-    background: linear-gradient(135deg, 
-      rgba(34, 197, 94, 0.1) 0%, 
-      rgba(59, 130, 246, 0.05) 100%);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+  .progress-bar {
+    background: linear-gradient(90deg, #3B82F6, #1D4ED8);
+    transition: width 0.3s ease;
   }
 
-  .warning-card {
-    background: linear-gradient(135deg, 
-      rgba(245, 158, 11, 0.1) 0%, 
-      rgba(239, 68, 68, 0.05) 100%);
-    border: 1px solid rgba(245, 158, 11, 0.2);
+  .status-badge {
+    position: relative;
+    overflow: hidden;
   }
 
-  .step-indicator {
-    transition: all 0.3s ease;
+  .status-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.3s ease;
   }
 
-  .step-indicator.active {
-    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
-    color: white;
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  .status-badge:hover::before {
+    left: 100%;
   }
 
-  .step-indicator.completed {
-    background: linear-gradient(135deg, #10B981, #059669);
-    color: white;
+  .loading-spinner {
+    border: 3px solid rgba(59, 130, 246, 0.3);
+    border-radius: 50%;
+    border-top: 3px solid #3B82F6;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
   }
 
-  .animated-checkmark {
-    animation: checkmark-draw 0.5s ease-in-out;
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 
-  @keyframes checkmark-draw {
-    from {
-      stroke-dasharray: 0 50;
-      opacity: 0;
-    }
-    to {
-      stroke-dasharray: 50 0;
+  .pulse-animation {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
       opacity: 1;
+    }
+    50% {
+      opacity: .5;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .form-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>
@@ -141,13 +180,13 @@
 {% block content %}
 <div class="space-y-8 animate-fade-in">
   <!-- Header Section -->
-  <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+  <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
     <div class="space-y-2">
-      <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
         Attendance Generation
       </h1>
-      <p class="text-lg text-muted-foreground max-w-3xl">
-        Transform raw attendance logs into structured daily attendance records with advanced processing options
+      <p class="text-lg text-muted-foreground max-w-2xl">
+        Generate comprehensive attendance records from raw attendance logs with advanced processing options
       </p>
     </div>
     <div class="flex items-center gap-3">
@@ -160,11 +199,19 @@
         </svg>
         View Logs
       </a>
+      <a href="{% url 'zkteco:device_list' %}" class="action-button inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-primary/20 bg-background hover:bg-primary/10 hover:text-primary px-6 py-3 text-sm font-medium shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+          <circle cx="12" cy="12" r="2"></circle>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        Manage Devices
+      </a>
     </div>
   </div>
 
   <!-- Statistics Overview -->
-  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+  <div class="stats-grid">
     <div class="generation-card rounded-2xl p-6 shadow-elevated glass-card-inner">
       <div class="flex items-center justify-between mb-4">
         <div class="p-3 bg-blue-500/10 rounded-xl">
@@ -173,15 +220,13 @@
             <polyline points="14,2 14,8 20,8"></polyline>
           </svg>
         </div>
-        <span class="text-sm font-medium text-muted-foreground">Available Logs</span>
+        <span class="text-sm font-medium text-muted-foreground">Raw Logs</span>
       </div>
       <div class="space-y-1">
-        <div class="text-3xl font-bold text-foreground">{{ logs_stats.total_logs|floatformat:0 }}</div>
-        <p class="text-sm text-muted-foreground">Raw attendance logs</p>
+        <div class="text-3xl font-bold text-foreground">{{ logs_stats.total_logs|floatformat:0|default:"0" }}</div>
+        <p class="text-sm text-muted-foreground">Available for processing</p>
         {% if logs_stats.earliest and logs_stats.latest %}
-        <p class="text-xs text-muted-foreground">
-          From {{ logs_stats.earliest|date:"M d" }} to {{ logs_stats.latest|date:"M d, Y" }}
-        </p>
+        <p class="text-xs text-muted-foreground">{{ logs_stats.earliest|date:"M d, Y" }} - {{ logs_stats.latest|date:"M d, Y" }}</p>
         {% endif %}
       </div>
     </div>
@@ -190,27 +235,25 @@
       <div class="flex items-center justify-between mb-4">
         <div class="p-3 bg-emerald-500/10 rounded-xl">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            <path d="M9 12l2 2 4-4"></path>
+            <circle cx="12" cy="12" r="10"></circle>
           </svg>
         </div>
         <span class="text-sm font-medium text-muted-foreground">Generated Records</span>
       </div>
       <div class="space-y-1">
-        <div class="text-3xl font-bold text-foreground">{{ attendance_stats.total_records|floatformat:0 }}</div>
-        <p class="text-sm text-muted-foreground">Daily attendance records</p>
+        <div class="text-3xl font-bold text-foreground">{{ attendance_stats.total_records|floatformat:0|default:"0" }}</div>
+        <p class="text-sm text-muted-foreground">Attendance records</p>
         {% if attendance_stats.earliest and attendance_stats.latest %}
-        <p class="text-xs text-muted-foreground">
-          From {{ attendance_stats.earliest|date:"M d" }} to {{ attendance_stats.latest|date:"M d, Y" }}
-        </p>
+        <p class="text-xs text-muted-foreground">{{ attendance_stats.earliest|date:"M d, Y" }} - {{ attendance_stats.latest|date:"M d, Y" }}</p>
         {% endif %}
       </div>
     </div>
 
     <div class="generation-card rounded-2xl p-6 shadow-elevated glass-card-inner">
       <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-purple-500/10 rounded-xl">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600">
+        <div class="p-3 bg-amber-500/10 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-600">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
@@ -219,14 +262,14 @@
       </div>
       <div class="space-y-1">
         <div class="text-3xl font-bold text-foreground">{{ employees_with_logs.count }}</div>
-        <p class="text-sm text-muted-foreground">With attendance data</p>
+        <p class="text-sm text-muted-foreground">With attendance logs</p>
       </div>
     </div>
 
     <div class="generation-card rounded-2xl p-6 shadow-elevated glass-card-inner">
       <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-amber-500/10 rounded-xl">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-600">
+        <div class="p-3 bg-purple-500/10 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600">
             <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
             <circle cx="12" cy="12" r="2"></circle>
           </svg>
@@ -235,34 +278,670 @@
       </div>
       <div class="space-y-1">
         <div class="text-3xl font-bold text-foreground">{{ devices.count }}</div>
-        <p class="text-sm text-muted-foreground">Available devices</p>
+        <p class="text-sm text-muted-foreground">Active devices</p>
       </div>
     </div>
   </div>
 
-  <!-- Step Indicators -->
-  <div class="flex items-center justify-center space-x-8 py-6">
-    <div class="flex items-center space-x-2">
-      <div class="step-indicator active flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground text-sm font-bold">1</div>
-      <span class="text-sm font-medium">Configure</span>
-    </div>
-    <div class="flex-1 h-px bg-border"></div>
-    <div class="flex items-center space-x-2">
-      <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full border-2 border-border text-sm font-bold">2</div>
-      <span class="text-sm font-medium text-muted-foreground">Preview</span>
-    </div>
-    <div class="flex-1 h-px bg-border"></div>
-    <div class="flex items-center space-x-2">
-      <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full border-2 border-border text-sm font-bold">3</div>
-      <span class="text-sm font-medium text-muted-foreground">Generate</span>
-    </div>
-  </div>
-
-  <!-- Configuration Form -->
+  <!-- Generation Configuration -->
   <div class="generation-card rounded-2xl border bg-card shadow-elevated glass-card-inner">
     <div class="border-b border-border/50 p-6">
       <div class="flex items-center gap-3">
         <div class="p-2 bg-primary/10 rounded-lg">
-       =
-        {% endblock %}
-   
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+            <path d="M15 5l3 3"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold">Generation Configuration</h3>
+      </div>
+    </div>
+    
+    <div class="p-6">
+      <form id="generationForm" class="space-y-8">
+        <!-- Date Range Section -->
+        <div class="form-section rounded-xl p-6 border border-border/30">
+          <h4 class="text-md font-semibold mb-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" x2="16" y1="2" y2="6"></line>
+              <line x1="8" x2="8" y1="2" y2="6"></line>
+              <line x1="3" x2="21" y1="10" y2="10"></line>
+            </svg>
+            Date Range
+          </h4>
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="space-y-2">
+              <label class="text-sm font-medium">Start Date</label>
+              <input type="date" name="start_date" id="start_date" required
+                     class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm font-medium">End Date</label>
+              <input type="date" name="end_date" id="end_date" required
+                     class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button type="button" class="quick-date-btn px-3 py-1 rounded-full border border-border text-xs font-medium hover:bg-primary/10" data-days="1">Today</button>
+            <button type="button" class="quick-date-btn px-3 py-1 rounded-full border border-border text-xs font-medium hover:bg-primary/10" data-days="7">Last 7 Days</button>
+            <button type="button" class="quick-date-btn px-3 py-1 rounded-full border border-border text-xs font-medium hover:bg-primary/10" data-days="30">Last 30 Days</button>
+            <button type="button" class="quick-date-btn px-3 py-1 rounded-full border border-border text-xs font-medium hover:bg-primary/10" data-days="90">Last 90 Days</button>
+          </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="form-section rounded-xl p-6 border border-border/30">
+          <h4 class="text-md font-semibold mb-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            Filters
+          </h4>
+          <div class="grid gap-4 md:grid-cols-3 form-grid">
+            <div class="space-y-2">
+              <label class="text-sm font-medium">Departments</label>
+              <select name="departments" id="departments" multiple class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                {% for department in departments %}
+                <option value="{{ department.id }}">{{ department.name }}</option>
+                {% endfor %}
+              </select>
+              <p class="text-xs text-muted-foreground">Hold Ctrl/Cmd to select multiple</p>
+            </div>
+            
+            <div class="space-y-2">
+              <label class="text-sm font-medium">Employees</label>
+              <select name="employees" id="employees" multiple class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                {% for employee in employees_with_logs %}
+                <option value="{{ employee.id }}">{{ employee.name }} ({{ employee.employee_id }})</option>
+                {% endfor %}
+              </select>
+              <p class="text-xs text-muted-foreground">Leave empty for all employees</p>
+            </div>
+            
+            <div class="space-y-2">
+              <label class="text-sm font-medium">Devices</label>
+              <select name="devices" id="devices" multiple class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                {% for device in devices %}
+                <option value="{{ device.id }}">{{ device.name }}</option>
+                {% endfor %}
+              </select>
+              <p class="text-xs text-muted-foreground">Leave empty for all devices</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Processing Options -->
+        <div class="form-section rounded-xl p-6 border border-border/30">
+          <h4 class="text-md font-semibold mb-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+              <path d="M12 2v6l3-3-3-3z"></path>
+              <path d="M12 8v6l3-3-3-3z"></path>
+              <path d="M12 14v6l3-3-3-3z"></path>
+            </svg>
+            Processing Options
+          </h4>
+          
+          <div class="grid gap-6 md:grid-cols-2">
+            <div class="space-y-4">
+              <div class="space-y-2">
+                <label class="text-sm font-medium">Punch Matching Strategy</label>
+                <div class="space-y-2">
+                  <label class="strategy-option flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer">
+                    <input type="radio" name="punch_matching_strategy" value="first_last" checked class="text-primary">
+                    <div>
+                      <div class="font-medium">First & Last</div>
+                      <div class="text-xs text-muted-foreground">Use first punch as check-in, last as check-out</div>
+                    </div>
+                  </label>
+                  <label class="strategy-option flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer">
+                    <input type="radio" name="punch_matching_strategy" value="first_two" class="text-primary">
+                    <div>
+                      <div class="font-medium">First Two</div>
+                      <div class="text-xs text-muted-foreground">Use first two punches (in-out pattern)</div>
+                    </div>
+                  </label>
+                  <label class="strategy-option flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer">
+                    <input type="radio" name="punch_matching_strategy" value="smart_pairing" class="text-primary">
+                    <div>
+                      <div class="font-medium">Smart Pairing</div>
+                      <div class="text-xs text-muted-foreground">Intelligent pairing based on time gaps</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <div class="space-y-2">
+                <label class="text-sm font-medium">Minimum Work Hours</label>
+                <input type="number" name="min_work_hours" id="min_work_hours" value="4" min="0" max="24" step="0.5"
+                       class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                <p class="text-xs text-muted-foreground">Minimum hours to mark as present</p>
+              </div>
+              
+              <div class="space-y-2">
+                <label class="text-sm font-medium">Break Time (minutes)</label>
+                <input type="number" name="break_time_minutes" id="break_time_minutes" value="60" min="0" max="480" step="15"
+                       class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                <p class="text-xs text-muted-foreground">Break time to deduct from work hours</p>
+              </div>
+              
+              <div class="space-y-2">
+                <label class="text-sm font-medium">Overtime Threshold (hours)</label>
+                <input type="number" name="overtime_threshold_hours" id="overtime_threshold_hours" value="8" min="0" max="24" step="0.5"
+                       class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                <p class="text-xs text-muted-foreground">Hours after which overtime is calculated</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advanced Options -->
+        <div class="form-section rounded-xl p-6 border border-border/30">
+          <h4 class="text-md font-semibold mb-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            Advanced Options
+          </h4>
+          
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="space-y-4">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="regenerate_existing" id="regenerate_existing" class="rounded border-border text-primary focus:ring-primary">
+                <div>
+                  <div class="font-medium">Regenerate Existing Records</div>
+                  <div class="text-xs text-muted-foreground">Overwrite existing attendance records</div>
+                </div>
+              </label>
+              
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="consider_holidays" id="consider_holidays" checked class="rounded border-border text-primary focus:ring-primary">
+                <div>
+                  <div class="font-medium">Consider Holidays</div>
+                  <div class="text-xs text-muted-foreground">Mark holiday dates appropriately</div>
+                </div>
+              </label>
+            </div>
+            
+            <div class="space-y-4">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="consider_leaves" id="consider_leaves" checked class="rounded border-border text-primary focus:ring-primary">
+                <div>
+                  <div class="font-medium">Consider Leave Applications</div>
+                  <div class="text-xs text-muted-foreground">Mark approved leave dates</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-4 justify-center">
+          <button type="button" id="previewBtn" class="btn-gradient inline-flex items-center gap-2 rounded-xl px-8 py-4 text-sm font-medium text-white shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Preview Generation
+          </button>
+          
+          <button type="button" id="generateBtn" class="btn-success inline-flex items-center gap-2 rounded-xl px-8 py-4 text-sm font-medium text-white shadow-lg" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20"></path>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            Generate Attendance
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Preview Section -->
+  <div id="previewSection" class="generation-card rounded-2xl border bg-card shadow-elevated glass-card-inner hidden">
+    <div class="border-b border-border/50 p-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-emerald-500/10 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold">Generation Preview</h3>
+        </div>
+        <button id="closePreview" class="text-muted-foreground hover:text-foreground">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <div class="p-6">
+      <!-- Preview Summary -->
+      <div id="previewSummary" class="grid gap-4 md:grid-cols-4 mb-6">
+        <!-- Summary cards will be populated by JavaScript -->
+      </div>
+      
+      <!-- Preview Table -->
+      <div class="preview-table border rounded-xl overflow-hidden">
+        <table class="min-w-full">
+          <thead class="bg-muted/30 border-b border-border/50">
+            <tr>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Employee</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Date</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Check In</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Check Out</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Hours</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Status</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Action</th>
+            </tr>
+          </thead>
+          <tbody id="previewTableBody" class="divide-y divide-border/30">
+            <!-- Preview data will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Section -->
+  <div id="progressSection" class="generation-card rounded-2xl border bg-card shadow-elevated glass-card-inner hidden">
+    <div class="p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="loading-spinner"></div>
+        <h3 class="text-lg font-semibold">Generating Attendance Records...</h3>
+      </div>
+      
+      <div class="space-y-4">
+        <div class="bg-muted/30 rounded-full h-3 overflow-hidden">
+          <div id="progressBar" class="progress-bar h-full rounded-full" style="width: 0%"></div>
+        </div>
+        
+        <div id="progressText" class="text-sm text-muted-foreground text-center">
+          Initializing...
+        </div>
+        
+        <div id="progressStats" class="grid gap-4 md:grid-cols-4 text-center">
+          <div>
+            <div id="createdCount" class="text-2xl font-bold text-emerald-600">0</div>
+            <div class="text-xs text-muted-foreground">Created</div>
+          </div>
+          <div>
+            <div id="updatedCount" class="text-2xl font-bold text-blue-600">0</div>
+            <div class="text-xs text-muted-foreground">Updated</div>
+          </div>
+          <div>
+            <div id="skippedCount" class="text-2xl font-bold text-amber-600">0</div>
+            <div class="text-xs text-muted-foreground">Skipped</div>
+          </div>
+          <div>
+            <div id="errorCount" class="text-2xl font-bold text-red-600">0</div>
+            <div class="text-xs text-muted-foreground">Errors</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Set default dates
+  const today = new Date();
+  const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  
+  document.getElementById('end_date').value = today.toISOString().split('T')[0];
+  document.getElementById('start_date').value = lastWeek.toISOString().split('T')[0];
+
+  // Quick date buttons
+  document.querySelectorAll('.quick-date-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const days = parseInt(this.dataset.days);
+      const endDate = new Date();
+      const startDate = new Date(endDate.getTime() - (days - 1) * 24 * 60 * 60 * 1000);
+      
+      document.getElementById('end_date').value = endDate.toISOString().split('T')[0];
+      document.getElementById('start_date').value = startDate.toISOString().split('T')[0];
+      
+      // Visual feedback
+      document.querySelectorAll('.quick-date-btn').forEach(b => b.classList.remove('bg-primary', 'text-white'));
+      this.classList.add('bg-primary', 'text-white');
+    });
+  });
+
+  // Strategy option selection
+  document.querySelectorAll('.strategy-option input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      document.querySelectorAll('.strategy-option').forEach(opt => opt.classList.remove('selected'));
+      if (this.checked) {
+        this.closest('.strategy-option').classList.add('selected');
+      }
+    });
+  });
+
+  // Initialize first strategy as selected
+  document.querySelector('.strategy-option input[type="radio"]:checked').closest('.strategy-option').classList.add('selected');
+
+  // Preview functionality
+  document.getElementById('previewBtn').addEventListener('click', function() {
+    const formData = getFormData();
+    if (!validateForm(formData)) return;
+    
+    showLoading(this);
+    
+    fetch('{% url "zkteco:attendance_generation_preview" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      hideLoading(this);
+      if (data.success) {
+        showPreview(data);
+        document.getElementById('generateBtn').disabled = false;
+      } else {
+        showError('Preview failed: ' + data.error);
+      }
+    })
+    .catch(error => {
+      hideLoading(this);
+      showError('Network error: ' + error.message);
+    });
+  });
+
+  // Generate functionality
+  document.getElementById('generateBtn').addEventListener('click', function() {
+    if (!confirm('Are you sure you want to generate attendance records? This action cannot be undone.')) {
+      return;
+    }
+    
+    const formData = getFormData();
+    showProgress();
+    
+    fetch('{% url "zkteco:generate_attendance_records" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      hideProgress();
+      if (data.success) {
+        showSuccess(data);
+      } else {
+        showError('Generation failed: ' + data.error);
+      }
+    })
+    .catch(error => {
+      hideProgress();
+      showError('Network error: ' + error.message);
+    });
+  });
+
+  // Close preview
+  document.getElementById('closePreview').addEventListener('click', function() {
+    document.getElementById('previewSection').classList.add('hidden');
+    document.getElementById('generateBtn').disabled = true;
+  });
+
+  function getFormData() {
+    const form = document.getElementById('generationForm');
+    const formData = new FormData(form);
+    const data = {};
+    
+    // Convert FormData to object
+    for (let [key, value] of formData.entries()) {
+      if (data[key]) {
+        if (Array.isArray(data[key])) {
+          data[key].push(value);
+        } else {
+          data[key] = [data[key], value];
+        }
+      } else {
+        data[key] = value;
+      }
+    }
+    
+    // Handle multi-select fields
+    ['departments', 'employees', 'devices'].forEach(field => {
+      const select = document.getElementById(field);
+      const selected = Array.from(select.selectedOptions).map(option => option.value);
+      data[field] = selected;
+    });
+    
+    // Handle checkboxes
+    data.regenerate_existing = document.getElementById('regenerate_existing').checked;
+    data.consider_holidays = document.getElementById('consider_holidays').checked;
+    data.consider_leaves = document.getElementById('consider_leaves').checked;
+    
+    return data;
+  }
+
+  function validateForm(data) {
+    if (!data.start_date || !data.end_date) {
+      showError('Please select both start and end dates');
+      return false;
+    }
+    
+    const startDate = new Date(data.start_date);
+    const endDate = new Date(data.end_date);
+    
+    if (endDate < startDate) {
+      showError('End date must be after start date');
+      return false;
+    }
+    
+    const daysDiff = (endDate - startDate) / (1000 * 60 * 60 * 24);
+    if (daysDiff > 90) {
+      showError('Date range cannot exceed 90 days');
+      return false;
+    }
+    
+    return true;
+  }
+
+  function showPreview(data) {
+    const section = document.getElementById('previewSection');
+    const summary = document.getElementById('previewSummary');
+    const tbody = document.getElementById('previewTableBody');
+    
+    // Show summary
+    summary.innerHTML = `
+      <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <div class="text-2xl font-bold text-blue-600">${data.summary.total_records}</div>
+        <div class="text-sm text-muted-foreground">Total Records</div>
+      </div>
+      <div class="text-center p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+        <div class="text-2xl font-bold text-emerald-600">${data.summary.new_records}</div>
+        <div class="text-sm text-muted-foreground">New Records</div>
+      </div>
+      <div class="text-center p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+        <div class="text-2xl font-bold text-amber-600">${data.summary.updated_records}</div>
+        <div class="text-sm text-muted-foreground">Updates</div>
+      </div>
+      <div class="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+        <div class="text-2xl font-bold text-purple-600">${data.summary.employees_affected}</div>
+        <div class="text-sm text-muted-foreground">Employees</div>
+      </div>
+    `;
+    
+    // Show preview data
+    tbody.innerHTML = data.preview_data.map(record => `
+      <tr class="hover:bg-primary/5">
+        <td class="px-4 py-3">
+          <div class="font-medium">${record.employee_name}</div>
+          <div class="text-xs text-muted-foreground">${record.employee_code}</div>
+        </td>
+        <td class="px-4 py-3 text-sm">${new Date(record.date).toLocaleDateString()}</td>
+        <td class="px-4 py-3 text-sm font-mono">${record.check_in_time || '-'}</td>
+        <td class="px-4 py-3 text-sm font-mono">${record.check_out_time || '-'}</td>
+        <td class="px-4 py-3 text-sm">${record.work_hours.toFixed(2)}h</td>
+        <td class="px-4 py-3">
+          <span class="status-badge inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusClass(record.status)}">
+            ${getStatusText(record.status)}
+          </span>
+        </td>
+        <td class="px-4 py-3">
+          <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${record.action === 'create' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}">
+            ${record.action === 'create' ? 'Create' : 'Update'}
+          </span>
+        </td>
+      </tr>
+    `).join('');
+    
+    section.classList.remove('hidden');
+    section.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function showProgress() {
+    document.getElementById('progressSection').classList.remove('hidden');
+    document.getElementById('previewSection').classList.add('hidden');
+    document.getElementById('progressSection').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function hideProgress() {
+    document.getElementById('progressSection').classList.add('hidden');
+  }
+
+  function showSuccess(data) {
+    const message = `
+      <div class="generation-card rounded-2xl p-6 shadow-elevated glass-card-inner bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 bg-emerald-500/10 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
+              <path d="M9 12l2 2 4-4"></path>
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-emerald-800">Generation Completed Successfully!</h3>
+        </div>
+        <div class="grid gap-4 md:grid-cols-4 mb-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-emerald-600">${data.generated_count}</div>
+            <div class="text-sm text-emerald-700">Created</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-600">${data.updated_count}</div>
+            <div class="text-sm text-blue-700">Updated</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-amber-600">${data.skipped_count}</div>
+            <div class="text-sm text-amber-700">Skipped</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-red-600">${data.error_count}</div>
+            <div class="text-sm text-red-700">Errors</div>
+          </div>
+        </div>
+        <p class="text-emerald-700">${data.message}</p>
+        <div class="mt-4 flex gap-3">
+          <a href="{% url 'zkteco:attendance_logs' %}" class="btn-gradient inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium text-white shadow-lg">
+            View Attendance Records
+          </a>
+        </div>
+      </div>
+    `;
+    
+    document.querySelector('.space-y-8').insertAdjacentHTML('afterbegin', message);
+  }
+
+  function showError(message) {
+    // Create error notification
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-xl shadow-lg z-50';
+    errorDiv.innerHTML = `
+      <div class="flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" x2="9" y1="9" y2="15"></line>
+          <line x1="9" x2="15" y1="9" y2="15"></line>
+        </svg>
+        <span>${message}</span>
+        <button onclick="this.parentElement.parentElement.remove()" class="ml-2 hover:bg-red-600 rounded p-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(errorDiv);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      if (errorDiv.parentElement) {
+        errorDiv.remove();
+      }
+    }, 5000);
+  }
+
+  function showLoading(button) {
+    const originalText = button.innerHTML;
+    button.innerHTML = `
+      <div class="loading-spinner mr-2"></div>
+      Loading...
+    `;
+    button.disabled = true;
+    button.dataset.originalText = originalText;
+  }
+
+  function hideLoading(button) {
+    button.innerHTML = button.dataset.originalText;
+    button.disabled = false;
+  }
+
+  function getStatusClass(status) {
+    switch(status) {
+      case 'P': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400';
+      case 'A': return 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400';
+      case 'H': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400';
+      case 'L': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400';
+      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400';
+    }
+  }
+
+  function getStatusText(status) {
+    switch(status) {
+      case 'P': return 'Present';
+      case 'A': return 'Absent';
+      case 'H': return 'Holiday';
+      case 'L': return 'Leave';
+      default: return 'Unknown';
+    }
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+});
+</script>
+{% endblock %}
