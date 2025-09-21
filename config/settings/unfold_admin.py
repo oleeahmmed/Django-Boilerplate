@@ -148,38 +148,7 @@ UNFOLD = {
                 ],
             },
             
-            {
-                "title": _("Social Accounts"),
-                "separator": True,
-                "collapsible": True,
-                "items": [
-                    
-                    {
-                        "title": _("Sites"),
-                        "icon": "language",  
-                        "link": reverse_lazy("admin:sites_site_changelist"),
-                        "permission": lambda request: request.user.is_superuser,
-                    },
-                    {
-                        "title": _("Social Accounts"),
-                        "icon": "account_circle",
-                        "link": reverse_lazy("admin:socialaccount_socialaccount_changelist"),
-                        "permission": lambda request: request.user.is_superuser,
-                    },
-                    {
-                        "title": _("Social Tokens"),
-                        "icon": "vpn_key",
-                        "link": reverse_lazy("admin:socialaccount_socialtoken_changelist"),
-                        "permission": lambda request: request.user.is_superuser,
-                    },
-                    {
-                        "title": _("Social Apps"),
-                        "icon": "apps",
-                        "link": reverse_lazy("admin:socialaccount_socialapp_changelist"),
-                        "permission": lambda request: request.user.is_superuser,
-                    },
-                ],
-            },
+
 {
                 "title": _("Ecommerce"),
                 "separator": True,

@@ -4,7 +4,6 @@ DEBUG = True
 
 INSTALLED_APPS += [
     'debug_toolbar',
-    'django_extensions',  # Optional: adds useful management commands
 ]
 
 MIDDLEWARE = [
@@ -23,11 +22,11 @@ DEBUG_TOOLBAR_CONFIG = {
         'debug_toolbar.panels.profiling.ProfilingPanel',
     ],
     'SHOW_TEMPLATE_CONTEXT': True,
+    'SHOW_TOOLBAR_CALLBACK': lambda request: False,  # সবসময় toolbar লুকাবে
+
 }
 
-# Simplify CORS in development
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
+
 
 # Email backend for development
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -53,11 +52,7 @@ LOGGING = {
     },
 }
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}
+
 
 # Development-specific settings
 ALLOWED_HOSTS = ['*']  # Allow all hosts in development

@@ -17,7 +17,7 @@ urlpatterns = [
     # path('token/verify/', views.verify_token, name='verify_token'),
     
     # # Profile management
-    path('profile/', views.ProfileView.as_view(), name='profile'),
+    # path('profile/', views.ProfileView.as_view(), name='profile'),
     # path('dashboard/', views.user_dashboard, name='dashboard'),
     
     # # Utility endpoints
