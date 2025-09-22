@@ -4,140 +4,13 @@
 
 {% block extra_css %}
 <style>
-  .glass-card-inner {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(59, 130, 246, 0.2);
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
   }
-
-  .dark .glass-card-inner {
-    background: rgba(17, 24, 39, 0.8);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-  }
-
-  .shadow-elevated {
-    box-shadow: 
-      0 25px 50px -12px rgba(0, 0, 0, 0.25),
-      0 0 0 1px rgba(59, 130, 246, 0.05);
-  }
-
-  .log-card {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .log-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-      0 32px 64px -12px rgba(0, 0, 0, 0.25),
-      0 0 0 1px rgba(59, 130, 246, 0.1);
-  }
-
-  .filter-chip {
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
-
-  .filter-chip:hover {
-    background: rgba(59, 130, 246, 0.1);
-    transform: scale(1.02);
-  }
-
-  .filter-chip.active {
-    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
-    color: white;
-    border-color: transparent;
-  }
-
-  .btn-gradient {
-    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-    transition: all 0.3s ease;
-  }
-
-  .btn-gradient:hover {
-    background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-  }
-
-  .source-badge {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .source-badge::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.3s ease;
-  }
-
-  .source-badge:hover::before {
-    left: 100%;
-  }
-
-  .timestamp-column {
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 0.875rem;
-  }
-
-  .employee-avatar {
-    background: linear-gradient(135deg, #3B82F6, #8B5CF6);
-    color: white;
-    font-weight: 600;
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-  }
-
-  .pagination-button {
-    transition: all 0.2s ease;
-  }
-
-  .pagination-button:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-  }
-
-  .pagination-button.active {
-    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
-    color: white;
-    border-color: transparent;
-  }
-
-  .search-input {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-  }
-
-  .search-input:focus {
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
-  .dark .search-input {
-    background: rgba(17, 24, 39, 0.8);
-  }
-
-  .dark .search-input:focus {
-    background: rgba(17, 24, 39, 0.95);
-  }
-
-  @media (max-width: 768px) {
-    .table-responsive {
-      font-size: 0.875rem;
-    }
-    
-    .timestamp-column {
-      font-size: 0.8rem;
-    }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 </style>
 {% endblock %}
@@ -145,142 +18,123 @@
 {% block page_title %}Attendance Logs{% endblock %}
 
 {% block content %}
-<div class="space-y-8 animate-fade-in">
-  <!-- Header Section -->
-  <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-    <div class="space-y-2">
-      <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
-        Attendance Logs
-      </h1>
-      <p class="text-lg text-muted-foreground max-w-2xl">
-        View and analyze imported attendance data from your ZKTeco devices
-      </p>
+<div class="space-y-6 animate-fade-in">
+  <!-- Compact Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Attendance Logs</h1>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">View and analyze attendance records</p>
     </div>
-    <div class="flex items-center gap-3">
-      <a href="{% url 'zkteco:attendance_generation' %}" class="btn-gradient inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-white px-6 py-3 text-sm font-medium shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2v20"></path>
-          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'zkteco:attendance_generation' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
         </svg>
-        Generate Attendance
+        Generate
       </a>
-      <a href="{% url 'zkteco:device_list' %}" class="action-button inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-primary/20 bg-background hover:bg-primary/10 hover:text-primary px-6 py-3 text-sm font-medium shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <a href="{% url 'zkteco:device_list' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
           <circle cx="12" cy="12" r="2"></circle>
           <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
         </svg>
-        Manage Devices
+        Devices
       </a>
     </div>
   </div>
 
-  <!-- Statistics Overview -->
-  <div class="stats-grid">
-    <div class="log-card rounded-2xl p-6 shadow-elevated glass-card-inner">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-emerald-500/10 rounded-xl">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14,2 14,8 20,8"></polyline>
+  <!-- Compact Statistics -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total Logs</p>
+          <p class="text-lg font-bold text-gray-900 dark:text-white">{{ total_logs|floatformat:0 }}</p>
+        </div>
+        <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
           </svg>
         </div>
-        <span class="text-sm font-medium text-muted-foreground">Total Logs</span>
-      </div>
-      <div class="space-y-1">
-        <div class="text-3xl font-bold text-foreground">{{ total_logs|floatformat:0 }}</div>
-        <p class="text-sm text-muted-foreground">Attendance records</p>
       </div>
     </div>
 
     {% if date_stats.earliest and date_stats.latest %}
-    <div class="log-card rounded-2xl p-6 shadow-elevated glass-card-inner">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-blue-500/10 rounded-xl">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600">
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">Date Range</p>
+          <p class="text-xs font-medium text-gray-900 dark:text-white">{{ date_stats.earliest|date:"M d" }} - {{ date_stats.latest|date:"M d" }}</p>
+        </div>
+        <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12,6 12,12 16,14"></polyline>
           </svg>
         </div>
-        <span class="text-sm font-medium text-muted-foreground">Date Range</span>
-      </div>
-      <div class="space-y-1">
-        <div class="text-sm font-medium text-foreground">{{ date_stats.earliest|date:"M d, Y" }}</div>
-        <div class="text-xs text-muted-foreground">to</div>
-        <div class="text-sm font-medium text-foreground">{{ date_stats.latest|date:"M d, Y" }}</div>
       </div>
     </div>
     {% endif %}
 
-    <div class="log-card rounded-2xl p-6 shadow-elevated glass-card-inner">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-purple-500/10 rounded-xl">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600">
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wide">Devices</p>
+          <p class="text-lg font-bold text-gray-900 dark:text-white">{{ devices.count }}</p>
+        </div>
+        <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
             <circle cx="12" cy="12" r="2"></circle>
           </svg>
         </div>
-        <span class="text-sm font-medium text-muted-foreground">Devices</span>
-      </div>
-      <div class="space-y-1">
-        <div class="text-3xl font-bold text-foreground">{{ devices.count }}</div>
-        <p class="text-sm text-muted-foreground">Active devices</p>
       </div>
     </div>
 
-    <div class="log-card rounded-2xl p-6 shadow-elevated glass-card-inner">
-      <div class="flex items-center justify-between mb-4">
-        <div class="p-3 bg-amber-500/10 rounded-xl">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-600">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wide">Employees</p>
+          <p class="text-lg font-bold text-gray-900 dark:text-white">{{ employees.count }}</p>
+        </div>
+        <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
           </svg>
         </div>
-        <span class="text-sm font-medium text-muted-foreground">Employees</span>
-      </div>
-      <div class="space-y-1">
-        <div class="text-3xl font-bold text-foreground">{{ employees.count }}</div>
-        <p class="text-sm text-muted-foreground">With attendance</p>
       </div>
     </div>
   </div>
 
-  <!-- Filters Section -->
-  <div class="log-card rounded-2xl border bg-card shadow-elevated glass-card-inner">
-    <div class="border-b border-border/50 p-6">
-      <div class="flex items-center gap-3">
-        <div class="p-2 bg-primary/10 rounded-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-          </svg>
-        </div>
-        <h3 class="text-lg font-semibold">Filters & Search</h3>
-      </div>
+  <!-- Compact Filters -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Filters</h3>
     </div>
     
-    <div class="p-6">
-      <form method="GET" class="space-y-6">
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <!-- Search Input -->
-          <div class="space-y-2">
-            <label class="text-sm font-medium">Search Employee</label>
+    <div class="p-4">
+      <form method="GET" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- Search -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
             <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+              <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <circle cx="11" cy="11" r="8"></circle>
                   <path d="m21 21-4.35-4.35"></path>
                 </svg>
               </div>
               <input type="text" name="search" value="{{ current_search|default:'' }}" 
-                     placeholder="Name, ID, or ZKTeco ID" 
-                     class="search-input w-full pl-10 pr-4 py-3 rounded-xl border border-input text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                     placeholder="Employee name or ID" 
+                     class="w-full pl-7 pr-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
             </div>
           </div>
 
-          <!-- Device Filter -->
-          <div class="space-y-2">
-            <label class="text-sm font-medium">Device</label>
-            <select name="device" class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <!-- Device -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Device</label>
+            <select name="device" class="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
               <option value="">All Devices</option>
               {% for device in devices %}
               <option value="{{ device.id }}" {% if current_device == device.id|stringformat:"s" %}selected{% endif %}>
@@ -290,10 +144,10 @@
             </select>
           </div>
 
-          <!-- Employee Filter -->
-          <div class="space-y-2">
-            <label class="text-sm font-medium">Employee</label>
-            <select name="employee" class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <!-- Employee -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Employee</label>
+            <select name="employee" class="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
               <option value="">All Employees</option>
               {% for employee in employees %}
               <option value="{{ employee.id }}" {% if current_employee == employee.id|stringformat:"s" %}selected{% endif %}>
@@ -303,10 +157,10 @@
             </select>
           </div>
 
-          <!-- Source Type Filter -->
-          <div class="space-y-2">
-            <label class="text-sm font-medium">Source</label>
-            <select name="source_type" class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <!-- Source -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Source</label>
+            <select name="source_type" class="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
               <option value="">All Sources</option>
               <option value="ZK" {% if current_source_type == "ZK" %}selected{% endif %}>ZKTeco Device</option>
               <option value="MN" {% if current_source_type == "MN" %}selected{% endif %}>Manual Entry</option>
@@ -314,55 +168,52 @@
           </div>
         </div>
 
-        <div class="grid gap-4 md:grid-cols-3">
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
           <!-- Date Range -->
-          <div class="space-y-2">
-            <label class="text-sm font-medium">Start Date</label>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
             <input type="date" name="start_date" value="{{ current_start_date|default:'' }}" 
-                   class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                   class="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
           </div>
 
-          <div class="space-y-2">
-            <label class="text-sm font-medium">End Date</label>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
             <input type="date" name="end_date" value="{{ current_end_date|default:'' }}" 
-                   class="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                   class="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
           </div>
 
-          <!-- Quick Date Filters -->
-          <div class="space-y-2">
-            <label class="text-sm font-medium">Quick Filters</label>
-            <div class="flex flex-wrap gap-2">
-              <button type="submit" name="date_range" value="today" class="filter-chip {% if current_date_range == 'today' %}active{% endif %} px-3 py-1 rounded-full border border-border text-xs font-medium">
+          <!-- Quick Filters -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Quick Filters</label>
+            <div class="flex flex-wrap gap-1">
+              <button type="submit" name="date_range" value="today" class="px-2 py-1 text-xs font-medium rounded border {% if current_date_range == 'today' %}bg-blue-600 text-white border-blue-600{% else %}bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %} transition-colors">
                 Today
               </button>
-              <button type="submit" name="date_range" value="yesterday" class="filter-chip {% if current_date_range == 'yesterday' %}active{% endif %} px-3 py-1 rounded-full border border-border text-xs font-medium">
+              <button type="submit" name="date_range" value="yesterday" class="px-2 py-1 text-xs font-medium rounded border {% if current_date_range == 'yesterday' %}bg-blue-600 text-white border-blue-600{% else %}bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %} transition-colors">
                 Yesterday
               </button>
-              <button type="submit" name="date_range" value="this_week" class="filter-chip {% if current_date_range == 'this_week' %}active{% endif %} px-3 py-1 rounded-full border border-border text-xs font-medium">
-                This Week
+              <button type="submit" name="date_range" value="this_week" class="px-2 py-1 text-xs font-medium rounded border {% if current_date_range == 'this_week' %}bg-blue-600 text-white border-blue-600{% else %}bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %} transition-colors">
+                Week
               </button>
-              <button type="submit" name="date_range" value="this_month" class="filter-chip {% if current_date_range == 'this_month' %}active{% endif %} px-3 py-1 rounded-full border border-border text-xs font-medium">
-                This Month
+              <button type="submit" name="date_range" value="this_month" class="px-2 py-1 text-xs font-medium rounded border {% if current_date_range == 'this_month' %}bg-blue-600 text-white border-blue-600{% else %}bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %} transition-colors">
+                Month
               </button>
             </div>
           </div>
         </div>
 
-        <div class="flex flex-wrap gap-3">
-          <button type="submit" class="btn-gradient inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium text-white shadow-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="flex items-center gap-2">
+          <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            Apply Filters
+            Apply
           </button>
           
-          <a href="{% url 'zkteco:attendance_logs' %}" class="inline-flex items-center gap-2 rounded-xl border border-input bg-background hover:bg-accent px-6 py-3 text-sm font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-              <path d="M21 3v5h-5"></path>
-              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-              <path d="M3 21v-5h5"></path>
+          <a href="{% url 'zkteco:attendance_logs' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
             </svg>
             Clear
           </a>
@@ -371,21 +222,13 @@
     </div>
   </div>
 
-  <!-- Attendance Logs Table -->
-  <div class="log-card rounded-2xl border bg-card shadow-elevated glass-card-inner">
-    <div class="border-b border-border/50 p-6">
+  <!-- Compact Attendance Table -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="p-2 bg-emerald-500/10 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14,2 14,8 20,8"></polyline>
-              <line x1="16" x2="8" y1="13" y2="13"></line>
-              <line x1="16" x2="8" y1="17" y2="17"></line>
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold">Attendance Records</h3>
-          <span class="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+        <div class="flex items-center gap-2">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Attendance Records</h3>
+          <span class="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
             {{ total_logs }} records
           </span>
         </div>
@@ -393,111 +236,109 @@
     </div>
 
     {% if logs %}
-    <div class="overflow-hidden">
-      <div class="overflow-x-auto table-responsive">
-        <table class="min-w-full">
-          <thead class="bg-muted/30 border-b border-border/50">
-            <tr>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wide">Employee</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wide">Device</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wide">Timestamp</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-muted-foreground uppercase tracking-wide">Source</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-border/30">
-            {% for log in logs %}
-            <tr class="hover:bg-primary/5 transition-colors duration-200">
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <div class="employee-avatar flex items-center justify-center h-10 w-10 rounded-full text-sm font-bold">
-                    {{ log.employee.name|slice:":2"|upper }}
-                  </div>
-                  <div>
-                    <div class="font-medium text-foreground">{{ log.employee.name }}</div>
-                    <div class="text-sm text-muted-foreground font-mono">
-                      ID: {{ log.employee.employee_id }}
-                      {% if log.employee.zkteco_id != log.employee.employee_id %}
-                        • ZK: {{ log.employee.zkteco_id }}
-                      {% endif %}
-                    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-xs">
+        <thead class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+          <tr>
+            <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">Employee</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">Device</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">Date & Time</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">Source</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          {% for log in logs %}
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                  {{ log.employee.name|slice:":1"|upper }}
+                </div>
+                <div class="min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white truncate">{{ log.employee.name }}</div>
+                  <div class="text-gray-500 dark:text-gray-400 font-mono">
+                    ID: {{ log.employee.employee_id }}
+                    {% if log.employee.zkteco_id != log.employee.employee_id %}
+                      • ZK: {{ log.employee.zkteco_id }}
+                    {% endif %}
                   </div>
                 </div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                  <div class="p-2 bg-purple-500/10 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600">
-                      <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                      <circle cx="12" cy="12" r="2"></circle>
-                    </svg>
-                  </div>
-                  <div>
-                    <div class="font-medium text-foreground">{{ log.device.name }}</div>
-                    <div class="text-xs text-muted-foreground font-mono">{{ log.device.ip_address }}</div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="timestamp-column">
-                  <div class="font-semibold text-foreground">{{ log.timestamp|date:"M d, Y" }}</div>
-                  <div class="text-sm text-muted-foreground">{{ log.timestamp|date:"H:i:s" }}</div>
-                  <div class="text-xs text-muted-foreground">{{ log.timestamp|timesince }} ago</div>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                {% if log.source_type == 'ZK' %}
-                <span class="source-badge inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              </div>
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 bg-purple-100 dark:bg-purple-900/30 rounded flex items-center justify-center">
+                  <svg class="w-3 h-3 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
                     <circle cx="12" cy="12" r="2"></circle>
                   </svg>
-                  Device
-                </span>
-                {% else %}
-                <span class="source-badge inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 20h9"></path>
-                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                    <path d="M15 5l3 3"></path>
-                  </svg>
-                  Manual
-                </span>
-                {% endif %}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+                </div>
+                <div class="min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white truncate">{{ log.device.name }}</div>
+                  <div class="text-gray-500 dark:text-gray-400 font-mono">{{ log.device.ip_address }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3">
+              <div class="font-mono">
+                <div class="font-medium text-gray-900 dark:text-white">{{ log.timestamp|date:"M d, Y" }}</div>
+                <div class="text-gray-600 dark:text-gray-400">{{ log.timestamp|date:"H:i:s" }}</div>
+                <div class="text-gray-500 dark:text-gray-500">{{ log.timestamp|timesince }} ago</div>
+              </div>
+            </td>
+            <td class="px-4 py-3">
+              {% if log.source_type == 'ZK' %}
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
+                <svg class="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                  <circle cx="12" cy="12" r="2"></circle>
+                </svg>
+                Device
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
+                <svg class="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                  <path d="M15 5l3 3"></path>
+                </svg>
+                Manual
+              </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
-    <!-- Pagination -->
+    <!-- Compact Pagination -->
     {% if logs.has_other_pages %}
-    <div class="border-t border-border/50 px-6 py-4">
-      <div class="flex items-center justify-between">
-        <div class="text-sm text-muted-foreground">
-          Showing {{ logs.start_index }} to {{ logs.end_index }} of {{ logs.paginator.count }} results
+    <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between text-xs">
+        <div class="text-gray-500 dark:text-gray-400">
+          {{ logs.start_index }}-{{ logs.end_index }} of {{ logs.paginator.count }}
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1">
           {% if logs.has_previous %}
           <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ logs.previous_page_number }}" 
-             class="pagination-button inline-flex items-center justify-center rounded-lg border border-input bg-background hover:bg-accent px-3 py-2 text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m15 18-6-6 6-6"></path>
+             class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
-            Previous
+            Prev
           </a>
           {% endif %}
 
-          <div class="flex items-center gap-1">
+          <div class="flex items-center gap-0.5">
             {% for num in logs.paginator.page_range %}
               {% if logs.number == num %}
-                <span class="pagination-button active inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">
+                <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-medium text-white bg-blue-600 rounded">
                   {{ num }}
                 </span>
-              {% elif num > logs.number|add:'-3' and num < logs.number|add:'3' %}
+              {% elif num > logs.number|add:'-2' and num < logs.number|add:'2' %}
                 <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}" 
-                   class="pagination-button inline-flex items-center justify-center rounded-lg border border-input bg-background hover:bg-accent px-3 py-2 text-sm">
+                   class="inline-flex items-center justify-center w-6 h-6 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
                   {{ num }}
                 </a>
               {% endif %}
@@ -506,10 +347,10 @@
 
           {% if logs.has_next %}
           <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ logs.next_page_number }}" 
-             class="pagination-button inline-flex items-center justify-center rounded-lg border border-input bg-background hover:bg-accent px-3 py-2 text-sm">
+             class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors">
             Next
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m9 18 6-6-6-6"></path>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
           </a>
           {% endif %}
@@ -518,40 +359,32 @@
     </div>
     {% endif %}
     {% else %}
-    <div class="text-center py-16">
-      <div class="mx-auto h-24 w-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
-        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14,2 14,8 20,8"></polyline>
-          <line x1="16" x2="8" y1="13" y2="13"></line>
-          <line x1="16" x2="8" y1="17" y2="17"></line>
+    <div class="text-center py-12">
+      <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mx-auto mb-4">
+        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
         </svg>
       </div>
-      <h3 class="text-lg font-semibold text-foreground mb-2">No attendance logs found</h3>
-      <p class="text-muted-foreground mb-6 max-w-sm mx-auto">
+      <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">No attendance logs found</h3>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mb-4 max-w-sm mx-auto">
         {% if request.GET %}
-          No records match your current filters. Try adjusting your search criteria.
+          No records match your filters. Try adjusting your search criteria.
         {% else %}
-          Start by importing attendance data from your ZKTeco devices.
+          Import attendance data from your ZKTeco devices to get started.
         {% endif %}
       </p>
-      <div class="flex items-center justify-center gap-3">
+      <div class="flex items-center justify-center gap-2">
         {% if request.GET %}
-        <a href="{% url 'zkteco:attendance_logs' %}" class="inline-flex items-center gap-2 rounded-xl border border-input bg-background hover:bg-accent px-6 py-3 text-sm font-medium">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-            <path d="M21 3v5h-5"></path>
-            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-            <path d="M3 21v-5h5"></path>
+        <a href="{% url 'zkteco:attendance_logs' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
           </svg>
           Clear Filters
         </a>
         {% endif %}
-        <a href="{% url 'zkteco:device_list' %}" class="btn-gradient inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium text-white shadow-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" x2="12" y1="3" y2="15"></line>
+        <a href="{% url 'zkteco:device_list' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
           </svg>
           Import Data
         </a>
@@ -566,32 +399,12 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Auto-submit form on filter chip clicks
-  document.querySelectorAll('.filter-chip').forEach(chip => {
-    chip.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      // Remove active class from all chips
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      
-      // Add active class to clicked chip
-      this.classList.add('active');
-      
-      // Submit the form
-      const form = this.closest('form');
-      if (form) {
-        form.submit();
-      }
-    });
-  });
-
-  // Search input auto-focus
+  // Search input focus shortcut
   const searchInput = document.querySelector('input[name="search"]');
   if (searchInput) {
-    // Focus on search when pressing '/' key
     document.addEventListener('keydown', function(e) {
       if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+        if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'SELECT') {
           e.preventDefault();
           searchInput.focus();
         }
@@ -599,72 +412,158 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Smooth scrolling for pagination
-  document.querySelectorAll('.pagination-button').forEach(button => {
-    if (button.tagName === 'A') {
-      button.addEventListener('click', function() {
-        // Scroll to top of table
-        const table = document.querySelector('.table-responsive');
+  // Quick filter buttons
+  document.querySelectorAll('button[name="date_range"]').forEach(button => {
+    button.addEventListener('click', function(e) {
+      // Remove active styling from all buttons
+      document.querySelectorAll('button[name="date_range"]').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+        btn.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300', 'border-gray-300', 'dark:border-gray-600');
+      });
+      
+      // Add active styling to clicked button
+      this.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300', 'border-gray-300', 'dark:border-gray-600');
+      this.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+    });
+  });
+
+  // Smooth scroll to table after pagination
+  document.querySelectorAll('a[href*="page="]').forEach(link => {
+    link.addEventListener('click', function() {
+      setTimeout(() => {
+        const table = document.querySelector('table');
         if (table) {
           table.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-      });
+      }, 100);
+    });
+  });
+
+  // Enhanced tooltips for employee avatars
+  document.querySelectorAll('.w-6.h-6.bg-gradient-to-br').forEach(avatar => {
+    const employeeRow = avatar.closest('tr');
+    const employeeName = employeeRow.querySelector('.font-medium.text-gray-900').textContent;
+    const employeeId = employeeRow.querySelector('.font-mono').textContent;
+    avatar.setAttribute('title', `${employeeName}\n${employeeId}`);
+  });
+
+  // Auto-clear search on escape
+  if (searchInput) {
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        this.value = '';
+        this.blur();
+      }
+    });
+  }
+
+  // Form submission with loading state
+  const filterForm = document.querySelector('form[method="GET"]');
+  if (filterForm) {
+    filterForm.addEventListener('submit', function() {
+      const submitButton = this.querySelector('button[type="submit"]');
+      if (submitButton) {
+        const originalText = submitButton.innerHTML;
+        submitButton.innerHTML = '<svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Loading...';
+        submitButton.disabled = true;
+        
+        // Reset button after a timeout in case form doesn't redirect
+        setTimeout(() => {
+          submitButton.innerHTML = originalText;
+          submitButton.disabled = false;
+        }, 5000);
+      }
+    });
+  }
+
+  // Keyboard navigation for table
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+      return; // Don't interfere with form inputs
+    }
+
+    const rows = document.querySelectorAll('tbody tr');
+    let currentIndex = Array.from(rows).findIndex(row => row.classList.contains('bg-blue-50'));
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (currentIndex < rows.length - 1) {
+        if (currentIndex >= 0) rows[currentIndex].classList.remove('bg-blue-50', 'dark:bg-blue-900/20');
+        currentIndex++;
+        rows[currentIndex].classList.add('bg-blue-50', 'dark:bg-blue-900/20');
+        rows[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (currentIndex > 0) {
+        rows[currentIndex].classList.remove('bg-blue-50', 'dark:bg-blue-900/20');
+        currentIndex--;
+        rows[currentIndex].classList.add('bg-blue-50', 'dark:bg-blue-900/20');
+        rows[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (currentIndex === -1 && rows.length > 0) {
+        currentIndex = 0;
+        rows[currentIndex].classList.add('bg-blue-50', 'dark:bg-blue-900/20');
+        rows[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
   });
 
-  // Enhanced hover effects for employee avatars
-  document.querySelectorAll('.employee-avatar').forEach(avatar => {
-    const employeeName = avatar.parentElement.querySelector('.font-medium').textContent;
-    avatar.setAttribute('title', `Employee: ${employeeName}`);
-  });
+  // Real-time search functionality (optional)
+  if (searchInput) {
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      const searchTerm = this.value.toLowerCase().trim();
+      
+      if (searchTerm.length === 0) {
+        // Show all rows
+        document.querySelectorAll('tbody tr').forEach(row => {
+          row.style.display = '';
+        });
+        return;
+      }
+      
+      searchTimeout = setTimeout(() => {
+        document.querySelectorAll('tbody tr').forEach(row => {
+          const employeeName = row.querySelector('.font-medium.text-gray-900').textContent.toLowerCase();
+          const employeeId = row.querySelector('.font-mono').textContent.toLowerCase();
+          const deviceName = row.querySelectorAll('.font-medium.text-gray-900')[1].textContent.toLowerCase();
+          
+          const matches = employeeName.includes(searchTerm) || 
+                         employeeId.includes(searchTerm) || 
+                         deviceName.includes(searchTerm);
+          
+          row.style.display = matches ? '' : 'none';
+        });
+      }, 300);
+    });
+  }
 
-  // Keyboard shortcuts info
-  const keyboardShortcutsInfo = document.createElement('div');
-  keyboardShortcutsInfo.className = 'fixed bottom-4 right-4 bg-black/80 text-white text-xs p-2 rounded-lg opacity-0 transition-opacity pointer-events-none';
-  keyboardShortcutsInfo.innerHTML = 'Press "/" to focus search';
-  document.body.appendChild(keyboardShortcutsInfo);
+  // Add keyboard shortcut indicator
+  const shortcutIndicator = document.createElement('div');
+  shortcutIndicator.className = 'fixed bottom-4 right-4 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-xs px-3 py-1 rounded-lg opacity-0 transition-opacity pointer-events-none z-50';
+  shortcutIndicator.textContent = 'Press "/" to search • ↑↓ to navigate';
+  document.body.appendChild(shortcutIndicator);
 
-  // Show shortcuts info on hover over search
+  // Show shortcut indicator on first load
+  setTimeout(() => {
+    shortcutIndicator.style.opacity = '0.8';
+    setTimeout(() => {
+      shortcutIndicator.style.opacity = '0';
+    }, 3000);
+  }, 1000);
+
+  // Show indicator when hovering over search
   if (searchInput) {
     searchInput.addEventListener('mouseenter', () => {
-      keyboardShortcutsInfo.style.opacity = '1';
+      shortcutIndicator.style.opacity = '0.8';
     });
     
     searchInput.addEventListener('mouseleave', () => {
-      keyboardShortcutsInfo.style.opacity = '0';
+      shortcutIndicator.style.opacity = '0';
     });
   }
-
-  // Auto-refresh functionality (optional)
-  let autoRefreshInterval;
-  
-  function startAutoRefresh() {
-    autoRefreshInterval = setInterval(() => {
-      // Only refresh if no filters are active and user hasn't interacted recently
-      const hasFilters = new URLSearchParams(window.location.search).toString();
-      if (!hasFilters) {
-        // Add subtle indicator for auto-refresh
-        const refreshIndicator = document.createElement('div');
-        refreshIndicator.className = 'fixed top-4 right-4 bg-blue-500 text-white text-xs px-3 py-1 rounded-full opacity-80';
-        refreshIndicator.textContent = 'Refreshing...';
-        document.body.appendChild(refreshIndicator);
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      }
-    }, 300000); // Refresh every 5 minutes
-  }
-
-  // Uncomment to enable auto-refresh
-  // startAutoRefresh();
-
-  // Cleanup on page unload
-  window.addEventListener('beforeunload', () => {
-    if (autoRefreshInterval) {
-      clearInterval(autoRefreshInterval);
-    }
-  });
 });
+
 </script>
 {% endblock %}

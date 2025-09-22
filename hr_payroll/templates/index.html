@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}ZKTeco Device Management{% endblock %}</title>
+  <title>Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -97,136 +97,130 @@
       background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
       border: 1px solid rgba(255,255,255,0.1);
     }
-
-    /* Mobile responsiveness */
-    @media (max-width: 1024px) {
-      .sidebar-desktop {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-      }
-      
-      .sidebar-desktop.show {
-        transform: translateX(0);
-      }
-    }
-
-    /* Mobile backdrop */
-    .mobile-backdrop {
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(4px);
-    }
   </style>
-  {% block extra_css %}{% endblock %}
 </head>
 <body class="font-sans bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-  <!-- Mobile Backdrop -->
-  <div id="mobileBackdrop" class="fixed inset-0 z-40 mobile-backdrop hidden lg:hidden"></div>
-
-  <!-- Mobile Menu Toggle Button -->
-  <button id="mobile-nav-toggle" aria-label="Menu" class="fixed right-4 top-4 z-50 rounded-xl p-3 bg-blue-600 hover:bg-blue-700 text-white shadow-lg lg:hidden transition-all duration-200">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="4" x2="20" y1="12" y2="12"></line>
-      <line x1="4" x2="20" y1="6" y2="6"></line>
-      <line x1="4" x2="20" y1="18" y2="18"></line>
-    </svg>
-  </button>
-
   <div class="flex h-screen">
     <!-- Sidebar -->
-    <div id="sidebar" class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-colors duration-300 sidebar-desktop fixed lg:static inset-y-0 left-0 z-50 lg:z-auto">
+    <div class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-colors duration-300">
       <!-- Company Logo -->
       <div class="p-4 border-b border-gray-200 dark:border-gray-700">
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-            <span class="text-white text-sm font-bold">Z</span>
+            <span class="text-white text-sm font-bold">A</span>
           </div>
-          <span class="font-semibold text-base text-gray-900 dark:text-white">ZKTeco</span>
+          <span class="font-semibold text-base text-gray-900 dark:text-white">Acme Inc.</span>
         </div>
       </div>
 
       <!-- Navigation -->
       <div class="flex-1 p-3 overflow-auto">
-        <!-- Main Menu Section -->
+        <!-- Home Section -->
         <div class="mb-6">
           <div class="px-2 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Main Menu
+            Home
           </div>
           <nav class="space-y-1 mt-2">
-            <a href="{% url 'zkteco:device_list' %}" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg {% if request.resolver_match.url_name == 'device_list' %}bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium{% else %}hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white{% endif %} transition-all duration-200">
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium transition-all duration-200">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                <circle cx="12" cy="12" r="2"></circle>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m7 7 5-5 5 5"/>
               </svg>
-              <span>Device Management</span>
-              {% if total_devices %}
-              <div class="ml-auto rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-xs text-blue-700 dark:text-blue-300">
-                {{ total_devices }}
-              </div>
-              {% endif %}
+              <span>Dashboard</span>
             </a>
-            
-            <a href="{% url 'zkteco:attendance_logs' %}" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg {% if request.resolver_match.url_name == 'attendance_logs' %}bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium{% else %}hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white{% endif %} transition-all duration-200">
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14,2 14,8 20,8"></polyline>
-                <line x1="16" x2="8" y1="13" y2="13"></line>
-                <line x1="16" x2="8" y1="17" y2="17"></line>
-                <polyline points="10,9 9,9 8,9"></polyline>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
-              <span>Attendance Logs</span>
-              <div class="ml-auto rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-700 dark:text-emerald-300">
-                New
-              </div>
+              <span>Analytics</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              <span>Projects</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+              </svg>
+              <span>Team</span>
             </a>
           </nav>
         </div>
 
-        <!-- Reports Section -->
+        <!-- Documents Section -->
         <div class="mb-6">
           <div class="px-2 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Reports
+            Documents
           </div>
           <nav class="space-y-1 mt-2">
-            <!-- Expandable Analytics Menu -->
+            <!-- Dropdown Item 1 -->
             <div class="relative">
               <button onclick="toggleDropdown('dropdown1')" class="flex items-center justify-between w-full px-3 py-2.5 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200">
                 <div class="flex items-center gap-3">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
-                  <span>Analytics</span>
+                  <span>Data Library</span>
                 </div>
                 <svg id="dropdown1-icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
               </button>
               <div id="dropdown1" class="hidden ml-6 mt-1 space-y-1">
-                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Daily Reports</a>
-                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Monthly Reports</a>
-                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Custom Reports</a>
+                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Reports</a>
+                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Analytics</a>
+                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Exports</a>
               </div>
             </div>
 
-            <!-- Export Menu -->
+            <!-- Dropdown Item 2 -->
             <div class="relative">
               <button onclick="toggleDropdown('dropdown2')" class="flex items-center justify-between w-full px-3 py-2.5 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200">
                 <div class="flex items-center gap-3">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
-                  <span>Export Data</span>
+                  <span>Reports</span>
                 </div>
                 <svg id="dropdown2-icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
               </button>
               <div id="dropdown2" class="hidden ml-6 mt-1 space-y-1">
-                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Export CSV</a>
-                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Export Excel</a>
-                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Export PDF</a>
+                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Monthly</a>
+                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Quarterly</a>
+                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Annual</a>
               </div>
             </div>
+
+            <!-- Dropdown Item 3 -->
+            <div class="relative">
+              <button onclick="toggleDropdown('dropdown3')" class="flex items-center justify-between w-full px-3 py-2.5 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200">
+                <div class="flex items-center gap-3">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                  <span>Word Assistant</span>
+                </div>
+                <svg id="dropdown3-icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+              <div id="dropdown3" class="hidden ml-6 mt-1 space-y-1">
+                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Templates</a>
+                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Grammar Check</a>
+                <a href="#" class="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200">Suggestions</a>
+              </div>
+            </div>
+
+            <button class="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-all duration-200 w-full">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+              </svg>
+              <span>More</span>
+            </button>
           </nav>
         </div>
       </div>
@@ -254,11 +248,11 @@
           <button onclick="toggleDropdown('sidebarProfile')" class="w-full p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                <span class="text-white text-sm font-medium">AD</span>
+                <span class="text-white text-sm font-medium">S</span>
               </div>
               <div class="flex-1 min-w-0 text-left">
-                <div class="text-sm font-medium text-gray-900 dark:text-white truncate">Admin User</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 truncate">System Administrator</div>
+                <div class="text-sm font-medium text-gray-900 dark:text-white truncate">shadcn</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 truncate">m@example.com</div>
               </div>
               <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
@@ -293,22 +287,13 @@
     </div>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col lg:ml-0">
+    <div class="flex-1 flex flex-col">
       <!-- Header -->
       <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 transition-colors duration-300">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{% block page_title %}Dashboard{% endblock %}</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{% block page_description %}Welcome back, here's what's happening today.{% endblock %}</p>
-            
-            <!-- Breadcrumb -->
-            <nav class="hidden md:flex mt-2" aria-label="Breadcrumb">
-              <ol class="flex items-center space-x-2 text-sm">
-                <li><a href="{% url 'zkteco:device_list' %}" class="text-gray-500 hover:text-blue-600 dark:hover:text-blue-400">Home</a></li>
-                <li class="text-gray-400">/</li>
-                <li class="font-medium text-gray-900 dark:text-gray-100">{% block breadcrumb %}Dashboard{% endblock %}</li>
-              </ol>
-            </nav>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Welcome back, here's what's happening today.</p>
           </div>
           <div class="flex items-center gap-4">
             <!-- Theme Toggle -->
@@ -351,7 +336,7 @@
             <div class="relative">
               <button onclick="toggleDropdown('topProfile')" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200">
                 <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                  <span class="text-white text-sm font-medium">AD</span>
+                  <span class="text-white text-sm font-medium">S</span>
                 </div>
                 <svg class="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -362,11 +347,11 @@
                 <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                      <span class="text-white font-medium">AD</span>
+                      <span class="text-white font-medium">S</span>
                     </div>
                     <div>
-                      <div class="font-medium text-gray-900 dark:text-white">Admin User</div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">admin@zkteco.com</div>
+                      <div class="font-medium text-gray-900 dark:text-white">shadcn</div>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">m@example.com</div>
                     </div>
                   </div>
                 </div>
@@ -401,23 +386,107 @@
         </div>
       </header>
 
-      <!-- Main Content Area -->
+      <!-- Main Content Area with Stat Cards -->
       <main class="flex-1 p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        {% block content %}
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <!-- Stat Card 1 -->
+          <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Revenue</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white mt-2">$45,231.89</p>
+                <p class="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17l9.2-9.2M17 17V7H7"/>
+                  </svg>
+                  +20.1% from last month
+                </p>
+              </div>
+              <div class="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stat Card 2 -->
+          <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Subscriptions</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white mt-2">+2,350</p>
+                <p class="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17l9.2-9.2M17 17V7H7"/>
+                  </svg>
+                  +180.1% from last month
+                </p>
+              </div>
+              <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stat Card 3 -->
+          <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Sales</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white mt-2">+12,234</p>
+                <p class="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17l9.2-9.2M17 17V7H7"/>
+                  </svg>
+                  +19% from last month
+                </p>
+              </div>
+              <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stat Card 4 -->
+          <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Now</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white mt-2">+573</p>
+                <p class="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17l9.2-9.2M17 17V7H7"/>
+                  </svg>
+                  +201 since last hour
+                </p>
+              </div>
+              <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty Content Area -->
         <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-300">
           <div class="text-center">
             <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 17l10 5 10-5"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 12l10 5 10-5"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
             </div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Welcome to ZKTeco Management</h3>
-            <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">Manage your biometric attendance devices with ease and precision.</p>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Ready for your content</h3>
+            <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">This is your main content area. Add charts, tables, or any other dashboard components here.</p>
           </div>
         </div>
-        {% endblock %}
       </main>
     </div>
   </div>
@@ -452,30 +521,6 @@
       document.body.classList.add(`theme-${colorTheme}`);
       localStorage.setItem('colorTheme', colorTheme);
       toggleDropdown('themeSelector');
-    }
-
-    // Mobile Sidebar Management
-    function toggleMobileSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const backdrop = document.getElementById('mobileBackdrop');
-      
-      sidebar.classList.toggle('show');
-      backdrop.classList.toggle('hidden');
-      
-      if (sidebar.classList.contains('show')) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = '';
-      }
-    }
-
-    function closeMobileSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const backdrop = document.getElementById('mobileBackdrop');
-      
-      sidebar.classList.remove('show');
-      backdrop.classList.add('hidden');
-      document.body.style.overflow = '';
     }
 
     // Dropdown Management
@@ -519,50 +564,30 @@
       }
     }
 
-    // Event Listeners
-    document.addEventListener('DOMContentLoaded', function() {
-      // Mobile menu toggle
-      const mobileNavToggle = document.getElementById('mobile-nav-toggle');
-      if (mobileNavToggle) {
-        mobileNavToggle.addEventListener('click', toggleMobileSidebar);
-      }
-
-      // Mobile backdrop
-      const mobileBackdrop = document.getElementById('mobileBackdrop');
-      if (mobileBackdrop) {
-        mobileBackdrop.addEventListener('click', closeMobileSidebar);
-      }
-
-      // Close dropdowns when clicking outside
-      document.addEventListener('click', function(event) {
-        const dropdowns = ['dropdown1', 'dropdown2', 'dropdown3', 'sidebarProfile', 'topProfile', 'themeSelector'];
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      const dropdowns = ['dropdown1', 'dropdown2', 'dropdown3', 'sidebarProfile', 'topProfile', 'themeSelector'];
+      
+      dropdowns.forEach(dropdownId => {
+        const dropdown = document.getElementById(dropdownId);
+        if (!dropdown) return;
         
-        dropdowns.forEach(dropdownId => {
-          const dropdown = document.getElementById(dropdownId);
-          if (!dropdown) return;
+        const button = dropdown.previousElementSibling || dropdown.parentElement.querySelector('button');
+        
+        if (button && !button.contains(event.target) && !dropdown.contains(event.target)) {
+          dropdown.classList.add('hidden');
           
-          const button = dropdown.previousElementSibling || dropdown.parentElement.querySelector('button');
-          
-          if (button && !button.contains(event.target) && !dropdown.contains(event.target)) {
-            dropdown.classList.add('hidden');
-            
-            // Reset sidebar dropdown icons
-            if (dropdownId.startsWith('dropdown')) {
-              const icon = document.getElementById(dropdownId + '-icon');
-              if (icon) icon.style.transform = 'rotate(0deg)';
-            }
+          // Reset sidebar dropdown icons
+          if (dropdownId.startsWith('dropdown')) {
+            const icon = document.getElementById(dropdownId + '-icon');
+            if (icon) icon.style.transform = 'rotate(0deg)';
           }
-        });
-      });
-
-      // Handle window resize
-      window.addEventListener('resize', () => {
-        if (window.innerWidth >= 1024) {
-          closeMobileSidebar();
         }
       });
+    });
 
-      // Initialize theme from localStorage
+    // Initialize theme from localStorage
+    document.addEventListener('DOMContentLoaded', function() {
       const savedTheme = localStorage.getItem('theme') || 'light';
       const savedColorTheme = localStorage.getItem('colorTheme') || 'default';
       
@@ -570,7 +595,5 @@
       setColorTheme(savedColorTheme);
     });
   </script>
-
-  {% block extra_js %}{% endblock %}
 </body>
 </html>
