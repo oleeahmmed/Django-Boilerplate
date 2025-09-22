@@ -299,16 +299,16 @@
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{% block page_title %}Dashboard{% endblock %}</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{% block page_description %}Welcome back, here's what's happening today.{% endblock %}</p>
+            <!-- <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{% block page_description %}Welcome back, here's what's happening today.{% endblock %}</p> -->
             
             <!-- Breadcrumb -->
-            <nav class="hidden md:flex mt-2" aria-label="Breadcrumb">
+            <!-- <nav class="hidden md:flex mt-2" aria-label="Breadcrumb">
               <ol class="flex items-center space-x-2 text-sm">
                 <li><a href="{% url 'zkteco:device_list' %}" class="text-gray-500 hover:text-blue-600 dark:hover:text-blue-400">Home</a></li>
                 <li class="text-gray-400">/</li>
                 <li class="font-medium text-gray-900 dark:text-gray-100">{% block breadcrumb %}Dashboard{% endblock %}</li>
               </ol>
-            </nav>
+            </nav> -->
           </div>
           <div class="flex items-center gap-4">
             <!-- Theme Toggle -->
@@ -326,7 +326,7 @@
             </div>
 
             <!-- Color Theme Selector -->
-            <div class="relative">
+            <!-- <div class="relative">
               <button onclick="toggleDropdown('themeSelector')" class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200">
                 <div class="w-3 h-3 rounded-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
                 Theme
@@ -345,8 +345,13 @@
                   Blue
                 </button>
               </div>
-            </div>
-
+            </div> -->
+    <button id="refreshDevices" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+      </svg>
+      Refresh
+    </button>
             <!-- Top Profile Dropdown -->
             <div class="relative">
               <button onclick="toggleDropdown('topProfile')" class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200">
@@ -561,7 +566,15 @@
           closeMobileSidebar();
         }
       });
-
+    // Refresh devices
+    function setupRefreshDevices() {
+      const refreshBtn = document.getElementById('refreshDevices');
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+          location.reload();
+        });
+      }
+    }
       // Initialize theme from localStorage
       const savedTheme = localStorage.getItem('theme') || 'light';
       const savedColorTheme = localStorage.getItem('colorTheme') || 'default';
